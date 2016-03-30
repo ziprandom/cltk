@@ -22,4 +22,4 @@ See the example Language under `/kazoo`
 
 ## Contributors
 
-- [ziprandom](https://github.com/[ziprandom])  - creator, maintainer
+- [ziprandom](https://github.com/ziprandom)  - creator, maintainer
