@@ -4,39 +4,55 @@ require "./kparser"
 require "./kast"
 require "./kscope"
 
-lexer = Kazoo::Lexer
+lexer  = Kazoo::Lexer
 parser = Kazoo::Parser
-scope = Kazoo::Scope(Expression).new
+scope  = Kazoo::Scope(Expression).new
 
 input = ""
 
-while !(input||"").match /^exit$/
-  input = Readline.readline(":: ", true)
-  if input.is_a? String
-    begin
-      tokens = lexer.lex(input)
-    rescue e: CLTK::LexingError
-      pp(e)
-      next
-    end
-    begin
-      res = parser.parse(tokens, {:accept => :first})
-      if res.is_a? CLTK::ASTNode
-        begin
-          puts res.eval_scope(scope).to_s
-        rescue e
-          puts e
-        end
-      end
-    rescue e: CLTK::NotInLanguage
-      pos = e.current.position
-      if pos
-        puts "Syntax error at:"
-        puts input
-        puts pos.line_offset.times().map { "-" }.join + "^"
-      else
-        puts "invalid input: #{input}"
-      end
-    end
+
+while !(input).match /^exit$/
+  begin
+
+    # read input
+    input = Readline.readline(":: ", true) || ""
+
+    # lex input
+    tokens = lexer.lex(input)
+
+    # parse lexed tokens
+    res = parser.parse(tokens, {:accept => :first}) as CLTK::ASTNode
+
+    # evaluate the result with a given scope
+    # (scope my be altered by the expression)
+    evaluated =  res.eval_scope(scope).to_s
+
+    # output result of evaluation
+    puts evaluated
+
+  rescue e: CLTK::LexingError
+    show_lexing_error(e, input)
+  rescue e: CLTK::NotInLanguage
+    show_syntax_error(e,input)
+  rescue e
+    puts e
   end
+end
+
+def show_lexing_error(e, input)
+  puts "Lexing error at:\n\n"
+  puts "    " + input.split("\n")[e.line_number-1]
+  puts "    " + e.line_offset.times().map { "-" }.join + "^"
+  puts e
+end
+
+def show_syntax_error(e,input)
+    pos = e.current.position
+    if pos
+      puts "Syntax error at:"
+      puts "    " + input.split("\n")[pos.line_number-1]
+      puts "    " + pos.line_offset.times().map { "-" }.join + "^"
+    else
+      puts "invalid input: #{input}"
+    end
 end
