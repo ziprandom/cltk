@@ -1,4 +1,4 @@
-# Description:	This file contains the base class for lexers that use RLTK.
+# Description:	This file contains the base class for lexers that use CLTK.
 
 ############
 # Requires #
@@ -7,7 +7,7 @@
 # Standard Library
 require "string_scanner"
 
-# Ruby Language Toolkit
+# Crystal Language Toolkit
 require "./token"
 
 #######################

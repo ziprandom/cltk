@@ -4,7 +4,7 @@
 # Requires #
 ############
 
-# Ruby Language Toolkit
+# Crystal Language Toolkit
 require "../parser"
 #######################
 # Classes and Modules #
@@ -12,8 +12,8 @@ require "../parser"
 
 module CLTK
 
-  # The RLTK::Parsers module contains the parsers that are included as part
-  # of the RLKT project.
+  # The CLTK::Parsers module contains the parsers that are included as part
+  # of the CLTK project.
   module Parsers
 
     # A parser for a simple infix calculator.

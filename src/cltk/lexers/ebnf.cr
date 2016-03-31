@@ -5,7 +5,7 @@
 # Requires #
 ############
 
-# Ruby Language Toolkit
+# Crystal Language Toolkit
 require "../lexer"
 
 #######################
@@ -13,24 +13,24 @@ require "../lexer"
 #######################
 
 module CLTK
-	module Lexers
+  module Lexers
 
-		# The EBNF lexer is used by the RLTK::CFG class.
-		class EBNF < Lexer
+    # The EBNF lexer is used by the CLTK::CFG class.
+    class EBNF < Lexer
 
-			#################
-			# Default State #
-			#################
+      #################
+      # Default State #
+      #################
 
-			rule(/\*/) { :STAR     }
-			rule(/\+/) { :PLUS     }
-			rule(/\?/) { :QUESTION }
-			rule(/\./) { :DOT      }
+      rule(/\*/) { :STAR     }
+      rule(/\+/) { :PLUS     }
+      rule(/\?/) { :QUESTION }
+      rule(/\./) { :DOT      }
 
-			rule(/[a-z0-9_']+/) { |t| {:NONTERM, t.to_s} }
-			rule(/[A-Z0-9_']+/) { |t| {:TERM,    t.to_s} }
+      rule(/[a-z0-9_']+/) { |t| {:NONTERM, t.to_s} }
+      rule(/[A-Z0-9_']+/) { |t| {:TERM,    t.to_s} }
 
-			rule(/\s/)
-		end
-	end
+      rule(/\s/)
+    end
+  end
 end

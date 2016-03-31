@@ -9,7 +9,7 @@
 # Standard Library
 require "set"
 
-# Ruby Language Toolkit
+# Crystal Language Toolkit
 require "./lexers/ebnf"
 
 #######################
@@ -22,7 +22,7 @@ module CLTK
   class GrammarError < Exception; end
 
   # The CFG class is used to represent context-free grammars.  It is used by
-  # the RLTK::Parser class to represent the parser's grammar, but can also be
+  # the CLTK::Parser class to represent the parser's grammar, but can also be
   # used to manipulate arbitrary CFGs.
   class CFG
 
