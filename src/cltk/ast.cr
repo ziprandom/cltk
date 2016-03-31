@@ -1,5 +1,3 @@
-require "spec"
-
 abstract class CLTK::ASTNode
 
   property :parent
