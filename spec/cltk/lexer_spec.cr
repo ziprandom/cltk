@@ -100,7 +100,7 @@ describe "CLTK::Lexer" do
     expected.should eq actual
   end
 
-  it "test_smth" do
+  it "can instantiate a lexer with a custom environment" do
     expected = [
       CLTK::Token.new(:A, 0),
       CLTK::Token.new(:A, 1),
@@ -108,13 +108,13 @@ describe "CLTK::Lexer" do
       CLTK::Token.new(:EOS)
     ]
 
-#    actual = ENVLexer.lex("aaa")
+    actual = ENVLexer.lex("aaa")
 
-#    expected.should eq actual
+    expected.should eq actual
 
-#    lexer = ENVLexer.new
+    lexer = ENVLexer.new
 
-#    expected.should eq lexer.lex("aaa")
+    expected.should eq lexer.lex("aaa")
 
     expected = [
       CLTK::Token.new(:A, 3),
@@ -123,8 +123,10 @@ describe "CLTK::Lexer" do
       CLTK::Token.new(:EOS)
     ]
 
-#    expected.should eq lexer.lex("aaa")
+    expected.should eq lexer.lex("aaa")
+
   end
+
 
   it "test_first_match" do
     expected = [
