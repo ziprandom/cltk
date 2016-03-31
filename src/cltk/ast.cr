@@ -1,19 +1,4 @@
 require "spec"
-class Array(T)
-  def flatten
-    arr = [] of T
-    self.each do |el|
-      if el.responds_to? :flatten
-        el.flatten.each do |e|
-          arr = arr + ([e] as Array)
-        end
-      else
-        arr << el
-      end
-    end
-    arr
-  end
-end
 
 abstract class CLTK::ASTNode
 
