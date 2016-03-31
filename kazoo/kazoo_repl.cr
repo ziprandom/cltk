@@ -10,12 +10,19 @@ scope  = Kazoo::Scope(Expression).new
 
 input = ""
 
+puts "\n\n" +
+     "  welcome to the example repl, exit with: 'exit'  \n" +
+     "--------------------------------------------------\n\n"
 
-while !(input).match /^exit$/
+while true
   begin
 
     # read input
     input = Readline.readline(":: ", true) || ""
+
+    # exit on exit
+
+    exit if input == "exit"
 
     # lex input
     tokens = lexer.lex(input)
