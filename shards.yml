@@ -1,0 +1,11 @@
+name: cltk
+version: 0.0.2
+
+authors:
+  - ziprandom <ziprandom@gmail.com>
+  - Chris Wailes (RLTK)
+
+description: |
+  A Collection of Classes to define Lexers, Parsers & Abstract Syntax Trees. A port of the Ruby Language Toolking written by Chris Wailes
+
+license: MIT
