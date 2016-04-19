@@ -283,6 +283,9 @@ class Prototype < Expression
   end
 
   def eval_scope(sscope)
+    if name
+      sscope[name.not_nil!] = self
+    end
     self.scope = sscope
     self
   end

@@ -142,8 +142,15 @@ describe "Kazoo::Language" do
     {"1 + 1;23;", "23"},
     {"[1+1, 2*2, true]", "[ 2, 4, true ]"},
     {"fun(x)
+        x + 2
+      end", "Function (x)"},
+    {"def add_two(x)
+        x + 2
+      end", "Function add_two(x)"},
+    {"def add_two(x)
           x + 2
-        end", "Function (x)"},
+        end
+      add_two(2)", "4"},
     {"add = fun(x)
           x + 2
         end
