@@ -8,6 +8,21 @@
 # CLTK Language Toolkit
 require "./cfg"
 require "./ast"
+
+# exceptions
+require "./parser/exceptions/bad_token_exception"
+require "./parser/exceptions/internal_parser_exception"
+require "./parser/exceptions/parser_construction_exception"
+require "./parser/exceptions/handled_error_exception"
+require "./parser/exceptions/not_in_language_exception"
+require "./parser/exceptions/useless_parser_exception"
+
+require "./parser/environment"
+require "./parser/parse_stack"
+require "./parser/state"
+require "./parser/prod_proc"
+require "./parser/actions"
+
 #######################
 # Classes and Modules #
 #######################
@@ -16,97 +31,6 @@ require "./ast"
 module CLTK
 
   alias Type = ASTNode | Token | String | Symbol | Int32 | Float32 | Float64 | Bool | Nil | Array(Type) | Hash(String, Type)
-
-  # A BadToken error indicates that a token was observed in the input stream
-  # that wasn't used in the grammar's definition.
-  class BadToken < Exception
-    def initialize()
-      @backtrace = [] of String
-      super(message)
-    end
-
-    # @return [String] String representation of the error.
-    def to_s
-      "Unexpected token.  Token not present in grammar definition."
-    end
-  end
-
-  # A NotInLanguage error is raised whenever there is no valid parse tree
-  # for a given token stream.  In other words, the input string is not in the
-  # defined language.
-  class NotInLanguage < Exception
-
-    # @return [Array<Token>]  List of tokens that have been successfully parsed
-    getter :seen
-
-    # @return [Token]  Token that caused the parser to stop
-    getter :current
-
-    # @return [Array<Token>]  List of tokens that have yet to be seen
-    getter :remaining
-
-    # @param [Array<Token>]  seen       Tokens that have been successfully parsed
-    # @param [Token]         current    Token that caused the parser to stop
-    # @param [Array<Token>]  remaining  Tokens that have yet to be seen
-    def initialize(@seen, @current, @remaining)
-      super(message)
-      @backtrace = [] of String
-    end
-
-    # @return [String] String representation of the error.
-    def to_s
-      "String not in language.  Token info:\n\tSeen: #{@seen}\n\tCurrent: #{@current}\n\tRemaining: #{@remaining}"
-    end
-  end
-
-  # An error of this type is raised when the parser encountered a error that
-  # was handled by an error production.
-  class HandledError < Exception
-
-    # The errors as reported by the parser.
-    #
-    # @return [Array<Object>]
-    getter :errors
-
-    # The result that would have been returned by the call to *parse*.
-    getter :result
-
-    # Instantiate a new HandledError object with *errors*.
-    #
-    # @param [Array<Object>]	errors Errors added to the parsing environment by calls to {Parser::Environment#error}.
-    # @param [Object]		result Object resulting from parsing Tokens before the error occurred.
-    def initialize(@errors, @result)
-      @backtrace = [] of String
-      super("HandledError")
-    end
-  end
-
-  # Used for exceptions that occure during parser construction.
-  class ParserConstructionException < Exception
-   def initialize(message)
-      @backtrace = [] of String
-      super(message)
-   end
-  end
-
-  # Used for runtime exceptions that are the parsers fault.  These should
-  # never be observed in the wild.
-  class InternalParserException < Exception
-    def initialize(message)
-      @backtrace = [] of String
-      @printable_backtrace = @backtrace
-      super(message)
-    end
-  end
-
-  # Used to indicate that a parser is empty or hasn't been finalized.
-  class UselessParserException < Exception
-    # Sets the error messsage for this exception.
-    def initialize
-      @backtrace = [] of String
-      super("Parser has not been finalized.")
-    end
-  end
 
   # The Parser class may be sub-classed to produce new parsers.  These
   # parsers have a lot of features, and are described in the main
@@ -130,19 +54,18 @@ module CLTK
       end
     end
 
-    # Installs instance class varialbes into a class.
+    # Installs instance class variables into a class.
     #
     # @return [void]
     macro inherited
       @@curr_lhs  = nil
       @@curr_prec = nil
-
-      @@conflicts = Hash(Int32, Array({String, String})).new {|h, k| h[k] = Array({String, String}).new}
+      @@conflicts = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
 
       @@grammar   = CLTK::CFG.new
 
       @@lh_sides  = {} of Int32 => String
-      @@procs     = Hash(Int32, {ProdProc, Int32}).new
+      @@procs     = {} of Int32 => { ProdProc, Int32 }
       @@states    = Array(State).new
 
       # Variables for dealing with precedence.
@@ -170,25 +93,27 @@ module CLTK
 	         when :empty then ProdProc.new { [] of CLTK::Type}
 	         else             ProdProc.new { |prime| prime[0] }
 	         end
-
 	       when :nelp
 	         case which
 	         when :single
 	           ProdProc.new { |el| [el[0]] }
 	         when :multiple
 	           ProdProc.new(:splat, sels) do |syms|
-		     el = (syms as Array)[1..-1]
-		     multiple = (syms.first as Array) << (el.size == 1 ? el.first : el)
-                     multiple
+                     syms  = syms as Array
+                     first = syms.shift as Array
+                     rest  = syms.size > 1 ? syms : syms.first
+                     first << rest
 	           end
 	         else
-	           ProdProc.new { |el| el = el as Array; el.size == 1 ? el.first : el }
+	           ProdProc.new do |el|
+                     el = el as Array
+                     el.size > 1 ? el : el.first
+                   end
 	         end
+               else
+                 raise "this should never happen"
 	       end
-	@@procs.not_nil![p.id.not_nil!] = {
-          proc.not_nil!,
-	  p.rhs.size
-	}
+	@@procs.not_nil![p.id] = { proc, p.rhs.size }
 	@@production_precs.not_nil![p.id] = p.last_terminal
         nil
       end
@@ -203,14 +128,14 @@ module CLTK
     #
     # @return [Integer] The ID of the state.
     def self.add_state(state)
-      id = @@states.not_nil!.index(state)
+      states = @@states.not_nil!
+      id = states.index(state)
       if id
 	id
       else
-	state.id = @@states.not_nil!.size
-
-	@@states.not_nil! << state
-	@@states.not_nil!.size - 1
+	state.id = states.size
+	states << state
+	states.size - 1
       end
     end
 
@@ -221,12 +146,11 @@ module CLTK
     #
     # @return [Hash{Symbol => Object}]
     private def self.build_finalize_opts(opts)
-      if opts.fetch(:explain).is_a? String
-        val = self.get_io(opts[:explain])
-      end
-      if val
-        opts[:explain]	= val as IO
-      end
+
+      opts[:explain] =
+        opts[:explain] ?
+          self.get_io(opts[:explain] as String) : nil
+
       {
 	explain:    false,
 	lookahead:  true,
@@ -242,12 +166,10 @@ module CLTK
     #
     # @return [Hash{Symbol => Object}]
     private def self.build_parse_opts(opts)
-#      opts[:parse_tree] = self.get_io(opts[:parse_tree])
-#      opts[:verbose]    = self.get_io(opts[:verbose])
 
       {
 	accept:     :first,
-	env:        (@@env || Environment).new as Environment,
+	env:        (@@env || Environment).new,
 	parse_tree: nil,
 	verbose:    STDOUT
       }.merge(opts)
@@ -354,7 +276,6 @@ module CLTK
       # Use the curr_prec only if it isn't overridden for this
       # clause.
       %arg_type = {{arg_type}}
-
       precedence = {{precedence}} || @@curr_prec
       production, selections = if @@grammar
                                  e = (@@grammar as CLTK::CFG).clause({{expression}})
@@ -366,8 +287,7 @@ module CLTK
       # of symbols on the right-hand side.
       %expected_arity = (selections.empty? ? production.rhs.size : selections.size)
       if %arg_type == :splat && {{action.args.size}} != %expected_arity
-  #	raise ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action.arity}." + " Action arity must match the number of terminals and non-terminals in the clause."
-        raise "Incorrect number of action parameters.  Expected #{%expected_arity} but got {{action.args.size}}." + " Action arity must match the number of terminals and non-terminals in the clause."
+  	raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{%expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
       end
 
 
@@ -392,7 +312,6 @@ module CLTK
             {{action.body}}
           end
         end,
-        ##
         production.rhs.size
       }
       # If no precedence is specified use the precedence of the
@@ -458,6 +377,7 @@ module CLTK
     def self.list(symbol, list_elements, separator = "")
       self.build_list_production(symbol, list_elements, separator)
     end
+
     # This function will print a description of the parser to the
     # provided IO object.
     #
@@ -1382,478 +1302,14 @@ module CLTK
     # Instantiates a new parser and creates an environment to be
     # used for subsequent calls.
     def initialize
-      @env = Environment.new
+      @env = (@@env || Environment).new
     end
 
     # Parses the given token stream using the encapsulated environment.
     #
     # @see .parse
-    def parse(tokens, opts)
-      self.class.parse(tokens, {:env => @env}.update(opts))
-    end
-
-    ################################
-
-    # All actions passed to Parser.producation and Parser.clause are
-    # evaluated inside an instance of the Environment class or its
-    # subclass (which must have the same name).
-    class Environment
-      # Indicates if an error was encountered and handled.
-      #
-      # @return [Boolean]
-      property :he
-
-      # A list of all objects added using the *error* method.
-      #
-      # @return [Array<Object>]
-      getter :errors
-
-      # Instantiate a new Environment object.
-      def initialize
-        @errors = [] of Type
-        self.reset
-      end
-
-      def yield_with_self
-        with self yield
-      end
-
-      # Adds an object to the list of errors.
-      #
-      # @return [void]
-      def error(o)
-        @errors << o
-      end
-
-      # Returns a StreamPosition object for the symbol at location n,
-      # indexed from zero.
-      #
-      # @param [Integer] n Index for symbol position.
-      #
-      # @return [StreamPosition] Position of symbol at index n.
-      def pos(n)
-        if @positions
-          @positions.not_nil![n] as StreamPosition
-        end
-      end
-
-      # Reset any variables that need to be re-initialized between
-      # parse calls.
-      #
-      # @return [void]
-      def reset
-        @errors	= [] of Type
-        @he	= false
-      end
-
-      # Setter for the *positions* array.
-      #
-      # @param [Array<StreamPosition>] positions
-      #
-      # @return [Array<StreamPosition>] The same array of positions.
-      def set_positions(positions)
-        @positions = positions
-      end
-    end
-
-    # The ParseStack class is used by a Parser to keep track of state
-    # during parsing.
-    class ParseStack
-      # @return [Integer] ID of this parse stack.
-      getter :id
-
-      # @return [Array<Object>] Array of objects produced by {Reduce} actions.
-      getter :output_stack
-
-      # @return [Array<Integer>] Array of states used when performing {Reduce} actions.
-      getter :state_stack
-
-      # Instantiate a new ParserStack object.
-      #
-      # @param [Integer]                id           ID for this parse stack.  Used by GLR algorithm.
-      # @param [Array<Object>]          ostack       Output stack.  Holds results of {Reduce} and {Shift} actions.
-      # @param [Array<Integer>]         sstack       State stack.  Holds states that have been shifted due to {Shift} actions.
-      # @param [Array<Integer>]         nstack       Node stack.  Holds dot language IDs for nodes in the parse tree.
-      # @param [Array<Array<Integer>>]  connections  Integer pairs representing edges in the parse tree.
-      # @param [Array<Symbol>]          labels       Labels for nodes in the parse tree.
-      # @param [Array<StreamPosition>]  positions    Position data for symbols that have been shifted.
-      def initialize(id,
-                     ostack = [] of Type,
-                     sstack = [0] of Int32,
-                     nstack = [] of Int32,
-                     connections = [] of {Int32, Int32},
-                     labels = [] of String,
-                     positions = [] of StreamPosition)
-        @id = id
-
-        @node_stack   = nstack
-        @output_stack = ostack
-        @state_stack  = sstack
-
-        @connections  = connections
-        @labels       = labels
-        @positions    = positions
-      end
-
-      # Branch this stack, effectively creating a new copy of its
-      # internal state.
-      #
-      # @param [Integer] new_id ID for the new ParseStack.
-      #
-      # @return [ParseStack]
-      def branch(new_id)
-        # We have to do a deeper copy of the output stack to avoid
-        # interactions between the Proc objects for the different
-        # parsing paths.
-        #
-        # The being/rescue block is needed because some classes
-        # respond to `clone` but always raise an error.
-        new_output_stack = [] of Type
-        @output_stack.each do |o|
-	  # Check to see if we can obtain a deep copy.
-	  if o.responds_to?(:copy)
-	    new_output_stack.push o.copy as Type
-	  else
-	    begin
-              new_output_stack.push o.clone as Type
-            rescue
-              new_output_stack.push o as Type
-            end
-	  end
-        end
-
-        ParseStack.new(new_id, new_output_stack, @state_stack.clone,
-		       @node_stack.clone, @connections.clone, @labels.clone, @positions.clone)
-      end
-
-      # @return [StreamPosition] Position data for the last symbol on the stack.
-      def position
-        if @positions.empty?
-	  StreamPosition.new
-        else
-	  @positions.last.clone
-        end
-      end
-
-      # Push new state and other information onto the stack.
-      #
-      # @param [Integer]			state	ID of the shifted state.
-      # @param [Object]			o		Value of Token that caused the shift.
-      # @param [Symbol]			node0	Label for node in parse tree.
-      # @param [StreamPosition]	position	Position token that got shifted.
-      #
-      # @return [void]
-      def push(state, o, node0, position)
-        @state_stack << state.not_nil!
-        if o.is_a? Array
-          a = [] of Type as Type
-          o.each { |e| (a as Array(Type)).push(e as Type) }
-          @output_stack = @output_stack + [a]
-        elsif o.is_a? Type
-          @output_stack << o
-        else
-          @output_stack = @output_stack + [o]
-        end
-
-        @node_stack	<< @labels.size
-        @labels		<< if CFG.is_terminal?(node0) && o
-                             node0.to_s + "(#{o})"
-                           else
-                             node0.to_s
-                           end as String
-      @positions	<< position.not_nil!
-
-      if CFG.is_nonterminal?(node0)
-        @cbuffer.not_nil!.each do |node1|
-	  @connections << {@labels.size - 1, node1}
-        end
-      end
-    end
-
-    # Pop some number of objects off of the inside stacks.
-    #
-    # @param [Integer] n Number of object to pop off the stack.
-    #
-    # @return [Array(Object, StreamPosition)] Values popped from the output and positions stacks.
-    def pop(n = 1)
-      @state_stack.pop(n)
-      # Pop the node stack so that the proper edges can be added
-      # when the production's left-hand side non-terminal is
-      # pushed onto the stack.
-      @cbuffer = @node_stack.pop(n)
-      {@output_stack.pop(n), @positions.pop(n)}
-    end
-
-    # Fetch the result stored in this ParseStack.  If there is more
-    # than one object left on the output stack there is an error.
-    #
-    # @return [Object] The end result of this parse stack.
-    def result
-      if @output_stack.size == 1
-        return @output_stack.last
-      else
-        raise InternalParserException.new "The parsing stack should have 1 element on the output stack, not #{@output_stack.size}."
-      end
-    end
-
-    # @return [Integer] Current state of this ParseStack.
-    def state
-      @state_stack.last
-    end
-
-    # @return [String] Representation of the parse tree in the DOT langauge.
-    def tree
-      tree  = "digraph tree#{@id} {\n"
-
-      @labels.each_with_index do |label, i|
-        tree += "\tnode#{i} [label=\"#{label}\""
-
-        if CFG.is_terminal?(label)
-	  tree += " shape=box"
-        end
-
-        tree += "];\n"
-      end
-
-      tree += "\n"
-
-      @connections.each do |from, to|
-        tree += "\tnode#{from} -> node#{to};\n"
-      end
-
-      tree += "}"
+    def parse(tokens)
+      self.class.parse(tokens, {:env => @env})
     end
   end
-
-  # The State class is used to represent sets of items and actions to be
-  # used during parsing.
-  class State
-    # @return [Integer] State's ID.
-    property :id
-
-    # @return  [Array<CFG::Item>]  Item objects that comprise this state
-    getter :items
-
-    # @return [Hash{Symbol => Array<Action>}]  Maps lookahead symbols to actions
-    getter :actions
-
-    # Instantiate a new State object.
-    #
-    # @param [Array<Symbol>]     tokens  Tokens that represent this state
-    # @param [Array<CFG::Item>]  items   Items that make up this state
-    def initialize(tokens : Array(String)?, items = [] of CFG::Item)
-      @id      = nil
-      @items   = items
-      if tokens
-        @actions = tokens.reduce({} of String => Array(CLTK::Parser::Action) ) { |h, t| h[t] = Array(CLTK::Parser::Action).new; h }
-      end
-    end
-
-    # Compare one State to another.  Two States are equal if they
-    # have the same items or, if the items have been cleaned, if
-    # the States have the same ID.
-    #
-    # @param [State]  other  Another State to compare to
-    #
-    # @return [Boolean]
-    def ==(other)
-      if self.items && other.items
-        self.items == other.items
-      else
-        self.id == other.id
-      end
-    end
-
-    # Add a Reduce action to the state.
-    #
-    # @param [Production]  production  Production used to perform the reduction
-    #
-    # @return [void]
-    def add_reduction(production)
-      action = Reduce.new(production)
-
-      # Reduce actions are not allowed for the ERROR terminal.
-      @actions.not_nil!.each do |k, v|
-        if CFG.is_terminal?(k) && k.to_s != "ERROR"
-          v << action
-        end
-      end
-    end
-
-    # @param [CFG::Item] item Item to add to this state.
-    def append(item)
-      if item.is_a?(CFG::Item) &&  !@items.not_nil!.includes?(item)
-        @items.not_nil! << item
-      end
-    end
-
-    def <<(item)
-      append(item)
-    end
-    # Clean this State by removing the list of {CFG::Item} objects.
-    #
-    # @return [void]
-    def clean
-      @items = nil
-    end
-
-    # Close this state using *productions*.
-    #
-    # @param [Array<CFG::Production>] productions Productions used to close this state.
-    #
-    # @return [vod]
-    def close(productions)
-      self.each do |item|
-        next_symbol = item.next_symbol
-        if next_symbol && CFG.is_nonterminal?(next_symbol)
-	  productions.not_nil![next_symbol].each { |p| self << p.to_item }
-        end
-      end
-    end
-
-    # Checks to see if there is a conflict in this state, given a
-    # input of *sym*.  Returns :SR if a shift/reduce conflict is
-    # detected and :RR if a reduce/reduce conflict is detected.  If
-    # no conflict is detected nil is returned.
-    #
-    # @param [Symbol] sym Symbol to check for conflicts on.
-    #
-    # @return [:SR, :RR, nil]
-    def conflict_on?(sym)
-
-      reductions	= 0
-      shifts		= 0
-
-      @actions.not_nil![sym].each do |action|
-        if action.is_a?(Reduce)
-	  reductions += 1
-
-        elsif action.is_a?(Shift)
-	  shifts += 1
-
-        end
-      end
-
-      if shifts == 1 && reductions > 0
-        :SR
-      elsif reductions > 1
-        :RR
-      else
-        nil
-      end
-    end
-
-    # Iterate over the state's items.
-    #
-    # @return [void]
-    def each
-      current_item = 0
-      while current_item < @items.not_nil!.size
-        yield @items.not_nil!.at(current_item)
-        current_item += 1
-      end
-    end
-
-    # Specify an Action to perform when the input token is *symbol*.
-    #
-    # @param [Symbol] symbol Symbol to add action for.
-    # @param [Action] action Action for symbol.
-    #
-    # @return [void]
-    def on(symbol, action)
-      if @actions.not_nil!.has_key?(symbol.to_s)
-        @actions.not_nil![symbol.to_s] = (@actions.not_nil![symbol.to_s] as Array(Action)) << action as Action
-      else
-        raise Exception.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
-      end
-    end
-
-    # Returns that actions that should be taken when the input token
-    # is *symbol*.
-    #
-    # @param [Symbol] symbol Symbol we want the actions for.
-    #
-    # @return [Array<Action>] Actions that should be taken.
-    def on?(symbol)
-      @actions.not_nil![symbol].clone
-    end
-  end
-
-#  alias ProdProc = Proc
-  # A subclass of Proc that indicates how it should be passed arguments
-  # by the parser.
-  struct ProdProc
-    # @return [:array, :splat]  Method that should be used to pass arguments to this proc.
-    getter :arg_type
-
-    # @return [Array<Integer>]  Mask for selection of tokens to pass to action.  Empty mask means pass all.
-    getter :selections
-
-    def initialize(arg_type = :splat, selections = [] of Int32, &block: Array(Type), Environment -> _)
-#      super(&block)
-      @block = block
-      @arg_type   = arg_type
-      @selections = selections
-    end
-    def call(args, env)
-      @block.call(args as Array(Type), env as Environment)
-    end
-  end
-
-# The Action class is used to indicate what action the parser should
-# take given a current state and input token.
-class Action
-  # @return [Integer] ID of this action.
-  getter :id
-
-  # @param [Integer] id ID of this action.
-  def initialize(id = nil)
-    @id = id
-  end
-end
-
-# The Accept class indicates to the parser that it should accept the
-# current parse tree.
-class Accept < Action
-  # @return [String] String representation of this action.
-  def to_s
-    "Accept"
-  end
-end
-
-# The GoTo class indicates to the parser that it should goto the state
-# specified by GoTo.id.
-class GoTo < Action
-  # @return [String] String representation of this action.
-  def to_s
-    "GoTo #{self.id}"
-  end
-end
-
-# The Reduce class indicates to the parser that it should reduce the
-# input stack by the rule specified by Reduce.id.
-class Reduce < Action
-
-  # @param [Production]  production  Production to reduce by
-  def initialize(production)
-    super(production.id)
-
-    @production = production
-  end
-
-  # @return [String] String representation of this action.
-  def to_s
-    "Reduce by Production #{self.id} : #{@production.to_s}"
-  end
-end
-
-# The Shift class indicates to the parser that it should shift the
-# current input token.
-class Shift < Action
-  # @return [String] String representation of this action.
-  def to_s
-    "Shift to State #{self.id}"
-  end
-end
-end
 end

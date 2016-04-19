@@ -327,8 +327,11 @@ class TokenHookParser < CLTK::Parser
       @counter = 0
       super
     end
+
   end
+
   setenv CounterEnvironment
+
   token_hook(:A) { |env| (env as CounterEnvironment).counter += 1; next nil }
   token_hook(:B) { |env| (env as CounterEnvironment).counter += 2; next nil }
 
@@ -348,7 +351,7 @@ describe "CLTK::Parser" do
   it "test_ambiguous_parse_stack" do
     (AmbiguousParseStackParser.parse(ABLexer.lex("ab")) as Array).size.should eq 1
   end
-  #
+
   it "test_array_args" do
     actual = ArrayCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
     (actual).should eq 3
@@ -357,14 +360,14 @@ describe "CLTK::Parser" do
     actual = ArrayCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3"))
     (actual).should eq 9
   end
-  #
-  #  it "test_construction_error" do
-  #    expect_raises(CLTK::ParserConstructionException) do
-  #      class MyClass < CLTK::Parser
-  #	finalize
-  #      end
-  #    end
-  # end
+
+#  it "test_construction_error" do
+#    expect_raises(CLTK::ParserConstructionException) do
+#      class MyClass < CLTK::Parser
+#  	finalize
+#      end
+#    end
+#  end
 
   it "test_ebnf_parsing" do
     ################
@@ -696,14 +699,14 @@ describe "CLTK::Parser" do
     actual.should eq expected
   end
 
-  pending "test_token_hooks" do
+  it "test_token_hooks" do
     parser = TokenHookParser.new
 
     parser.parse(AlphaLexer.lex("a a a a"))
-    parser.env.counter.should eq 4
+    (parser.env as TokenHookParser::CounterEnvironment).counter.should eq 4
 
     parser.parse(AlphaLexer.lex("b b b b"))
-    parser.env.counter.should eq 1
+    (parser.env as TokenHookParser::CounterEnvironment).counter.should eq 12
   end
 
   it "test_underscore_tokens" do
@@ -741,7 +744,7 @@ describe "CLTK::Parser" do
     File.unlink(tmpfile)
   end
 
-  pending "test_uesless_parser_exception" do
+  pending "test_useless_parser_exception" do
     expect_raises(CLTK::UselessParserException) { UselessParser.new }
   end
 end
