@@ -10,100 +10,118 @@ require "./kast"
 module Kazoo
   class Parser < CLTK::Parser
 
-    left :ASSIGN
-    left :FUN
-    left :LPAREN, :LBRACK, :LCBRACK
+    left :ASSIGN, :FUN, :LPAREN,
+         :LBRACK, :LCBRACK,
+         :PLUS, :SUB, :MUL, :DIV
+
     right :RPAREN, :RBRACK, :RCBRACK
-    left :PLUS, :SUB
-    left :MUL, :DIV
 
-
-    production(:input, "statement") { |s| s }
-
-    production(:sep) do
-      clause("SEMI") { |n| n }
-      clause("CR") { |n| n }
+    production(:statement) do
+      clause("expressions sep*") do |e|
+        KProgram.new(e)
+      end
       nil
     end
-    production(:commax) do
-      clause("CR* COMMA CR*") {|e0, e1| e0 }
-    end
-    production(:hash_pair) do
-      clause("IDENT COLON e") {|e0, x, e1| [e0, e1]}
-    end
-    build_list_production(:hash_pairs, :hash_pair, :commax)
-    build_list_production(:array_elements, :e, :commax)
+
+    build_list_production(:expressions, :e, :sep)
 
     production(:e) do
-      clause("LPAREN e RPAREN") { |e0, e1| e1 }
-      clause("NUMBER")	        { |n| ANumber.new(n as Float64) }
-      clause("IDENT")	        { |i| Variable.new(i); }
-      clause("NIL")	        { KNil.new }
-      clause("TRUE")            { KTrue.new }
-      clause("FALSE")           { KFalse.new }
-      clause("e OR e")          { |e0, o, e2| KOr.new(e0, e2) as Expression}
-      clause("e AND e")         { |e0, a, e2| KAnd.new(e0, e2)}
-      clause("IDENT")	        { |i| Variable.new(i); }
-      clause("e LPAREN array_elements RPAREN") do |e lp arguments rp|
-        parameters = (arguments as Array).reduce([] of Expression) do |all, e|
-          all + [e as Expression]
-        end
-        FunCall.new(e, parameters)
-      end
 
-      clause("STRING")	{ |s| AString.new(s) }
-      clause("e PLUS e")	{ |e0, p, e1| a = Add.new(e0, e1); a }
-      clause("e SUB e")	{ |e0, p, e1| Sub.new(e0, e1) }
-      clause("e MUL e")	{ |e0, p, e1| Mul.new(e0, e1) }
-      clause("e DIV e")	{ |e0, p, e1| Div.new(e0, e1) }
-      clause("LCBRACK hash_pairs RCBRACK") do |lb hp rb|
-        hash = Hash(Variable, Expression).new
-        pairs = (hp as Array).reduce([] of Expression) do |all, e |
-          all + [[Variable.new((e as Array)[0]), (e as Array)[1]]]
-        end
-        pairs.each do |pair|
-          key = (pair as Array)[0]
-          value = (pair as Array)[1]
-          if value.is_a? Expression
-            hash[key as Variable] = (value as Expression)
-          end
-        end
-        AHash.new(hash as Hash(Variable, Expression))
-      end
-      clause("LBRACK array_elements RBRACK") do |lb, ae, rb|
-        s = (ae as Array).reduce([] of Expression) do |all, e |
-          all + [e as Expression]
-        end
-        a = AArray.new(s)
-      end
+      clause(:function_call)        { |a| a }
 
-      clause("fun_def") { |e| e }
-      clause("varassign") { |e| e }
+      clause(:fun_def)              { |e| e }
+      clause(:varassign)            { |e| e }
+      clause(:binary_expressions)   { |binary| binary }
 
+      # composed
+      clause(:hash)                 { |hash| hash }
+      clause(:array)                { |array| array }
+
+      # in ( )
+      clause("LPAREN e RPAREN")     { |_, e, _| e }
+
+      # most basic
+      clause(:identifier)           { |var| var}
+      clause(:string)               { |string| string }
+      clause(:number)               { |n| n}
+      clause(:NIL)	            { KNil.new }
+      clause(:TRUE)                 { KTrue.new }
+      clause(:FALSE)                { KFalse.new }
       nil
+    end
+
+    production(:function_call) do
+      clause("e LPAREN array_elements RPAREN") do |e, _, arguments, _|
+        FunCall.new(e, arguments)
+      end
+    end
+
+    production(:array) do
+      clause("LBRACK array_elements RBRACK") do |_, elements, _|
+        a = AArray.new(elements)
+      end
+    end
+
+    build_list_production(:array_elements, :e, :comma)
+
+    production(:hash) do
+      clause("LCBRACK hash_pairs RCBRACK") do |_, hash_pairs, _|
+        hash = (hash_pairs as Array).reduce(Hash(Variable, Expression).new) do |hash, pair|
+          key, value = pair as Array
+          if value.is_a? Expression
+            hash[key as Variable] = value
+          end
+          hash
+        end
+        AHash.new(hash)
+      end
+    end
+
+    production(:hash_pair) do
+      clause("identifier COLON e") {|e0, _, e1| [e0, e1]}
+    end
+
+    build_list_production(:hash_pairs, :hash_pair, :comma)
+
+    production(:binary_expressions) do
+      clause("e OR e")          { |e0, _, e2| KOr.new(e0, e2)  }
+      clause("e AND e")         { |e0, _, e2| KAnd.new(e0, e2) }
+      clause("e PLUS e")	{ |e0, _, e1| Add.new(e0, e1)  }
+      clause("e SUB e")	        { |e0, _, e1| Sub.new(e0, e1)  }
+      clause("e MUL e")	        { |e0, _, e1| Mul.new(e0, e1)  }
+      clause("e DIV e")	        { |e0, _, e1| Div.new(e0, e1)  }
+    end
+
+    production(:identifier) do
+      clause(:IDENT) { |i| Variable.new(i) }
+    end
+
+    production(:string) do
+      clause(:STRING)	{ |s| AString.new(s) }
+    end
+
+    production(:number) do
+      clause(:NUMBER)	{ |n| ANumber.new(n as Float64) }
     end
 
     production(:varassign) do
-      clause("IDENT ASSIGN e") do |ident, assign, e|
+      clause("IDENT ASSIGN e") do |ident, _, e|
         VarAssign.new(Variable.new(ident), e)
       end
     end
 
-    build_list_production("args", "IDENT", :commax)
-
-    production(:fun_head) do
-      clause("DEF IDENT LPAREN args RPAREN") do |df, ident, lp, args, rp|
-        [ident, args]
-      end
-      clause("FUN LPAREN args RPAREN") do |fu, lp, args, rp|
-        [nil, args]
-      end
+    production(:sep) do
+      clause(:SEMI) { |n| n }
+      clause(:CR) { |n| n }
+      nil
     end
 
-    build_nonempty_list_production(:fun_body, :e, :sep)
+    production(:comma) do
+      clause("CR* COMMA CR*") {|cr, _, _| cr }
+    end
 
     production(:fun_def) do
-      clause("fun_head sep fun_body sep END") do |head, sep, body, sep, ed|
+      clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
         args_vars = ((head as Array)[1] as Array).map {|v| Variable.new v}
         exps = (body as Array)
                .reduce([] of Expression) do |a, exp|
@@ -112,17 +130,19 @@ module Kazoo
         Prototype.new((head as Array).first, args_vars as Array, FunBody.new(exps))
       end
     end
-    build_nonempty_list_production(:program_instructions, :e, :sep)
 
-    production(:statement) do
-      clause("program_instructions") do |e|
-        exps = (e as Array).reduce([] of Expression) do |all, x|
-          all + [x]
-        end.clone
-        KProgram.new(exps)
+    production(:fun_head) do
+      clause("DEF IDENT LPAREN args RPAREN") do |_, ident, _, args, _|
+        [ident, args]
       end
-      nil
+      clause("FUN LPAREN args RPAREN") do |_, _, args, _|
+        [nil, args]
+      end
     end
+
+    build_list_production(:args, :IDENT, :comma)
+
+    build_nonempty_list_production(:fun_body, :e, :sep)
 
     finalize
   end
