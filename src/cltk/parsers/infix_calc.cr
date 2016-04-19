@@ -23,14 +23,14 @@ module CLTK
       right :MUL, :DIV
 
       production(:e) do
-	clause("NUM") { |n| n[0] as Int32 }
+	clause("NUM") { |n| n as Int32 }
 
-	clause("LPAREN e RPAREN") { |a| a[1] }
+	clause("LPAREN e RPAREN") { |rparen, a, lparen | a }
 
-	clause("e PLS e") { |a| (a[0] as Int32) + (a[2] as Int32) }
-	clause("e SUB e") { |a| (a[0] as Int32) - (a[2] as Int32) }
-	clause("e MUL e") { |a| (a[0] as Int32) * (a[2] as Int32) }
-	clause("e DIV e") { |a| (a[0] as Int32) / (a[2] as Int32) }
+	clause("e PLS e") { |e0, op, e1| (e0 as Int32) + (e1 as Int32) }
+	clause("e SUB e") { |e0, op, e1| (e0 as Int32) - (e1 as Int32) }
+	clause("e MUL e") { |e0, op, e1| (e0 as Int32) * (e1 as Int32) }
+	clause("e DIV e") { |e0, op, e1| (e0 as Int32) / (e1 as Int32) }
         nil
       end
 

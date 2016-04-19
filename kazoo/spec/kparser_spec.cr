@@ -30,7 +30,6 @@ describe "Kazoo::Parser::VariableAssignment" do
   string = "b = 123 + 3"
   tokens = lexer.lex(string)
   res = ((parser.parse(tokens, {:accept => :first}) as KProgram).expressions as Array).first
-
   it "should parse an Assignment as such" do
     res.class.should eq VarAssign
   end
@@ -179,14 +178,17 @@ describe "Kazoo::Language" do
 }"}
   ]
   scope = Kazoo::Scope(Expression).new
-  it "should parse different programs and evaluate" do
-    tuples.each do |tuple|
-      program, result = tuple
+
+  tuples.each do |tuple|
+    program, result = tuple
+
+    it "should parse >> #{program} << and evaluate to #{result}" do
       lexer = Kazoo::Lexer
       parser = Kazoo::Parser
       tokens = lexer.lex(program)
       res = parser.parse(tokens, {:accept => :first}) as Expression
       res.eval_scope(scope).to_s.should eq result
     end
+
   end
 end

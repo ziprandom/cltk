@@ -44,8 +44,8 @@ end
 
 class APlusBParser < CLTK::Parser
   production(:a, "A+ B") do |a, b|
-    if a[0].is_a? Array
-      (a[0] as Array(CLTK::Type)).size
+    if a.is_a? Array
+      (a as Array(CLTK::Type)).size
     end
   end
 
@@ -53,14 +53,14 @@ class APlusBParser < CLTK::Parser
 end
 
 class AQuestionBParser < CLTK::Parser
-  production(:a, "A? B") { |a| a[0] }
+  production(:a, "A? B") { |a, b| a }
 
   finalize
 end
 
 class AStarBParser < CLTK::Parser
-  production(:a, "A* B") do |a|
-    (a[0] as Array).size
+  production(:a, "A* B") do |a, b|
+    (a as Array).size
   end
 
   finalize
@@ -68,12 +68,12 @@ end
 
 class AmbiguousParser < CLTK::Parser
   production(:e) do
-    clause("NUM") {|n| n[0] as Int32}
+    clause("NUM") {|n| n as Int32}
 
-    clause("e PLS e") { |e| e = e as Array; (e[0] as Int32) + (e[2] as Int32)}
-    clause("e SUB e") { |e| e = e as Array; (e[0] as Int32) - (e[2] as Int32)}
-    clause("e MUL e") { |e| e = e as Array; (e[0] as Int32) * (e[2] as Int32)}
-    clause("e DIV e") { |e| e = e as Array; (e[0] as Int32) / (e[2] as Int32)}
+    clause("e PLS e") { |e0, op, e1 | (e0 as Int32) + (e1 as Int32) }
+    clause("e SUB e") { |e0, op, e1 | (e0 as Int32) - (e1 as Int32) }
+    clause("e MUL e") { |e0, op, e1 | (e0 as Int32) * (e1 as Int32) }
+    clause("e DIV e") { |e0, op, e1 | (e0 as Int32) / (e1 as Int32) }
     nil
 
   end
@@ -85,12 +85,12 @@ class ArrayCalc < CLTK::Parser
   default_arg_type :array
 
   production(:e) do
-    clause("NUM") { |v| v[0] as Int32 }
+    clause("NUM") { |n| (n as Array)[0] as Int32 }
 
-    clause("PLS e e") { |v| v = v as Array;(v[1] as Int32) + ( v[2] as Int32) }
-    clause("SUB e e") { |v| v = v as Array;(v[1] as Int32) - ( v[2] as Int32) }
-    clause("MUL e e") { |v| v = v as Array;(v[1] as Int32) * ( v[2] as Int32) }
-    clause("DIV e e") { |v| v = v as Array;(v[1] as Int32) / ( v[2] as Int32) }
+    clause("PLS e e") { |args| args = args as Array; (args[1] as Int32) + ( args[2] as Int32) }
+    clause("SUB e e") { |args| args = args as Array; (args[1] as Int32) - ( args[2] as Int32) }
+    clause("MUL e e") { |args| args = args as Array; (args[1] as Int32) * ( args[2] as Int32) }
+    clause("DIV e e") { |args| args = args as Array; (args[1] as Int32) / ( args[2] as Int32) }
     nil
   end
 
@@ -103,7 +103,7 @@ end
 class AmbiguousParseStackParser < CLTK::Parser
   production(:s, "e*") { |e| e }
 
-  production(:e, "A b_question b_question") { |a| a = a as Array; [a[0], a[1], a[2]] }
+  production(:e, "A b_question b_question") { |a, b0, b1| [a, b0, b1] }
 
   production(:b_question) do
     clause("")	{ nil }
@@ -141,17 +141,15 @@ class EmptyListParser1 < CLTK::Parser
 end
 
 class GreedTestParser0 < CLTK::Parser
-  production(:e, "A? A") do |a|
-    a = a as Array;
-    [a[0], a[1]]
+  production(:e, "A? A") do |a0, a1|
+    [a0, a1]
   end
 
   finalize
 end
 
 class GreedTestParser1 < CLTK::Parser
-  production(:e, "A? A?") do |a, b|
-    a0, a1 = a[0..1]
+  production(:e, "A? A?") do |a0, a1|
     [a0, a1]
   end
 
@@ -159,13 +157,13 @@ class GreedTestParser1 < CLTK::Parser
 end
 
 class GreedTestParser2 < CLTK::Parser
-  production(:e, "A* A") { |a| a = a as Array;[a[0], a[1]] }
+  production(:e, "A* A") { |a0, a1| [a0, a1] }
 
   finalize
 end
 
 class GreedTestParser3 < CLTK::Parser
-  production(:e, "A+ A") { |a| a = a as Array; [a[0], a[1]] }
+  production(:e, "A+ A") { |a0, a1| [a0, a1] }
 
   finalize
 end
@@ -216,15 +214,13 @@ class ErrorCalc < CLTK::Parser
   production(:e) do
     clause("NUM") {|n| n}
 
-    clause("e PLS e") { |e| e = e as Array; (e[0] as Int32) + (e[2] as Int32) }
-    clause("e SUB e") { |e| e = e as Array; (e[0] as Int32) - (e[2] as Int32) }
-    clause("e MUL e") { |e| e = e as Array; (e[0] as Int32) * (e[2] as Int32) }
-    clause("e DIV e") { |e| e = e as Array; (e[0] as Int32) / (e[2] as Int32) }
-    clause("e PLS ERROR e") do |e, env|
-      env.error(e[2]);
-      e0= (e[0] as Array)[0] as Int32
-      e1= (e[3] as Array)[0] as Int32
-      e0 + e1
+    clause("e PLS e") { |e0, op, e1| (e0 as Int32) + (e1 as Int32) }
+    clause("e SUB e") { |e0, op, e1| (e0 as Int32) - (e1 as Int32) }
+    clause("e MUL e") { |e0, op, e1| (e0 as Int32) * (e1 as Int32) }
+    clause("e DIV e") { |e0, op, e1| (e0 as Int32) / (e1 as Int32) }
+    clause("e PLS ERROR e") do |e0, op, ts, e1|
+      error(ts);
+      (e0 as Int32) + (e1 as Int32)
     end
 
     nil
@@ -245,13 +241,18 @@ end
 
 class ErrorLine < CLTK::Parser
 
-  production(:s, "line*") { |l| l[0] }
+  production(:s, "line*") { |l| l }
 
   production(:line) do
     clause("NEWLINE") { nil }
 
-    clause("WORD+ SEMI NEWLINE")	{ |w| w[0] }
-    clause("WORD+ ERROR")		{ |w, e| e.error(e.pos(1).not_nil!.line_number); w[0] }
+    clause("WORD+ SEMI NEWLINE") { |w, semi, newline| w }
+    clause("WORD+ ERROR") do |w, err|
+      error(
+        pos(1).not_nil!.line_number
+      )
+      w
+    end
     nil
   end
 
@@ -259,7 +260,7 @@ class ErrorLine < CLTK::Parser
 end
 
 class UnderscoreParser < CLTK::Parser
-  production(:s, "A_TOKEN+") { |o| o[0] }
+  production(:s, "A_TOKEN+") { |o| o }
 
   finalize
 end
@@ -298,7 +299,7 @@ end
 #end
 class SelectionParser < CLTK::Parser
   production(:s, "A+ .B+") do |bs|
-    (bs[0] as Array).reduce(0) do |sum, add|
+    (bs as Array).reduce(0) do |sum, add|
       sum + (add as Int32)
     end
   end
@@ -307,31 +308,32 @@ class SelectionParser < CLTK::Parser
 end
 
 class UselessParser < CLTK::Parser
-  production(:s, "A+") { |a| a[0] }
+  production(:s, "A+") { |a| a }
 end
 
-# class TokenHookParser < CLTK::Parser
-#   default_arg_type :array
-#
-#   production(:s) do
-#     clause("A A A A") { nil }
-#     clause("B B B B") { nil }
-#     nil
-#   end
-#
-#   class CounterEnvironment < Environment
-#     property :counter
-#
-#     def initialize
-#       @counter = 0
-#     end
-#   end
-#   setenv CounterEnvironment
-#   token_hook(:A) { |env| (env as Environment).counter += 1; nil }
-#   token_hook(:B) { |env| (env as Environment).counter += 2; nil }
-#
-#   finalize
-# end
+class TokenHookParser < CLTK::Parser
+  default_arg_type :array
+
+  production(:s) do
+    clause("A A A A") { nil }
+    clause("B B B B") { nil }
+    nil
+  end
+
+  class CounterEnvironment < Environment
+    property :counter
+
+    def initialize
+      @counter = 0
+      super
+    end
+  end
+  setenv CounterEnvironment
+  token_hook(:A) { |env| (env as CounterEnvironment).counter += 1; next nil }
+  token_hook(:B) { |env| (env as CounterEnvironment).counter += 2; next nil }
+
+  finalize
+end
 
 describe "CLTK::Parser" do
 
@@ -346,7 +348,7 @@ describe "CLTK::Parser" do
   it "test_ambiguous_parse_stack" do
     (AmbiguousParseStackParser.parse(ABLexer.lex("ab")) as Array).size.should eq 1
   end
-#
+  #
   it "test_array_args" do
     actual = ArrayCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
     (actual).should eq 3
@@ -355,14 +357,14 @@ describe "CLTK::Parser" do
     actual = ArrayCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3"))
     (actual).should eq 9
   end
-#
-#  it "test_construction_error" do
-#    expect_raises(CLTK::ParserConstructionException) do
-#      class MyClass < CLTK::Parser
-#	finalize
-#      end
-#    end
- # end
+  #
+  #  it "test_construction_error" do
+  #    expect_raises(CLTK::ParserConstructionException) do
+  #      class MyClass < CLTK::Parser
+  #	finalize
+  #      end
+  #    end
+  # end
 
   it "test_ebnf_parsing" do
     ################
@@ -413,334 +415,333 @@ describe "CLTK::Parser" do
     actual.should eq(expected)
   end
 
-	it "test_greed" do
+  it "test_greed" do
 
-		####################
-		# GreedTestParser0 #
-		####################
+    ####################
+    # GreedTestParser0 #
+    ####################
 
-		expected = [nil, "a"]
-		actual   = GreedTestParser0.parse(AlphaLexer.lex("a"))
-                actual.should eq expected
+    expected = [nil, "a"]
+    actual   = GreedTestParser0.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
 
-		expected = ["a", "a"]
-		actual   = GreedTestParser0.parse(AlphaLexer.lex("a a"))
-                actual.should eq expected
+    expected = ["a", "a"]
+    actual   = GreedTestParser0.parse(AlphaLexer.lex("a a"))
+    actual.should eq expected
 
-		####################
-		# GreedTestParser1 #
-		####################
-		expected = [nil, nil]
-		actual   = GreedTestParser1.parse(AlphaLexer.lex(""))
-                actual.should eq expected
+    ####################
+    # GreedTestParser1 #
+    ####################
+    expected = [nil, nil]
+    actual   = GreedTestParser1.parse(AlphaLexer.lex(""))
+    actual.should eq expected
 
-		expected = ["a", nil]
-		expected = [nil, "a"]
-		actual   = GreedTestParser1.parse(AlphaLexer.lex("a"))
-                actual.should eq expected
+    expected = ["a", nil]
+    expected = [nil, "a"]
+    actual   = GreedTestParser1.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
 
 
 
-		expected = ["a", "a"]
-		actual   = GreedTestParser1.parse(AlphaLexer.lex("a a"))
-                actual.should eq expected
+    expected = ["a", "a"]
+    actual   = GreedTestParser1.parse(AlphaLexer.lex("a a"))
+    actual.should eq expected
 
 
-		####################
-		# GreedTestParser2 #
-		####################
+    ####################
+    # GreedTestParser2 #
+    ####################
 
-		expected = [[] of CLTK::Type, "a"]
-		actual   = GreedTestParser2.parse(AlphaLexer.lex("a"))
-                actual.should eq expected
+    expected = [[] of CLTK::Type, "a"]
+    actual   = GreedTestParser2.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
 
 
-		expected = [["a"], "a"]
-		actual   = GreedTestParser2.parse(AlphaLexer.lex("a a"))
-                actual.should eq expected
+    expected = [["a"], "a"]
+    actual   = GreedTestParser2.parse(AlphaLexer.lex("a a"))
+    actual.should eq expected
 
 
 
-		expected = [["a", "a"], "a"]
-		actual   = GreedTestParser2.parse(AlphaLexer.lex("a a a"))
-                actual.should eq expected
+    expected = [["a", "a"], "a"]
+    actual   = GreedTestParser2.parse(AlphaLexer.lex("a a a"))
+    actual.should eq expected
 
 
-		####################
-		# GreedTestParser3 #
-		####################
+    ####################
+    # GreedTestParser3 #
+    ####################
 
-		expected = [["a"], "a"]
-		actual   = GreedTestParser3.parse(AlphaLexer.lex("a a"))
-                actual.should eq expected
+    expected = [["a"], "a"]
+    actual   = GreedTestParser3.parse(AlphaLexer.lex("a a"))
+    actual.should eq expected
 
-		expected = [["a", "a"], "a"]
-		actual   = GreedTestParser3.parse(AlphaLexer.lex("a a a"))
-                actual.should eq expected
+    expected = [["a", "a"], "a"]
+    actual   = GreedTestParser3.parse(AlphaLexer.lex("a a a"))
+    actual.should eq expected
 
-	end
+  end
 
-	it "test_ebnf_selector_interplay" do
-		expected = ["a", ["b", "b", "b"], "a"]
-		actual   = EBNFSelectorParser.parse(AlphaLexer.lex("abbba"))
-                actual.should eq expected
+  it "test_ebnf_selector_interplay" do
+    expected = ["a", ["b", "b", "b"], "a"]
+    actual   = EBNFSelectorParser.parse(AlphaLexer.lex("abbba"))
+    actual.should eq expected
 
-		expected = ["a", [] of CLTK::Type, "a"]
-		actual   = EBNFSelectorParser.parse(AlphaLexer.lex("aa"))
-                actual.should eq expected
+    expected = ["a", [] of CLTK::Type, "a"]
+    actual   = EBNFSelectorParser.parse(AlphaLexer.lex("aa"))
+    actual.should eq expected
 
-		expected = ["b", "b"]
-		actual   = EBNFSelectorParser.parse(AlphaLexer.lex("bb"))
-                actual.should eq expected
+    expected = ["b", "b"]
+    actual   = EBNFSelectorParser.parse(AlphaLexer.lex("bb"))
+    actual.should eq expected
 
-		expected = ["b", "b"]
-		actual   = EBNFSelectorParser.parse(AlphaLexer.lex("bcccccb"))
-                actual.should eq expected
+    expected = ["b", "b"]
+    actual   = EBNFSelectorParser.parse(AlphaLexer.lex("bcccccb"))
+    actual.should eq expected
 
-	end
+  end
 
-	pending "test_environment" do
-		actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
-		actual.should eq 3
+  pending "test_environment" do
+    actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
+    actual.should eq 3
 
-		actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("/ 1 * 2 3"))
-		actual.should eq 7
+    actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("/ 1 * 2 3"))
+    actual.should eq 7
 
-		actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("- + 1 2 3"))
-		actual.should eq 9
+    actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("- + 1 2 3"))
+    actual.should eq 9
 
-		parser = RotatingCalc.new
+    parser = RotatingCalc.new
 
-		actual = parser.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
-		actual.should eq 3
+    actual = parser.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
+    actual.should eq 3
 
-		actual = parser.parse(CLTK::Lexers::Calculator.lex("/ 1 2"))
-		actual.should eq 3
-	end
-
-	it "test_error_productions" do
-
-		# Test to see if error reporting is working correctly.
-
-		test_string  = "first line;\n"
-		test_string += "second line\n"
-		test_string += "third line;\n"
-		test_string += "fourth line\n"
-
-		expect_raises(CLTK::HandledError) { ErrorLine.parse(ELLexer.lex(test_string)) }
-
-		# Test to see if we can continue parsing after errors are encounterd.
-		begin
-			ErrorLine.parse(ELLexer.lex(test_string))
-		rescue e: CLTK::HandledError
-                  e.errors.should eq [2,4]
-		end
-
-
-		begin
-		  ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + 1"))
-		rescue e: CLTK::HandledError
-                  (e.errors.first as Array).size.should eq 1
-                  e.result.should eq 2
-		end
-
-		# Test to see if we pop tokens correctly after an error is
-		# encountered.
-		begin
-		  ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + + + + + 1"))
-		rescue e: CLTK::HandledError
-                  (e.errors.first as Array).size.should eq 5
-                  e.result.should eq 2
-		end
-	end
-
-	it "test_infix_calc" do
-		actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2"))
-                actual.should eq 3
-
-		actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3"))
-                actual.should eq 7
-
-		actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("(1 + 2) * 3"))
-                actual.should eq 9
-
-		expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *")) }
-	end
-
-	it "test_input" do
-	  expect_raises(CLTK::BadToken) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::EBNF.lex("A B C")) }
-	end
-
-	it "test_nonempty_list" do
-		#######################
-		# NonEmptyListParser10 #
-		#######################
+    actual = parser.parse(CLTK::Lexers::Calculator.lex("/ 1 2"))
+    actual.should eq 3
+  end
+
+  it "test_error_productions" do
+
+    # Test to see if error reporting is working correctly.
+
+    test_string  = "first line;\n"
+    test_string += "second line\n"
+    test_string += "third line;\n"
+    test_string += "fourth line\n"
+
+    expect_raises(CLTK::HandledError) { ErrorLine.parse(ELLexer.lex(test_string)) }
+
+    # Test to see if we can continue parsing after errors are encounterd.
+    begin
+      ErrorLine.parse(ELLexer.lex(test_string))
+    rescue ex : CLTK::HandledError
+      ex.errors.should eq [2,4]
+    end
+
+    begin
+      ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + 1"))
+    rescue ex : CLTK::HandledError
+      (ex.errors.first as Array).size.should eq 1
+      ex.result.should eq 2
+    end
+
+    # Test to see if we pop tokens correctly after an error is
+    # encountered.
+    begin
+      ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + + + + + 1"))
+    rescue ex : CLTK::HandledError
+      (ex.errors.first as Array).size.should eq 5
+      ex.result.should eq 2
+    end
+  end
+
+  it "test_infix_calc" do
+    actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2"))
+    actual.should eq 3
+
+    actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3"))
+    actual.should eq 7
+
+    actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("(1 + 2) * 3"))
+    actual.should eq 9
+
+    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *")) }
+  end
+
+  it "test_input" do
+    expect_raises(CLTK::BadToken) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::EBNF.lex("A B C")) }
+  end
+
+  it "test_nonempty_list" do
+    #######################
+    # NonEmptyListParser10 #
+    #######################
+
+    expected = ["a"]
+    actual   = NonEmptyListParser10.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
+
+    expected = ["a", "a"]
+    actual   = NonEmptyListParser10.parse(AlphaLexer.lex("a, a"))
+    actual.should eq expected
+
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(""))   }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(","))  }
 
-		expected = ["a"]
-		actual   = NonEmptyListParser10.parse(AlphaLexer.lex("a"))
-                actual.should eq expected
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("aa")) }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("a,")) }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(",a")) }
 
-		expected = ["a", "a"]
-		actual   = NonEmptyListParser10.parse(AlphaLexer.lex("a, a"))
-		actual.should eq expected
+    #######################
+    # NonEmptyListParser1 #
+    #######################
+    expected = ["a"]
+    actual   = NonEmptyListParser1.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
+    expected = ["b"]
+    actual   = NonEmptyListParser1.parse(AlphaLexer.lex("b"))
+    actual.should eq expected
 
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(""))   }
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(","))  }
+    expected = ["a", "b", "a", "b"]
+    actual   = NonEmptyListParser1.parse(AlphaLexer.lex("a, b, a, b"))
+    actual.should eq expected
 
-                expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("aa")) }
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("a,")) }
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(",a")) }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a b")) }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a, ")) }
 
-		#######################
-		# NonEmptyListParser1 #
-		#######################
-		expected = ["a"]
-		actual   = NonEmptyListParser1.parse(AlphaLexer.lex("a"))
-		actual.should eq expected
-		expected = ["b"]
-		actual   = NonEmptyListParser1.parse(AlphaLexer.lex("b"))
-		actual.should eq expected
+    #######################
+    # NonEmptyListParser2 #
+    #######################
 
-		expected = ["a", "b", "a", "b"]
-		actual   = NonEmptyListParser1.parse(AlphaLexer.lex("a, b, a, b"))
-                actual.should eq expected
+    expected = ["a"]
+    actual   = NonEmptyListParser2.parse(AlphaLexer.lex("a"))
+    actual.should eq expected
 
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a b")) }
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a, ")) }
+    expected = ["b"]
+    actual   = NonEmptyListParser2.parse(AlphaLexer.lex("b"))
+    actual.should eq expected
 
-		#######################
-		# NonEmptyListParser2 #
-		#######################
+    expected = [["c", "d"]]
+    actual   = NonEmptyListParser2.parse(AlphaLexer.lex("c d"))
+    actual.should eq expected
 
-		expected = ["a"]
-		actual   = NonEmptyListParser2.parse(AlphaLexer.lex("a"))
-		actual.should eq expected
+    expected = [["c", "d"], ["c", "d"]]
+    actual   = NonEmptyListParser2.parse(AlphaLexer.lex("c d, c d"))
+    actual.should eq expected
 
-		expected = ["b"]
-		actual   = NonEmptyListParser2.parse(AlphaLexer.lex("b"))
-		actual.should eq expected
+    expected = ["a", "b", ["c", "d"]]
+    actual   = NonEmptyListParser2.parse(AlphaLexer.lex("a, b, c d"))
+    actual.should eq expected
 
-		expected = [["c", "d"]]
-		actual   = NonEmptyListParser2.parse(AlphaLexer.lex("c d"))
-		actual.should eq expected
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("c")) }
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("d")) }
 
-		expected = [["c", "d"], ["c", "d"]]
-		actual   = NonEmptyListParser2.parse(AlphaLexer.lex("c d, c d"))
-		actual.should eq expected
+    #######################
+    # NonEmptyListParser3 #
+    #######################
 
-		expected = ["a", "b", ["c", "d"]]
-		actual   = NonEmptyListParser2.parse(AlphaLexer.lex("a, b, c d"))
-		actual.should eq expected
+    expected = [["a"], ["a", "a"], ["a", "a", "a"]]
+    actual   = NonEmptyListParser3.parse(AlphaLexer.lex("a, aa, aaa"))
+    actual.should eq expected
 
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("c")) }
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("d")) }
+    #######################
+    # NonEmptyListParser4 #
+    #######################
 
-		#######################
-		# NonEmptyListParser3 #
-		#######################
+    expected = ["a", "a", "a"]
+    actual   = NonEmptyListParser4.parse(AlphaLexer.lex("a a a"))
+    actual.should eq expected
 
-		expected = [["a"], ["a", "a"], ["a", "a", "a"]]
-		actual   = NonEmptyListParser3.parse(AlphaLexer.lex("a, aa, aaa"))
-		actual.should eq expected
+    #######################
+    # NonEmptyListParser5 #
+    #######################
 
-		#######################
-		# NonEmptyListParser4 #
-		#######################
+    expected = ["a", "a", "a"]
+    actual   = NonEmptyListParser5.parse(AlphaLexer.lex("a b a b c a"))
+    actual.should eq expected
 
-		expected = ["a", "a", "a"]
-		actual   = NonEmptyListParser4.parse(AlphaLexer.lex("a a a"))
-		actual.should eq expected
+    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser5.parse(AlphaLexer.lex("a b b a")) }
+  end
 
-		#######################
-		# NonEmptyListParser5 #
-		#######################
+  it "test_postfix_calc" do
+    actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 +"))
+    actual.should eq 3
 
-		expected = ["a", "a", "a"]
-		actual   = NonEmptyListParser5.parse(AlphaLexer.lex("a b a b c a"))
-		actual.should eq expected
+    actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 3 * +"))
+    actual.should eq 7
 
-		expect_raises(CLTK::NotInLanguage) { NonEmptyListParser5.parse(AlphaLexer.lex("a b b a")) }
-	end
+    actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *"))
+    actual.should eq 9
 
-	it "test_postfix_calc" do
-		actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 +"))
-		actual.should eq 3
+    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3")) }
+  end
 
-		actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 3 * +"))
-		actual.should eq 7
+  it "test_prefix_calc" do
+    actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
+    actual.should eq 3
 
-		actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *"))
-		actual.should eq 9
+    actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 * 2 3"))
+    actual.should eq 7
 
-		expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3")) }
-	end
+    actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3"))
+    actual.should eq 9
 
-	it "test_prefix_calc" do
-		actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
-		actual.should eq 3
+    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3")) }
+  end
 
-		actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 * 2 3"))
-		actual.should eq 7
+  it "test_selection_parser" do
+    actual   = SelectionParser.parse(ABLexer.lex("aaabbb"))
+    expected = 6
 
-		actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3"))
-		actual.should eq 9
+    actual.should eq expected
+  end
 
-		expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3")) }
-	end
+  pending "test_token_hooks" do
+    parser = TokenHookParser.new
 
-	it "test_selection_parser" do
-		actual   = SelectionParser.parse(ABLexer.lex("aaabbb"))
-		expected = 6
+    parser.parse(AlphaLexer.lex("a a a a"))
+    parser.env.counter.should eq 4
 
-		actual.should eq expected
-	end
+    parser.parse(AlphaLexer.lex("b b b b"))
+    parser.env.counter.should eq 1
+  end
 
-	pending "test_token_hooks" do
-		parser = TokenHookParser.new
+  it "test_underscore_tokens" do
+    actual   = (UnderscoreParser.parse(UnderscoreLexer.lex("abc")) as Array).join
+    expected = "abc"
 
-		parser.parse(AlphaLexer.lex("a a a a"))
-                parser.env.counter.should eq 4
+    actual.should eq expected
+  end
 
-		parser.parse(AlphaLexer.lex("b b b b"))
-                parser.env.counter.should eq 1
-	end
+  pending "test_use" do
+    tmpfile = File.join(Dir.tmpdir, "usetest")
 
-	it "test_underscore_tokens" do
-		actual   = (UnderscoreParser.parse(UnderscoreLexer.lex("abc")) as Array).join
-		expected = "abc"
+    FileUtils.rm(tmpfile) if File.exist?(tmpfile)
 
-		actual.should eq expected
-	end
+    parser0 = Class.new(CLTK::Parser) do
+      production(:a, "A+") { |a| a.size }
 
-	pending "test_use" do
-		tmpfile = File.join(Dir.tmpdir, "usetest")
+      finalize use: tmpfile
+    end
 
-		FileUtils.rm(tmpfile) if File.exist?(tmpfile)
+    result0 = parser0.parse(ABLexer.lex("a"))
 
-		parser0 = Class.new(CLTK::Parser) do
-			production(:a, "A+") { |a| a.size }
+    assert(File.exist?(tmpfile), "Serialized parser file not found.")
 
-			finalize use: tmpfile
-		end
+    parser1 = Class.new(CLTK::Parser) do
+      production(:a, "A+") { |a| a.size }
 
-		result0 = parser0.parse(ABLexer.lex("a"))
+      finalize use: tmpfile
+    end
 
-		assert(File.exist?(tmpfile), "Serialized parser file not found.")
+    result1 = parser1.parse(ABLexer.lex("a"))
 
-		parser1 = Class.new(CLTK::Parser) do
-			production(:a, "A+") { |a| a.size }
+    assert_equal(result0, result1)
 
-			finalize use: tmpfile
-		end
+    File.unlink(tmpfile)
+  end
 
-		result1 = parser1.parse(ABLexer.lex("a"))
-
-		assert_equal(result0, result1)
-
-		File.unlink(tmpfile)
-	end
-
-	pending "test_uesless_parser_exception" do
-		expect_raises(CLTK::UselessParserException) { UselessParser.new }
-	end
+  pending "test_uesless_parser_exception" do
+    expect_raises(CLTK::UselessParserException) { UselessParser.new }
+  end
 end

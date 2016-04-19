@@ -16,13 +16,12 @@ class KProgram < Expression
            })
 
   def eval_scope(scope)
-    res = Kazoo::Undefined
-    (expressions as Array).compact.each do |exp|
-      res = (exp as Expression).eval_scope(scope)
+    (expressions as Array).compact.reduce(Kazoo::Undefined) do |lastResult, exp|
+      exp.eval_scope(scope)
     end
-    res
   end
 end
+
 class ANumber < Expression
   values({
            value: Float64

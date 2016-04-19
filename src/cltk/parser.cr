@@ -1,3 +1,4 @@
+# coding: utf-8
 # Description:	This file contains the base class for parsers that use CLTK.
 
 ############
@@ -15,7 +16,7 @@ require "./ast"
 module CLTK
 
   alias Type = ASTNode | Token | String | Symbol | Int32 | Float32 | Float64 | Bool | Nil | Array(Type) | Hash(String, Type)
-  alias ValueType = Token | Int32 | String | Token | Nil | Array(ValueType)# | Hash(String, ValueType) #|
+
   # A BadToken error indicates that a token was observed in the input stream
   # that wasn't used in the grammar's definition.
   class BadToken < Exception
@@ -76,7 +77,7 @@ module CLTK
     # @param [Object]		result Object resulting from parsing Tokens before the error occurred.
     def initialize(@errors, @result)
       @backtrace = [] of String
-      super(message)
+      super("HandledError")
     end
   end
 
@@ -141,14 +142,16 @@ module CLTK
       @@grammar   = CLTK::CFG.new
 
       @@lh_sides  = {} of Int32 => String
-      @@procs     = Hash(Int32, {ProdProc, Int32}).new #{|h, k| h[k] = Tuple.new}
+      @@procs     = Hash(Int32, {ProdProc, Int32}).new
       @@states    = Array(State).new
 
       # Variables for dealing with precedence.
       @@prec_counts      = {:left => 0, :right => 0, :non => 0}
       @@production_precs = {} of Int32 => (String | Nil | {String, Int32})
       @@token_precs      = {} of String => {String, Int32}
-      @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new {|h, k| h[k] = [] of Proc(Environment, Nil)}
+      @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
+        h[k] = [] of Proc(Environment, Nil)
+      end
 
       # Set the default argument handling policy.  Valid values
       # are :array and :splat.
@@ -267,7 +270,7 @@ module CLTK
       # left-hand side of some production.
       @@grammar.not_nil!.nonterms.each do |sym|
 	unless @@lh_sides.not_nil!.values.includes?(sym)
-	  raise ParserConstructionException.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
+	  raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
 	end
       end
       # Check the actions in each state.
@@ -347,32 +350,55 @@ module CLTK
     # @param [Proc]            action      Action to be taken when the production is reduced.
     #
     # @return [void]
-    def self.clause(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+    macro clause(expression, precedence = nil, arg_type = nil, &action: _ -> _)
       # Use the curr_prec only if it isn't overridden for this
       # clause.
-      precedence ||= @@curr_prec
+      %arg_type = {{arg_type}}
+
+      precedence = {{precedence}} || @@curr_prec
       production, selections = if @@grammar
-                                 e = (@@grammar as CFG).clause(expression)
-                                 e
+                                 e = (@@grammar as CLTK::CFG).clause({{expression}})
+                                 e as Tuple # {CLTK::CFG::Production, Array(Int32)}
                                else
                                  raise "NO GRAMMAR DEFINED"
                                end
       # Check to make sure the action's arity matches the number
       # of symbols on the right-hand side.
-      expected_arity = (selections.empty? ? production.rhs.size : selections.size)
-      if arg_type == :splat && action.arity != expected_arity
-#	raise ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action.arity}." + " Action arity must match the number of terminals and non-terminals in the clause."
-        #puts "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action.arity}." + " Action arity must match the number of terminals and non-terminals in the clause."
+      %expected_arity = (selections.empty? ? production.rhs.size : selections.size)
+      if %arg_type == :splat && {{action.args.size}} != %expected_arity
+  #	raise ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action.arity}." + " Action arity must match the number of terminals and non-terminals in the clause."
+        raise "Incorrect number of action parameters.  Expected #{%expected_arity} but got {{action.args.size}}." + " Action arity must match the number of terminals and non-terminals in the clause."
       end
+
+
+
       # Add the action to our proc list.
       @@procs.not_nil![production.id] = {
-        ProdProc.new(arg_type, selections, &action),
+        ## new ProdProc
+        ProdProc.new(:splat, selections) do |%a, %env|
+          %env.yield_with_self do
+            {%for arg, index in action.args%}
+              {{arg}} = (%a as Array(CLTK::Type))[{{index}}]
+            {%end%}
+            # reassign the first block argument to
+            # the whole arguments array if arg_type
+            # evaluates to :array
+            {%if action.args.size > 0%}
+              if (%arg_type || @@default_arg_type) == :array
+                {{action.args.first}} = %a as Array
+              end
+            {%end %}
+
+            {{action.body}}
+          end
+        end,
+        ##
         production.rhs.size
       }
-
       # If no precedence is specified use the precedence of the
       # last terminal in the production.
       @@production_precs.not_nil![production.id] = (precedence || production.last_terminal)
+
     end
 
     def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
@@ -576,7 +602,7 @@ module CLTK
           end
         end
       else
-	raise ParserConstructionException.new "Parser.explain called outside of finalize."
+	#raise ParserConstructionException.new "Parser.explain called outside of finalize."
       end
     end
 
@@ -908,7 +934,6 @@ module CLTK
       accepted   = [] of ParseStack
       moving_on  = [] of ParseStack
       processing = [ParseStack.new(stack_id += 1)]
-
       # Iterate over the tokens.  We don't procede to the
       # next token until every stack is done with the
       # current one.
@@ -938,6 +963,7 @@ module CLTK
 	  if actions.empty?
 	    # If we are already in error mode and there
 	    # are no actions we skip this token.
+
 	    if error_mode
               st = if token.value
                      "(" + (token.value.to_s as String) + ")"
@@ -1004,6 +1030,7 @@ module CLTK
 
 	    next
 	  end
+
 	  # Make (stack, action) pairs, duplicating the
 	  # stack as necessary.
 	  pairs = ([{stack, actions.pop}] + actions.map {|action| {stack.branch(stack_id += 1), action} })
@@ -1031,7 +1058,8 @@ module CLTK
                 end
 
 		if (opts[:env] as Environment).he
-		  raise HandledError.new((opts[:env] as Environment).errors, stack.result)
+ 		  error = HandledError.new((opts[:env] as Environment).errors, stack.result)
+                  raise error
 		else
 		  return stack.result
 		end
@@ -1043,9 +1071,9 @@ module CLTK
 	      if !production_proc
 		raise InternalParserException.new "No production #{action.id} found."
 	      end
-
 	      args, positions = stack.pop(pop_size)
 	      (opts[:env] as Environment).set_positions(positions)
+
  	      if !production_proc.selections.empty?
                 new_args = [] of Type
                 production_proc.selections.each do |selection|
@@ -1055,6 +1083,7 @@ module CLTK
               end
               a = Array(Type).new
               args = args.each { |e| a << (e as Type)}
+
 	      result = begin
                          production_proc.call(a as Array(Type), opts[:env])
 		       end
@@ -1130,7 +1159,6 @@ module CLTK
 	  (opts[:parse_tree] as IO).puts(stack.tree)
         end
       end
-
       results = accepted.map { |stack| stack.result }
 
       if (opts[:env] as Environment).he
@@ -1155,11 +1183,15 @@ module CLTK
     # @param [Proc]				action		Action associated with this production.
     #
     # @return [void]
-    def self.production(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
-
+    macro production(symbol, expression = nil, precedence = nil, arg_type = nil, &action: _ -> _)
       # Check the symbol.
-      if !(symbol.is_a?(Symbol) || symbol.is_a?(String)) || !CFG.is_nonterminal?(symbol)
-	raise ParserConstructionException.new "Production symbols must be Strings or Symbols and be in all lowercase."
+      symbol = {{symbol}}
+      expression = {{expression}}
+      precedence = {{precedence}}
+      arg_type = {{arg_type}}
+
+      if !(symbol.is_a?(Symbol) || symbol.is_a?(String)) || !CLTK::CFG.is_nonterminal?(symbol)
+        raise Exception.new "Production symbols must be Strings or Symbols and be in all lowercase."
       end
 
       @@grammar.not_nil!.curr_lhs = symbol
@@ -1167,20 +1199,24 @@ module CLTK
 
       orig_dat = nil
       if arg_type != @@default_arg_type
-	orig_dat = @@default_arg_type
-	@@default_arg_type = arg_type
-      end
-      if expression
-	self.clause(expression, precedence, @@default_arg_type, &action)
-      else
-        with self yield [] of Type, Environment.new
-      end
+	  orig_dat = @@default_arg_type
+	  @@default_arg_type = arg_type
+        end
+        {%if expression%}
+          clause({{expression}}, {{precedence}}, {{arg_type}}) do |{{*action.args}}|
+            {{action.body}}
+          end
+        {%else%}
+          {{action.body}}
+        {%end%}
 
-      @@default_arg_type = orig_dat if !orig_dat.nil?
+        @@default_arg_type = orig_dat if !orig_dat.nil?
 
-      @@grammar.not_nil!.curr_lhs = nil
-      @@curr_prec        = nil
+        @@grammar.not_nil!.curr_lhs = nil
+        @@curr_prec        = nil
+
     end
+
 
     def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
       self.production(symbol, expression, precedence, arg_type, &action)
@@ -1286,7 +1322,7 @@ module CLTK
 		  selected_action = a
 
 		elsif prec == max_prec && assoc == :nonassoc
-		  raise ParserConstructionException.new "Non-associative token found during conflict resolution."
+		  raise Exception.new "Non-associative token found during conflict resolution."
 
 		end
 	      end
@@ -1378,6 +1414,10 @@ module CLTK
         self.reset
       end
 
+      def yield_with_self
+        with self yield
+      end
+
       # Adds an object to the list of errors.
       #
       # @return [void]
@@ -1403,7 +1443,7 @@ module CLTK
       # @return [void]
       def reset
         @errors	= [] of Type
-        @he		= false
+        @he	= false
       end
 
       # Setter for the *positions* array.
@@ -1724,7 +1764,7 @@ module CLTK
       if @actions.not_nil!.has_key?(symbol.to_s)
         @actions.not_nil![symbol.to_s] = (@actions.not_nil![symbol.to_s] as Array(Action)) << action as Action
       else
-        raise ParserConstructionException.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
+        raise Exception.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
       end
     end
 
