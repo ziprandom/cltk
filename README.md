@@ -2,7 +2,7 @@
 
 This is a port of the [Ruby Language Toolkit](https://github.com/chriswailes/RLTK) to the [Crystal Programming Language](http://crystal-lang.org/).
 
-*CLTK (like RLTK) is:* a collection of classes and methods designed to help programmers work with languages in an easy to use and straightforward manner.  This toolkit provides the following features:
+**CLTK (like RLTK) is:** a collection of classes and methods designed to help programmers work with languages in an easy to use and straightforward manner.  This toolkit provides the following features:
 
 * Lexer generator
 * Parser generator
@@ -19,7 +19,7 @@ The code of the Parser is very hackey at the moment and was translated merely by
 
 ## Usage
 
-See the example language *kazoo* **WIP** (and its tests under `examples/kazoo/specs`) or *brainfuck* (and its tests under `examples/brainfuck/specs`)
+See the example language **kazoo** **WIP** (`examples/kazoo`) or **brainfuck** (`examples/brainfuck`) and it's tests.
 
 ## Contributing
 
