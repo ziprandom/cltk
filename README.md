@@ -15,11 +15,11 @@ In addition, CLTK includes several ready-made lexers and parsers. To see what wo
 $ crystal spec
 ```
 
-A *WIP* Example of a language designed with it can be found under `kazoo` (the naming is not very good, as this has nothing to do with the example language implementation provided by RLTK under the same name). The code is very hackey at the moment and was translated merely by try and error with the testsuite (`RED` > `GREEN` but so far no refactoring). Works with version 0.14.2 of the crystal compiler. The AST Implementation is a complete rewrite. LLVM Bindings are missing.
+The code of the Parser is very hackey at the moment and was translated merely by try and error with the testsuite (`RED` > `GREEN` but so far no refactoring). The AST Implementation is a complete rewrite. LLVM Bindings are missing.
 
 ## Usage
 
-See the example language under `kazoo` and its tests under `kazoo/specs`
+See the example language *kazoo* **WIP** (and its tests under `examples/kazoo/specs`) or *brainfuck* (and its tests under `examples/brainfuck/specs`)
 
 ## Contributing
 
@@ -31,4 +31,4 @@ See the example language under `kazoo` and its tests under `kazoo/specs`
 
 ## Contributors
 
-- [ziprandom](https://github.com/ziprandom)  - creator, maintainer
+- [ziprandom](https://github.com/ziprandom)  - creator of the port, maintainer
