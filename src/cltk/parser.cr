@@ -861,7 +861,7 @@ module CLTK
 	# Check to make sure this token was seen in the
 	# grammar definition.
         unless @@symbols.not_nil!.includes?(token.type.to_s)
-	  raise BadToken.new
+	  raise BadToken.new(token)
         end
         st = if token.value
                "(" + (token.value.to_s as String) + ")"
