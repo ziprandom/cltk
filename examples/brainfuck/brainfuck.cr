@@ -6,12 +6,12 @@ module BrainFuck
   # Lexer
   #
   class Lexer < CLTK::Lexer
-    rule(/\>/) { :PTRRIGHT }
-    rule(/\</) { :PTRLEFT  }
+    rule(/>/)  { :PTRRIGHT }
+    rule(/</)  { :PTRLEFT  }
     rule(/\+/) { :INC      }
-    rule(/\-/) { :DEC      }
+    rule(/-/)  { :DEC      }
     rule(/\./) { :PUT      }
-    rule(/\,/) { :GET      }
+    rule(/,/)  { :GET      }
     rule(/\[/) { :LBRACKET }
     rule(/\]/) { :RBRACKET }
     # ignore the rest
