@@ -7,14 +7,16 @@ module BrainFuck
   #
   class Lexer < CLTK::Lexer
     rule(/\>/) { :PTRRIGHT }
-    rule(/\</) { :PTRLEFT }
-    rule(/\+/) { :INC }
-    rule(/\-/) { :DEC }
-    rule(/\./) { :PUT }
-    rule(/\,/) { :GET }
+    rule(/\</) { :PTRLEFT  }
+    rule(/\+/) { :INC      }
+    rule(/\-/) { :DEC      }
+    rule(/\./) { :PUT      }
+    rule(/\,/) { :GET      }
     rule(/\[/) { :LBRACKET }
     rule(/\]/) { :RBRACKET }
-    rule(/\n/)   { nil }
+    # ignore the rest
+    rule(/\n/) { nil       }
+    rule(/./)  { nil       }
   end
 
   #
