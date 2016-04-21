@@ -15,8 +15,8 @@ module BrainFuck
     rule(/\[/) { :LBRACKET }
     rule(/\]/) { :RBRACKET }
     # ignore the rest
-    rule(/\n/) { nil       }
-    rule(/./)  { nil       }
+    rule(/\n/)
+    rule(/./)
   end
 
   #
@@ -88,7 +88,6 @@ module BrainFuck
       when Get
         @tape[@pointer] = (gets(1) || "").to_i
       when Loop
-        start = @pointer
         while @tape[@pointer] != 0
           (cmd.operations as Array).each do |op|
             exec_cmd op
