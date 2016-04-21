@@ -89,7 +89,7 @@ abstract class CLTK::ASTNode
 
   def set_values(args)
     if args.size > 0
-      raise Exception.new "two many arguments provided for value="
+      raise Exception.new "{{@type}}: two many arguments provided for value="
     end
     [] of Nil
   end
@@ -100,7 +100,7 @@ abstract class CLTK::ASTNode
 
   def set_children(args)
     if args.size > 0
-      raise Exception.new "two many arguments provided for children"
+      raise Exception.new "{{@type}}: two many arguments provided for children"
     end
     [] of CLTK::ASTNode?|Array(CLTK::ASTNode?)
   end
@@ -225,7 +225,7 @@ abstract class CLTK::ASTNode
           {children_values, value_values}
         end as Tuple
       if children_values.size > {{@type}}::CHILDREN_NAMES.size || value_values.size > {{@type}}::VALUES_NAMES.size
-        raise Exception.new "#{values} does not match the children, values and order defined for {{@type}}"
+        raise Exception.new "{{@type}}: #{values} does not match the children, values and order defined for {{@type}}"
       end
       set_children(children_values.not_nil!.map do |val|
                      if val.is_a? CLTK::ASTNode?
@@ -235,14 +235,14 @@ abstract class CLTK::ASTNode
                          begin
                            v as CLTK::ASTNode?
                          rescue
-                           raise Exception.new "#{v.inspect} wasn't an Array of CLTK::ASTNode?"
+                           raise Exception.new "{{@type}}: #{v.inspect} wasn't an Array of CLTK::ASTNode?"
                          end
                        end
                        clean
                      elsif val.is_a? ValueNotSet
                        nil
                      else
-                       raise Exception.new "#{val.inspect} wasn't a CLTK::ASTNode"
+                       raise Exception.new "{{@type}}: #{val.inspect} wasn't a CLTK::ASTNode"
                      end;
                    end
                   )
