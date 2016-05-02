@@ -19,9 +19,9 @@ The code of the Parser is very hackey at the moment and was translated merely by
 
 ## Usage
 
-See the example languages (and their specs):
-* **WIP** interpreted language EXP_LANG (`examples/exp_lang`)
-* **WIP** **kazoo**  (`examples/kazoo/chapter 8`) with LLVM IR generation
+See the example languages (and their specs) **WIP** :
+* **interpreted language EXP_LANG** (`examples/exp_lang`)
+* **kazoo**  (`examples/kazoo/chapter 8`) with LLVM IR generation
 * **brainfuck** (`examples/brainfuck`)
 
 ## Contributing
