@@ -111,7 +111,7 @@ module CLTK
 	# and the longest match returned.  If the
 	# match_type is :first, we only need to scan until
 	# we find a match.
-	(@@rules as Hash)[env.state].each do |rule|
+	((@@rules as Hash)[env.state] as Array(Rule)).each do |rule|
 	  if (rule.flags - env.flags).empty?
 	    if txt = scanner.check(rule.pattern)
 	      if !match || match.not_nil!.first.size < txt.size
