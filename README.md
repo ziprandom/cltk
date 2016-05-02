@@ -15,11 +15,14 @@ In addition, CLTK includes several ready-made lexers and parsers. To see what wo
 $ crystal spec
 ```
 
-The code of the Parser is very hackey at the moment and was translated merely by try and error with the testsuite (`RED` > `GREEN` but so far no refactoring). The AST Implementation is a complete rewrite. LLVM Bindings are missing.
+The code of the Parser is very hackey at the moment and was translated merely by try and error with the testsuite (`RED` > `GREEN` but so far no refactoring). The AST Implementation is a complete rewrite. The LLVM Bindings (`cltk/cg`) has not been ported. Instead crystals own LLVM Bindings were used in [`examples/kazoo/chapter 8/kcontractor.cr`](https://github.com/ziprandom/cltk/blob/master/examples/kazoo/chapter_8/kcontractor.cr)
 
 ## Usage
 
-See the example language **kazoo** **WIP** (`examples/kazoo`) or **brainfuck** (`examples/brainfuck`) and it's tests.
+See the example languages (and their specs):
+* **WIP** interpreted language EXP_LANG (`examples/exp_lang`)
+* **WIP** **kazoo**  (`examples/kazoo/chapter 8`) with LLVM IR generation
+* **brainfuck** (`examples/brainfuck`)
 
 ## Contributing
 
