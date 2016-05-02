@@ -1,0 +1,6 @@
+language: crystal
+script:
+  - crystal spec
+  - (cd examples/kazoo/chapter\ 8/ && crystal spec)
+  - (cd examples/exp_lang/ && crystal spec)
+  - (cd examples/brainfuck/ && crystal spec)
