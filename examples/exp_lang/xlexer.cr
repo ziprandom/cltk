@@ -1,9 +1,9 @@
-# Description:	This file defines a simple lexer for the Kazoo language.
+# Description:	This file defines a simple lexer for the EXP_LANG language.
 
 # RLTK Files
 require "../../src/cltk/lexer"
 
-module Kazoo
+module EXP_LANG
 	class Lexer < CLTK::Lexer
 		# Skip whitespace.
 		rule(/\n/)		{ :CR  }

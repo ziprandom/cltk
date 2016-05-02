@@ -1,24 +1,25 @@
 # Author:		Chris Wailes <chris.wailes@gmail.com>
 # Project: 	Ruby Language Toolkit
 # Date:		2011/05/09
-# Description:	This file defines a simple parser for the Kazoo language.
+# Description:	This file defines a simple parser for the EXP_LANG language.
 
 # RLTK Files
 require "../../src/cltk/parser"
-require "./kast"
+require "./xast"
 
-module Kazoo
+module EXP_LANG
   class Parser < CLTK::Parser
 
-    left :ASSIGN, :FUN, :LPAREN,
-         :LBRACK, :LCBRACK,
-         :PLUS, :SUB, :MUL, :DIV
+    left :ASSIGN, :FUN, :LPAREN
+    left :LBRACK, :LCBRACK
+    left :PLUS, :SUB
+    left :MUL, :DIV
 
     right :RPAREN, :RBRACK, :RCBRACK
 
     production(:statement) do
       clause("expressions sep*") do |e|
-        KProgram.new(e)
+        XProgram.new(e)
       end
       nil
     end

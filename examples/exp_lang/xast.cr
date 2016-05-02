@@ -1,5 +1,5 @@
 require "../../src/cltk/ast"
-require "./kscope"
+require "./xscope"
 
 class CLTK::ASTNode
   def eval_scope(scope)
@@ -10,13 +10,13 @@ end
 class Expression < CLTK::ASTNode
 end
 
-class KProgram < Expression
+class XProgram < Expression
   children({
              expressions: Array(CLTK::ASTNode)
            })
 
   def eval_scope(scope)
-    (expressions as Array).compact.reduce(Kazoo::Undefined) do |lastResult, exp|
+    (expressions as Array).compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
       exp.eval_scope(scope)
     end
   end
@@ -157,11 +157,11 @@ class FunCall < Expression
       param_names,
       param_values
     )
-    param_scope = Kazoo::Scope(Expression).new(
+    param_scope = EXP_LANG::Scope(Expression).new(
       (prototype as Prototype).scope,
       param_dict
     )
-    res = Kazoo::Undefined
+    res = EXP_LANG::Undefined
     (((prototype as Prototype).body as FunBody).expressions as Array).each do |exp|
       res = (exp as Expression).eval_scope(param_scope)
     end
@@ -276,7 +276,7 @@ class Prototype < Expression
   })
   values({
            name: String,
-           scope: Kazoo::Scope(Expression)
+           scope: EXP_LANG::Scope(Expression)
          })
   def to_s
     "Function #{name}(" + (args as Array).map {|v| (v as Variable).name}.join(',') + ")"

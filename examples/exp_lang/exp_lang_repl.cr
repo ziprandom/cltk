@@ -1,12 +1,12 @@
 require "readline"
-require "./klexer"
-require "./kparser"
-require "./kast"
-require "./kscope"
+require "./xlexer"
+require "./xparser"
+require "./xast"
+require "./xscope"
 
-lexer  = Kazoo::Lexer
-parser = Kazoo::Parser
-scope  = Kazoo::Scope(Expression).new
+lexer  = EXP_LANG::Lexer
+parser = EXP_LANG::Parser
+scope  = EXP_LANG::Scope(Expression).new
 
 input = ""
 

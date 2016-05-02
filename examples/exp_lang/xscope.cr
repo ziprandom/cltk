@@ -1,5 +1,5 @@
-module Kazoo
-  class Kazoo::Undefined; end;
+module EXP_LANG
+  class EXP_LANG::Undefined; end;
 
   class Scope(T)
     property :parent
@@ -19,7 +19,7 @@ module Kazoo
       elsif p
         p.get(key)
       else
-        Kazoo::Undefined
+        EXP_LANG::Undefined
       end
     end
 
@@ -49,11 +49,11 @@ module Kazoo
     end
 
     def inherit
-      Kazoo::Scope(T).new(self)
+      EXP_LANG::Scope(T).new(self)
     end
 
     def clone
-      Kazoo::Scope(T).new(nil, @dict.clone)
+      EXP_LANG::Scope(T).new(nil, @dict.clone)
     end
   end
 end

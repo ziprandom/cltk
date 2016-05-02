@@ -1,35 +1,30 @@
 require "spec"
-require "../klexer"
-require "../kparser"
+require "../xlexer"
+require "../xparser"
 
-pending "Kazoo::Parser::Comments" do
-  lexer = Kazoo::Lexer
-  parser = Kazoo::Parser
+it "EXP_LANG::Parser::Comments" do
+  lexer = EXP_LANG::Lexer
+  parser = EXP_LANG::Parser
   string = "1 + 2 # simple addition \n" \
            "# one long comment spanning \n" \
            "# several lines \n"
   tokens = lexer.lex(string)
   it "parses a programm ignoring commented lines" do
-    pp tokens.map &.type
-    res = parser.parse(tokens, {:accept => :first})
-    puts "i am here"
-
+    res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
     res.class.should eq Add
-    left = (res as Add).left as ANumber
-    right = (res as Add).right as ANumber
-    left.class.should eq ANumber
-    left.value.should eq 1
-    right.class.should eq ANumber
-    right.value.should eq 2
+    rright = (res as Add).right as ANumber
+    rleft = (res as Add).left as ANumber
+    rleft.value.should eq 1.to_f
+    rright.value.should eq 2.to_f
   end
 end
 
-describe "Kazoo::Parser::VariableAssignment" do
-  lexer = Kazoo::Lexer
-  parser = Kazoo::Parser
+describe "EXP_LANG::Parser::VariableAssignment" do
+  lexer = EXP_LANG::Lexer
+  parser = EXP_LANG::Parser
   string = "b = 123 + 3"
   tokens = lexer.lex(string)
-  res = ((parser.parse(tokens, {:accept => :first}) as KProgram).expressions as Array).first
+  res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
   it "should parse an Assignment as such" do
     res.class.should eq VarAssign
   end
@@ -60,18 +55,18 @@ describe "Kazoo::Parser::VariableAssignment" do
     }
 
     srcs.each do |src, s|
-      lexer = Kazoo::Lexer
-      parser = Kazoo::Parser
+      lexer = EXP_LANG::Lexer
+      parser = EXP_LANG::Parser
       tokens = lexer.lex(src)
-      res = ((parser.parse(tokens, {:accept => :first}) as KProgram).expressions as Array).first
+      res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
       res.class.should eq VarAssign
       res.to_s.should eq s
     end
   end
 end
-describe "Kazoo::Parser::FunDef" do
-  lexer = Kazoo::Lexer
-  parser = Kazoo::Parser
+describe "EXP_LANG::Parser::FunDef" do
+  lexer = EXP_LANG::Lexer
+  parser = EXP_LANG::Parser
   string = "def stuff(a,b,c) \n" \
            "10+2\n" \
            "3-2 \n" \
@@ -83,7 +78,7 @@ describe "Kazoo::Parser::FunDef" do
 #  string = "def stuff(a,b,c);10+2;end"
   tokens = lexer.lex(string)
 #  pp tokens.map &.type
-  res = ((parser.parse(tokens, {:accept => :first}) as KProgram).expressions as Array).first
+  res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
 
   it "should parse a list of expressions as a Prototype" do
       res.class.should eq Prototype
@@ -133,7 +128,7 @@ describe "Kazoo::Parser::FunDef" do
   end
 end
 
-describe "Kazoo::Language" do
+describe "EXP_LANG::Language" do
   tuples = [
     {"\"[y(y(7))]\"", "\"[y(y(7))]\""},
     {"1 + 1", "2"},
@@ -187,14 +182,14 @@ describe "Kazoo::Language" do
   d: Function (x)
 }"}
   ]
-  scope = Kazoo::Scope(Expression).new
+  scope = EXP_LANG::Scope(Expression).new
 
   tuples.each do |tuple|
     program, result = tuple
 
     it "should parse >> #{program} << and evaluate to #{result}" do
-      lexer = Kazoo::Lexer
-      parser = Kazoo::Parser
+      lexer = EXP_LANG::Lexer
+      parser = EXP_LANG::Parser
       tokens = lexer.lex(program)
       res = parser.parse(tokens, {:accept => :first}) as Expression
       res.eval_scope(scope).to_s.should eq result

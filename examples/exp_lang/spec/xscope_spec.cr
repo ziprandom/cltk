@@ -1,13 +1,13 @@
 require "spec"
-require "../kscope"
-require "../kast"
+require "../xscope"
+require "../xast"
 
-describe "Kazoo::Scope" do
+describe "EXP_LANG::Scope" do
   context "simple operations" do
-    scope = Kazoo::Scope(String).new
+    scope = EXP_LANG::Scope(String).new
 
     it "can be initialized" do
-      scope.class.should eq Kazoo::Scope(String)
+      scope.class.should eq EXP_LANG::Scope(String)
     end
 
     it "can inherit a child of itself" do
@@ -23,11 +23,11 @@ describe "Kazoo::Scope" do
     end
 
     it "returns undefined if a key is not set" do
-      scope.get("noname").should eq Kazoo::Undefined
+      scope.get("noname").should eq EXP_LANG::Undefined
     end
 
     describe "#clone" do
-      scope = Kazoo::Scope(String).new
+      scope = EXP_LANG::Scope(String).new
       scope["name"] = "first"
       scope["age"] = "twelve"
 
@@ -43,9 +43,9 @@ describe "Kazoo::Scope" do
     end
   end
   context "recursive lookups" do
-      parent = Kazoo::Scope(String).new
+      parent = EXP_LANG::Scope(String).new
       parent["name"] = "parent"
-      scope = Kazoo::Scope(String).new(parent)
+      scope = EXP_LANG::Scope(String).new(parent)
 
     it "holds a reference to its parent" do
       scope.parent.should eq parent
@@ -68,9 +68,9 @@ describe "Kazoo::Scope" do
   end
 
   context "more complex types (ASTNode)" do
-    parent = Kazoo::Scope(Expression).new
+    parent = EXP_LANG::Scope(Expression).new
     parent["n"] = ANumber.new(2)
-    scope = Kazoo::Scope(Expression).new(parent)
+    scope = EXP_LANG::Scope(Expression).new(parent)
 
     it "holds a reference to its parent" do
       scope.parent.should eq parent
@@ -85,13 +85,13 @@ describe "Kazoo::Scope" do
     end
 
     it "returns undefined if a key is not set" do
-      scope.get("noname").should eq Kazoo::Undefined
+      scope.get("noname").should eq EXP_LANG::Undefined
     end
 
   end
 
   context "evaluation of expressions in scope" do
-    scope = Kazoo::Scope(Expression).new
+    scope = EXP_LANG::Scope(Expression).new
 
     it "should eval a simple variable identifier to its expression" do
       scope["x"] = ANumber.new(2.to_f);
