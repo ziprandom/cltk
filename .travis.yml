@@ -4,7 +4,7 @@ before_install:
   - curl http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
   - echo -e "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6 main\ndeb-src http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6 main" | sudo tee -a /etc/apt/sources.list
   - sudo apt-get -qq update
-  - sudo apt-get install -y llvm-3.6-dev
+  - sudo apt-get install -y llvm-3.6-dev libedit-dev
 script:
   - crystal spec
   - (cd examples/kazoo/chapter_8/ && crystal spec)
