@@ -1,4 +1,4 @@
-# cltk
+# cltk [![Build Status](https://api.travis-ci.org/ziprandom/cltk.svg)](https://travis-ci.org/ziprandom/cltk)
 
 This is a port of the [Ruby Language Toolkit](https://github.com/chriswailes/RLTK) to the [Crystal Programming Language](http://crystal-lang.org/).
 
