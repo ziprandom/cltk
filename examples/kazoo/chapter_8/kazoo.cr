@@ -34,7 +34,7 @@ loop do
     ast = Kazoo::Parser.parse(lex)
     if ast.is_a?(CLTK::ASTNode)
       ir = jit.add(ast)
-      #ir = jit.optimize(ir)
+      ir = jit.optimize(ir)
       result = jit.execute(ir).to_f64
       puts "=> #{result} (#{result.class})"
     end

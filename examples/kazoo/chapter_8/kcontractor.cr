@@ -46,8 +46,8 @@ module Kazoo
 
     def add(ast)
       case ast
-      when Expression          then visit Function.new(Kazoo::Prototype.new("", [] of CLTK::ASTNode), ast)
       when Function, Prototype then visit ast
+      when Expression          then visit Function.new(Kazoo::Prototype.new("", [] of CLTK::ASTNode), ast)
       else raise "Attempting to add an unhandled node type to the JIT."
       end as LLVM::Function
     end
@@ -62,6 +62,7 @@ module Kazoo
     	  @st[name] = alloca LLVM::Double, name
     	end
       store(right, loc)
+      right
     end
 
     on Variable do |node|
@@ -84,7 +85,7 @@ module Kazoo
       end
 
       args = args.map { |arg| (visit arg) as LLVM::Value }
-      @builder.call callee, args, "calltmp"
+      call callee, args, "calltmp"
     end
 
     on Prototype do |node|
@@ -112,17 +113,15 @@ module Kazoo
 
     on Function do |node|
       # Reset the symbol table.
-      @st.clear
+      # @st.clear
 
       # Translate the function"s prototype.
       func = visit node.proto as Prototype
-
       func.params.to_a.each do |param|
         name = param.name.not_nil!
 	@st[name] = alloca LLVM::Double, name
 	store param, @st[param.name]
       end
-
       # Create a new basic block to insert into, allocate space for
       # the arguments, store their values, translate the expression,
       # and set its value as the return value.
@@ -144,8 +143,12 @@ module Kazoo
           end
         end
       end
+
+
       # Verify the function and return it.
-      func.tap { LibLLVM.verify_function(func, LLVM::VerifierFailureAction::ReturnStatusAction )}
+      func.tap do |func|
+        LibLLVM.verify_function(func, LLVM::VerifierFailureAction::ReturnStatusAction )
+      end # .tap &.dump
       func
     end
 
@@ -258,12 +261,12 @@ module Kazoo
 	left  = fcmp LLVM::RealPredicate::UNE,  left, ZERO, "lefttmp"
 	right = fcmp LLVM::RealPredicate::UNE, right, ZERO, "righttmp"
 
-	ui2fp (@builder.or left, right, "ortmp"), LLVM::Double, "orltmp"
+	ui2fp (@env.or left, right, "ortmp"), LLVM::Double, "orltmp"
       when And
 	left  = fcmp LLVM::RealPredicate::UNE,  left, ZERO, "lefttmp"
 	right = fcmp LLVM::RealPredicate::UNE, right, ZERO, "rightmp"
 
-	ui2fp (@builder.and left, right, "andtmp"), LLVM::Double, "andtmp"
+	ui2fp (@env.and left, right, "andtmp"), LLVM::Double, "andtmp"
       else right
       end
     end

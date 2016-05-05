@@ -48,9 +48,9 @@ describe "CLTK::Kazoo" do
     result.should eq 225
   end
 
-  pending "parses, translates and evaluates a function definition" do
-    result = run("def multi(x) x * 3 end; multi(10);")
-    result.should eq 30
+  it "parses, translates and evaluates a function definition" do
+    result = run("def multi(x,y) x * y end; multi(10,5);")
+    result.should eq 50
   end
 
 end
