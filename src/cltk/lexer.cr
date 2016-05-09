@@ -35,7 +35,7 @@ module CLTK
     # @param [Integer]	line_number	Number of newlines encountered so far.
     # @param [Integer]	line_offset	Offset from beginning of line.
     # @param [String]	remainder		Rest of the string that couldn't be lexed.
-    def initialize(@stream_offset, @line_number, @line_offset, @remainder)
+    def initialize(@stream_offset : Int32, @line_number : Int32, @line_offset : Int32, @remainder : String)
       super(message)
       @backtrace = [] of String
     end
@@ -64,6 +64,7 @@ module CLTK
       @@start_state
     end
 
+
     def self.setenv(env)
       @@env = env
     end
@@ -73,6 +74,7 @@ module CLTK
     #
     # @return [void]
     macro inherited
+      @@env = Environment
       @@match_type	= :longest
       @@rules		= {} of Symbol => Array(Rule)
       @@rules.not_nil![:default] = [] of Rule
@@ -258,6 +260,9 @@ module CLTK
       #
       # @param [Symbol]	start_state	Lexer's start state.
       # @param [Match]	match		Match object for matching text.
+
+      @state: Array(Symbol)
+      @match: Regex::MatchData?
       def initialize(start_state, match = nil)
         @state	= [start_state]
         @match	= match
@@ -356,6 +361,9 @@ module CLTK
 
     # Instantiates a new lexer and creates an environment to be
     # used for subsequent calls.
+
+    @env: Environment
+
     def initialize
       @env = (@@env || Environment).new(self.class.start_state)
     end
@@ -384,6 +392,8 @@ module CLTK
       # @return [Proc] Token producting action to be taken when this rule is matched.
       getter :action
 
+      @action : ((String, CLTK::Lexer::Environment -> (Symbol | {String, String} | {Symbol, Array(String)} | {Symbol, Float64} | {Symbol, Int32} | {Symbol, String} | Nil)) | (String, CLTK::Lexer::Environment -> Nil) )
+
       # @return [Regexp] Regular expression for matching this rule.
       getter :pattern
 
@@ -396,7 +406,12 @@ module CLTK
       # @param [Proc]		action	Token producing action associated with this rule.
       # @param [Symbol]		state	State in which this rule is active.
       # @param [Array<Symbol>]	flags	Flags that must be enabled for this rule to match.
-      def initialize(@pattern, @action, @state, @flags)
+
+      def initialize(@pattern : Regex, action, @state : Symbol, flags)
+        @flags = (
+          Array(String|Symbol).new + flags
+        ) as Array(String|Symbol)
+        @action = action
       end
     end
   end

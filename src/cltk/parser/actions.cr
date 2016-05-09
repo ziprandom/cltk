@@ -7,8 +7,7 @@ module CLTK
       getter :id
 
       # @param [Integer] id ID of this action.
-      def initialize(id = nil)
-        @id = id
+      def initialize(@id : Int32? = nil)
       end
     end
 
@@ -35,7 +34,7 @@ module CLTK
     class Reduce < Action
 
       # @param [Production]  production  Production to reduce by
-      def initialize(production)
+      def initialize(production : CLTK::CFG::Production)
         super(production.id)
 
         @production = production

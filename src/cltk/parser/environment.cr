@@ -16,6 +16,8 @@ module CLTK
       # @return [Array<Object>]
       getter :errors
 
+      @positions: Array(CLTK::StreamPosition)?
+
       # Instantiate a new Environment object.
       def initialize
         @errors = [] of Type

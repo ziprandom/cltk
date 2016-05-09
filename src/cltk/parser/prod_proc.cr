@@ -9,14 +9,16 @@ module CLTK
       # @return [Array<Integer>]  Mask for selection of tokens to pass to action.  Empty mask means pass all.
       getter :selections
 
-      def initialize(arg_type = :splat, selections = [] of Int32, &block: Array(Type), Environment -> _)
-        @block = block
+      def initialize(
+            arg_type = :splat,
+            selections = [] of Int32,
+                               &@block : Proc(Array(CLTK::Type), Environment, CLTK::Type))
         @arg_type   = arg_type
         @selections = selections
       end
       def call(args, env)
         @block.call(args as Array(Type), env as Environment)
       end
-    end
   end
+end
 end

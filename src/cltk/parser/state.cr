@@ -12,6 +12,9 @@ module CLTK
       # @return [Hash{Symbol => Array<Action>}]  Maps lookahead symbols to actions
       getter :actions
 
+      @id: Int32?
+      @actions: Hash(String, Array(CLTK::Parser::Action))?
+
       # Instantiate a new State object.
       #
       # @param [Array<Symbol>]     tokens  Tokens that represent this state

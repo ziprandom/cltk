@@ -5,7 +5,7 @@ module EXP_LANG
     property :parent
     getter :dict
 
-    def initialize(@parent = nil, @dict = {} of String => T)
+    def initialize(@parent : Scope(T)? = nil, @dict = {} of String => T)
     end
 
     def eval(exp)

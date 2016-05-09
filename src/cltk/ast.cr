@@ -1,6 +1,7 @@
 abstract class CLTK::ASTNode
 
   property :parent
+  @parent : CLTK::ASTNode?
 
   def root
     parent || self
@@ -120,24 +121,23 @@ abstract class CLTK::ASTNode
 
       {% if child_type.id.stringify.starts_with? "Array" %}
         CHILDREN_DEFAULTS << [] of CLTK::ASTNode?
+
         def {{child_name.id}}(value : {{child_type.id}})
-          @{{child_name.id}} = value.map do |v|
-            v.parent = self if v
-            v as CLTK::ASTNode?
-          end
           index = CHILDREN_NAMES.rindex(:{{child_name.id}})
           if index
-            @children[index] = @{{child_name.id}}
+            @children[index] = value.map do |v|
+              v.parent = self if v
+              v as CLTK::ASTNode?
+            end
           end
         end
       {% else %}
         CHILDREN_DEFAULTS << nil
         def {{child_name.id}}(value : {{child_type}})
           index = CHILDREN_NAMES.rindex(:{{child_name.id}})
-          @{{child_name.id}} = value
           value.parent = self if value
           if index
-            @children.not_nil![index] = @{{child_name.id}}
+            @children.not_nil![index] = value
           end
         end
       {% end %}
@@ -180,21 +180,34 @@ abstract class CLTK::ASTNode
     end
 
     def initialize
-      @children = CHILDREN_DEFAULTS.clone
+      @children = {{@type.id}}.children_defaults
     end
 
     def self.children_names
-      CHILDREN_NAMES.clone
+      {{@type.id}}::CHILDREN_NAMES.clone
     end
+
 
     def self.children_defaults
-      CHILDREN_DEFAULTS.clone
+      {% if @type.id == CLTK::ASTNode %}
+        [] of CLTK::ASTNode?|Array(CLTK::ASTNode?)
+      {% else %}
+          {{@type.superclass}}.children_defaults + {{@type.id}}::CHILDREN_DEFAULTS
+      {% end %}
     end
+
   end
 
+  def self.children_defaults
+    [] of CLTK::ASTNode?|Array(CLTK::ASTNode?)
+  end
+
+  @children: Array( Array(CLTK::ASTNode?) | CLTK::ASTNode | Nil) = Array( Array(CLTK::ASTNode?) | CLTK::ASTNode | Nil).new
+
   macro inherited
+
     def initialize(*values)
-      @children = CHILDREN_DEFAULTS.clone
+      @children = {{@type}}.children_defaults.clone
       children_values, value_values =
         if ORDER == :custom
           children_values = CHILDREN_NAMES.map do |name|
@@ -249,7 +262,7 @@ abstract class CLTK::ASTNode
       set_values(value_values.not_nil!)
     end
     def initialize
-      @children = CHILDREN_DEFAULTS
+      @children = {{@type}}.children_defaults
     end
   end
 
@@ -262,7 +275,7 @@ abstract class CLTK::ASTNode
       if thing.responds_to? :"values="
         thing.values = values.clone
       end
-      thing as {{@type}}
+      thing as {{@type.stringify.gsub(/\+$/, "").id}}
     {% else %}
       self
     {% end %}
@@ -278,7 +291,7 @@ abstract class CLTK::ASTNode
   # @param [:pre, :post, :level]  order  The order in which to iterate over the tree
   #
   # @return [void]
-  def each(order = :pre, &block: CLTK::ASTNode+ -> _ )
+  def each(order = :pre, &block: CLTK::ASTNode -> _ )
     case order
     when :pre
       yield self

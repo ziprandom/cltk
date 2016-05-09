@@ -34,7 +34,7 @@ module CLTK
     # @param [Integer]		line_offset	The offset of this token from the beginning of the current line.
     # @param [Integer]		length		The length of the text of the token.
     # @param [String, nil]	file_name		The name of the file being lexed.
-    def initialize(@stream_offset = 0, @line_number = 0, @line_offset = 0, @length = 0, @file_name = nil)
+    def initialize(@stream_offset = 0, @line_number = 0, @line_offset = 0, @length = 0, @file_name : String? = nil)
     end
   end
 
@@ -55,7 +55,10 @@ module CLTK
     # @param [Symbol]				type		A symbol representing the type of this Token.
     # @param [Object, nil]			value	A value associated with this token.
     # @param [StreamPosition, nil]	position	The position of the token in a stream.
-    def initialize(@type, @value = nil, @position = nil)
+    def initialize(
+          @type : String|Symbol,
+          @value : Array(String) | Float64 | Int32 | String | Nil = nil,
+          @position : StreamPosition? = nil)
     end
 
     # Compares one token to another.  This only tests the token's *type*

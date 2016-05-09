@@ -11,7 +11,8 @@
 #######################
 # Classes and Modules #
 #######################
-
+require "spec"
+require "../../src/cltk/cfg"
 
 describe "CLTK::CFG" do
   grammar = CLTK::CFG.new

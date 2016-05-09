@@ -43,7 +43,6 @@ module CLTK
     # Class Methods #
     #################
 
-
     # The overridden new prevents un-finalized parsers from being
     # instantiated.
     def self.new(*args)
@@ -58,9 +57,19 @@ module CLTK
     #
     # @return [void]
     macro inherited
+      @@symbols : Array(String)?
+      @@start_symbol : String?
+      @@production_precs : Hash(Int32, String | Nil | {String, Int32}) | Array(String | {String, Int32} | Nil) | Nil
+      @@token_precs      : Hash(String, {String, Int32})?
+      @@env : (Environment.class) | Nil
+      @@grammar_prime : CLTK::CFG?
+      @@grammar : CLTK::CFG?
+      @@conflicts :  Hash(Int32, Array({ String, String }))?
+
       @@curr_lhs  = nil
       @@curr_prec = nil
       @@conflicts = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
+      @@prec_counts : Hash(Symbol, Int32)?
 
       @@grammar   = CLTK::CFG.new
 
@@ -96,7 +105,7 @@ module CLTK
 	       when :nelp
 	         case which
 	         when :single
-	           ProdProc.new { |el| [el[0]] }
+	           ProdProc.new { |el| [el[0]].map { |x| x as CLTK::Type } }
 	         when :multiple
 	           ProdProc.new(:splat, sels) do |syms|
                      syms  = syms as Array
@@ -308,8 +317,14 @@ module CLTK
                 {{action.args.first}} = %a as Array
               end
             {%end %}
-
-            {{action.body}}
+            %result = begin
+              {{action.body}}
+                end
+            if %result.is_a? Array
+              %result.map { |r| r as CLTK::Type}
+            else
+              %result as CLTK::Type
+            end
           end
         end,
         production.rhs.size
@@ -336,8 +351,8 @@ module CLTK
       @@grammar_prime = nil
 
       # Drop precedence and bookkeeping information.
-      @@cur_lhs  = nil
-      @@cur_prec = nil
+      @@curr_lhs  = nil
+      @@curr_prec = nil
 
       @@prec_counts      = nil
       @@production_precs = nil
@@ -525,7 +540,6 @@ module CLTK
 	#raise ParserConstructionException.new "Parser.explain called outside of finalize."
       end
     end
-
     # This method will finalize the parser causing the construction
     # of states and their actions, and the resolution of conflicts
     # using lookahead and precedence information.
@@ -978,7 +992,7 @@ module CLTK
                 end
 
 		if (opts[:env] as Environment).he
- 		  error = HandledError.new((opts[:env] as Environment).errors, stack.result)
+ 		  error = HandledError.new((opts[:env] as Environment).errors, stack.result as CLTK::Type)
                   raise error
 		else
 		  return stack.result
@@ -1025,6 +1039,7 @@ module CLTK
 		  pos1 = (opts[:env] as Environment).pos(-1) as StreamPosition
 		  pos0.length = (pos1.stream_offset + pos1.length) - pos0.stream_offset
 		end
+                result = nil if result.is_a? Void
 		stack.push(goto.id, result, @@lh_sides.not_nil![action.id], pos0)
 	      else
 		raise InternalParserException.new "No GoTo action found in state #{stack.state} " +
@@ -1079,10 +1094,10 @@ module CLTK
 	  (opts[:parse_tree] as IO).puts(stack.tree)
         end
       end
-      results = accepted.map { |stack| stack.result }
+      results = accepted.map { |stack| stack.result as CLTK::Type}
 
       if (opts[:env] as Environment).he
-	raise HandledError.new((opts[:env] as Environment).errors, results)
+	raise HandledError.new((opts[:env] as Environment).errors, results as CLTK::Type)
       else
 	return results
       end
@@ -1116,24 +1131,23 @@ module CLTK
 
       @@grammar.not_nil!.curr_lhs = symbol
       @@curr_prec        = precedence
-
-      orig_dat = nil
-      if arg_type != @@default_arg_type
-	  orig_dat = @@default_arg_type
-	  @@default_arg_type = arg_type
-        end
-        {%if expression%}
-          clause({{expression}}, {{precedence}}, {{arg_type}}) do |{{*action.args}}|
-            {{action.body}}
-          end
-        {%else%}
+      @@orig : Symbol? = @@default_arg_type
+      if {{arg_type}}
+        @@default_arg_type = {{arg_type}}
+      end
+      {%if expression%}
+        clause({{expression}}, {{precedence}}, {{arg_type}}) do |{{*action.args}}|
           {{action.body}}
-        {%end%}
+        end
+      {%else%}
+          {{action.body}}
+      {%end%}
 
-        @@default_arg_type = orig_dat if !orig_dat.nil?
+      @@default_arg_type = @@orig
 
-        @@grammar.not_nil!.curr_lhs = nil
-        @@curr_prec        = nil
+
+      @@grammar.not_nil!.curr_lhs = nil
+      @@curr_prec        = nil
 
     end
 
@@ -1301,7 +1315,8 @@ module CLTK
 
     # Instantiates a new parser and creates an environment to be
     # used for subsequent calls.
-    def initialize
+    @env : Environment
+    def  initialize
       @env = (@@env || Environment).new
     end
 

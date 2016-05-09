@@ -16,7 +16,7 @@ module CLTK
     # @param [Array<Token>]  seen       Tokens that have been successfully parsed
     # @param [Token]         current    Token that caused the parser to stop
     # @param [Array<Token>]  remaining  Tokens that have yet to be seen
-    def initialize(@seen, @current, @remaining)
+    def initialize(@seen : Array(CLTK::Token), @current : CLTK::Token, @remaining : Array(CLTK::Token))
       super(message)
       @backtrace = [] of String
     end

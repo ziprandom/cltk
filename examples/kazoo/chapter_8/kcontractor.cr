@@ -9,6 +9,7 @@ module Kazoo
     include CLTK::Visitor
 
     getter :main_module
+    @fpm : LLVM::FunctionPassManager
 
     def initialize(@builder = LLVM::Builder.new)
       LLVM.init_x86

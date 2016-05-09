@@ -12,6 +12,8 @@ module CLTK
       # @return [Array<Integer>] Array of states used when performing {Reduce} actions.
       getter :state_stack
 
+      @cbuffer : Array(Int32)?
+      @output_stack : Array(CLTK::Type)
       # Instantiate a new ParserStack object.
       #
       # @param [Integer]                id           ID for this parse stack.  Used by GLR algorithm.
@@ -21,9 +23,8 @@ module CLTK
       # @param [Array<Array<Integer>>]  connections  Integer pairs representing edges in the parse tree.
       # @param [Array<Symbol>]          labels       Labels for nodes in the parse tree.
       # @param [Array<StreamPosition>]  positions    Position data for symbols that have been shifted.
-      def initialize(id, ostack = [] of Type, sstack = [0] of Int32, nstack = [] of Int32,
+      def initialize(@id : Int32, ostack = [] of Type, sstack = [0] of Int32, nstack = [] of Int32,
                      connections = [] of {Int32, Int32}, labels = [] of String, positions = [] of StreamPosition)
-        @id = id
 
         @node_stack   = nstack
         @output_stack = ostack
@@ -91,7 +92,7 @@ module CLTK
         elsif o.is_a? Type
           @output_stack << o
         else
-          @output_stack = @output_stack + [o]
+          @output_stack << (o as Type)
         end
 
         @node_stack	<< @labels.size

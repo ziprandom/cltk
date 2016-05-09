@@ -62,6 +62,9 @@ module CLTK
     ####################
     # Instance Methods #
     ####################
+    @start_symbol: String?
+    @wrapper_symbol : String?
+    @curr_lhs: (String | Symbol | Nil)
 
     # Instantiates a new CFG object that uses *callback* to inform the
     # programmer of the generation of new productions due to EBNF
@@ -631,7 +634,7 @@ module CLTK
       # @param [Integer]        id   ID number of this production.
       # @param [Symbol]         lhs  Left-hand side of the production.
       # @param [Array<Symbol>]  rhs  Right-hand side of the production.
-      def initialize(@id, @lhs, @rhs)
+      def initialize(@id : Int32, @lhs : String, @rhs : Array(String))
       end
 
       # Comparese on production to another.  Returns true only if the
@@ -689,7 +692,7 @@ module CLTK
       #
       # @param [Integer]        dot   Location of the dot in this Item.
       # @param [Array<Object>]  args  (see {Production#initialize})
-      def initialize(dot, *args)
+      def initialize(dot : Int32, *args)
 	super(*args)
 
 	# The Dot indicates the NEXT symbol to be read.

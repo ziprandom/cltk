@@ -2,6 +2,8 @@
 # Project: 	Ruby Language Toolkit
 # Date:		2011/04/06
 # Description:	This file contains unit tests for the CLTK::Token class.
+require "spec"
+require "../../src/cltk/token"
 
 describe "Token" do
 
