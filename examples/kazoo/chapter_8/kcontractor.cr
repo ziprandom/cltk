@@ -217,7 +217,7 @@ module Kazoo
         then_val, new_then_bb = with_builder(builder) do
           { visit(node.elseExp), builder.insert_block }
         end
-        table.add(new_then_bb, then_val)
+        table.add(new_then_bb, then_val as LLVM::Value)
       end
 
       ## ELSE
@@ -226,7 +226,7 @@ module Kazoo
         else_val, new_else_bb = with_builder(builder) do
           { visit(node.thenExp), builder.insert_block }
         end
-        table.add(new_else_bb, else_val)
+        table.add(new_else_bb, else_val as LLVM::Value)
       end
 
       merge_bb = func.basic_blocks.append("merge")
