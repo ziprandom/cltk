@@ -160,23 +160,4 @@ describe "CLTK::CFG" do
     p0.last_terminal.should eq "D"
   end
 
-  it "sdfasd" do
-    #grammar = CLTK::CFG.new
-    #
-    #grammar.production(:s) do
-    #  clause("A G D")
-    #  clause("A a C")
-    #  clause("B a D")
-    #  clause("B G C")
-    #end
-
-    #grammar.production("a", "b")
-    #grammar.production("b", "G")
-    #puts grammar.first_set("A")
-    #puts grammar.follow_set "a"
-    #puts grammar.nonterms
-    #puts grammar.productions
-    #puts grammar.symbols
-    #puts grammar.terms
-  end
 end
