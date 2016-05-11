@@ -284,55 +284,54 @@ module CLTK
     macro clause(expression, precedence = nil, arg_type = nil, &action: _ -> _)
       # Use the curr_prec only if it isn't overridden for this
       # clause.
-      %arg_type = {{arg_type}}
-      precedence = {{precedence}} || @@curr_prec
-      production, selections = if @@grammar
-                                 e = (@@grammar as CLTK::CFG).clause({{expression}})
-                                 e as Tuple # {CLTK::CFG::Production, Array(Int32)}
-                               else
-                                 raise "NO GRAMMAR DEFINED"
-                               end
-      # Check to make sure the action's arity matches the number
-      # of symbols on the right-hand side.
-      %expected_arity = (selections.empty? ? production.rhs.size : selections.size)
-      if %arg_type == :splat && {{action.args.size}} != %expected_arity
-  	raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{%expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
-      end
+      Tuple.new({{expression}}, {{precedence}}, {{arg_type}}).tap do |param_tupel|
 
+        expression = param_tupel[0]
+        precedence = param_tupel[1] || @@curr_prec
+        arg_type   = param_tupel[2]
 
+        production, selections = if @@grammar
+                                   (@@grammar as CLTK::CFG).clause({{expression}})
+                                 else
+                                   raise "NO GRAMMAR DEFINED"
+                                 end
+        expected_arity = (selections.empty? ? production.rhs.size : selections.size)
+        if arg_type == :splat && {{action.args.size}} != expected_arity
+  	  raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
+        end
 
-      # Add the action to our proc list.
-      @@procs.not_nil![production.id] = {
-        ## new ProdProc
-        ProdProc.new(:splat, selections) do |%a, %env|
-          %env.yield_with_self do
-            {%for arg, index in action.args%}
-              {{arg}} = (%a as Array(CLTK::Type))[{{index}}]
-            {%end%}
-            # reassign the first block argument to
-            # the whole arguments array if arg_type
-            # evaluates to :array
-            {%if action.args.size > 0%}
-              if (%arg_type || @@default_arg_type) == :array
-                {{action.args.first}} = %a as Array
-              end
-            {%end %}
-            %result = begin
-              {{action.body}}
+        # Add the action to our proc list.
+        @@procs.not_nil![production.id] = {
+          ## new ProdProc
+          ProdProc.new(:splat, selections) do |%a, %env|
+            %env.yield_with_self do
+              {%for arg, index in action.args%}
+                {{arg}} = (%a as Array(CLTK::Type))[{{index}}]
+              {%end%}
+              # reassign the first block argument to
+              # the whole arguments array if arg_type
+              # evaluates to :array
+              {%if action.args.size > 0%}
+                if (arg_type || @@default_arg_type) == :array
+                  {{action.args.first}} = %a as Array
                 end
-            if %result.is_a? Array
-              %result.map { |r| r as CLTK::Type}
-            else
-              %result as CLTK::Type
+              {%end %}
+              result = begin
+                          {{action.body}}
+                        end
+              if result.is_a? Array
+                result.map { |r| r as CLTK::Type}
+              else
+                result as CLTK::Type
+              end
             end
-          end
-        end,
-        production.rhs.size
-      }
-      # If no precedence is specified use the precedence of the
-      # last terminal in the production.
-      @@production_precs.not_nil![production.id] = (precedence || production.last_terminal)
-
+          end,
+          production.rhs.size
+        }
+        # If no precedence is specified use the precedence of the
+        # last terminal in the production.
+        @@production_precs.not_nil![production.id] = precedence || production.last_terminal
+      end
     end
 
     def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
@@ -1144,7 +1143,6 @@ module CLTK
       {%end%}
 
       @@default_arg_type = @@orig
-
 
       @@grammar.not_nil!.curr_lhs = nil
       @@curr_prec        = nil

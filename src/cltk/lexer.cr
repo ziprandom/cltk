@@ -125,7 +125,6 @@ module CLTK
 	  rule = match[1]
 	  txt = scanner.scan(rule.pattern).not_nil!
 
-#	  type, value = env.rule_exec(rule.pattern.match(txt.not_nil!), txt, )
           type, value = rule.action.call(rule.pattern.match(txt).not_nil!, txt, env)
 
 	  if type
