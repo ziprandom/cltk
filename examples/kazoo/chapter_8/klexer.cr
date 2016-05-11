@@ -48,8 +48,8 @@ module Kazoo
     rule(/\d+\.\d+/)	 { |t| {:NUMBER, t.to_f} as BlockReturn}
 
     # Comment rules.
-    rule(/#/)		 { |m, e| e.push_state :comment }
-    rule(/\n/, :comment) { |m, e| e.pop_state }
+    rule(/#/)		 { |m| push_state :comment }
+    rule(/\n/, :comment) { |m| pop_state }
     rule(/./, :comment)
   end
 end

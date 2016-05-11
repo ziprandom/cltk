@@ -4,7 +4,7 @@ require "../../src/cltk/lexers/ebnf"
 require "../../src/cltk/lexers/calculator"
 
 class ENVLexer < CLTK::Lexer
-  class MyEnvironment < Environment
+  class Environment < Environment
     def initialize(args)
       @value = -1
       super(args)
@@ -15,13 +15,9 @@ class ENVLexer < CLTK::Lexer
       @value as Int32
     end
   end
-  setenv(MyEnvironment)
-  rule(/a/) do |txt, env|
-    n = (env as MyEnvironment).next_value
-    if (n)
-      next {:A, n }
-    end
-    {:A, 1 }
+
+  rule(/a/) do |txt|
+    next {:A, next_value }
   end
 end
 
@@ -43,10 +39,10 @@ end
 
 
 class FlagLexer < CLTK::Lexer
-  rule(/a/)	 { |txt, env| env.set_flag(:a); :A }
+  rule(/a/)	 { |txt| set_flag(:a); :A }
   rule(/\s/)
 
-  rule(/b/, :default, [:a])     { |txt, env| env.set_flag(:b); :B }
+  rule(/b/, :default, [:a])     { |txt| set_flag(:b); :B }
   rule(/c/, :default, [:a, :b]) { :C }
 end
 
@@ -54,17 +50,24 @@ class StateLexer < CLTK::Lexer
   rule(/a/)    { :A }
   rule(/\s/)
 
-  rule(/\(\*/) { |txt, env|
-    env.push_state(:comment)
+  rule(/\(\*/) { |txt|
+    push_state(:comment)
   }
 
-  rule(/\(\*/, :comment) { |txt, env| env.push_state(:comment) }
-  rule(/\*\)/, :comment) { |txt, env| env.pop_state }
+  rule(/\(\*/, :comment) { |txt| push_state(:comment) }
+  rule(/\*\)/, :comment) { |txt| pop_state }
   rule(/./,    :comment)
 end
 
 class MatchDataLexer < CLTK::Lexer
-  rule(/a(b*)(c+)/) { |txt, env| {:FOO, [ env.match.not_nil![1] , env.match.not_nil![2]] }}
+  rule(/a(b*)(c+)/) do |txt|
+    {:FOO,
+     [
+       match[1]? || "",
+       match[2]? || ""
+     ]
+    }
+  end
 end
 
 describe "CLTK::Lexer" do

@@ -57,13 +57,12 @@ module CLTK
     # Class Methods #
     #################
 
-
     # @return [Symbol] State in which the lexer starts.
     getter :start_state
+
     def self.start_state
       @@start_state
     end
-
 
     def self.setenv(env)
       @@env = env
@@ -77,9 +76,8 @@ module CLTK
       @@env = Environment
       @@match_type	= :longest
       @@rules		= {} of Symbol => Array(Rule)
-      @@rules.not_nil![:default] = [] of Rule
+      @@rules[:default] = [] of Rule
       @@start_state	= :default
-      self.setenv(CLTK::Lexer::Environment)
     end
 
     # Lex *string*, using *env* as the environment.  This method will
@@ -91,7 +89,7 @@ module CLTK
     # @param [Environment]	env		Lexing environment.
     #
     # @return [Array<Token>]
-    def self.lex(string, file_name = nil, env = @@env.not_nil!.new(@@start_state))
+    def self.lex(string, file_name = nil, env = @@env.new(@@start_state))
       # Offset from start of stream.
       stream_offset = 0
 
@@ -113,10 +111,10 @@ module CLTK
 	# and the longest match returned.  If the
 	# match_type is :first, we only need to scan until
 	# we find a match.
-	((@@rules as Hash)[env.state] as Array(Rule)).each do |rule|
+	@@rules[env.state].each do |rule|
 	  if (rule.flags - env.flags).empty?
 	    if txt = scanner.check(rule.pattern)
-	      if !match || match.not_nil!.first.size < txt.size
+	      if !match || match.first.size < txt.size
 		match = {txt, rule}
 		break if @@match_type == :first
 	      end
@@ -127,7 +125,8 @@ module CLTK
 	  rule = match[1]
 	  txt = scanner.scan(rule.pattern).not_nil!
 
-	  type, value = env.rule_exec(rule.pattern.match(txt.not_nil!), txt, rule.action)
+#	  type, value = env.rule_exec(rule.pattern.match(txt.not_nil!), txt, )
+          type, value = rule.action.call(rule.pattern.match(txt).not_nil!, txt, env)
 
 	  if type
 	    pos = StreamPosition.new(stream_offset, line_number, line_offset, txt.size, file_name)
@@ -140,13 +139,11 @@ module CLTK
 	  if (newlines = txt.count("\n")) > 0
 	    line_number += newlines
 	    line_offset = txt.split("\n").last.size
-#	    line_offset = txt.rpartition("\n").last.size
 	  else
 	    line_offset += txt.size()
 	  end
 	else
-	  error = LexingError.new(stream_offset, line_number, line_offset, scanner.rest)
-          raise error
+          raise LexingError.new(stream_offset, line_number, line_offset, scanner.rest)
 	end
       end
 
@@ -160,7 +157,7 @@ module CLTK
     # @param [Environment]	env		Lexing environment.
     #
     # @return [Array<Token>]
-    def self.lex_file(file_name, env = (@@env).new(@start_state))
+    def self.lex_file(file_name, env = @@env.new(@start_state))
       File.open(file_name, 'r') { |f| self.lex(f.read, file_name, env) }
     end
 
@@ -189,51 +186,49 @@ module CLTK
     #
     # @return [void]
 
-    alias BlockReturn = Symbol | Nil | { Symbol, Int32 } | {String, String} | {Symbol, Float64} |{ Symbol, String } | Tuple(Symbol, Array(String))
-    def self.rule(pattern, state = :default, flags = [] of String, &action : String, CLTK::Lexer::Environment -> BlockReturn)
+    alias BlockReturn = { Symbol, Nil } | {String, String} | { Nil, Nil } | { Symbol, Int32 } | {Symbol, Float64} | { Symbol, String } | { Symbol, Array(String) }
 
-      pattern = Regex.new(pattern) if pattern.is_a?(String)
-      r = Rule.new(pattern, action, state, flags)
-
-      if state == :ALL && @@rules.is_a?(Hash)
-        (@@rules as Hash).keys.each do |key|
-          (@@rules as Hash)[key as Symbol] = @@rules.not_nil![key] << r
-        end
-      end
-      if @@rules
-        rules = (@@rules as Hash(Symbol, Array(Rule)))
-        if rules.has_key? state
-          (rules[state] as Array(Rule)) << r
-        else
-          rules[state] = [r]
+    macro rule(pattern, state = :default, flags = [] of Symbol, &action: _ -> _)
+      {{pattern}}.tap do |pattern|
+        Rule.new(
+          (pattern.is_a?(String)) ? Regex.new(pattern) : pattern,
+          {{state}},
+          {{flags}}
+        ) do |%match, %txt, %env|
+            {% if action  %}
+              {% if action.args.first %}
+                {{action.args.first.id}} = %txt
+              {% end %}
+            %res = %env.yield_with_match(%match) do
+              {{action.body}}
+            end
+            if %res.is_a? Void
+              {nil, nil}
+            elsif %res.is_a? Tuple
+              %res
+            else
+              Tuple.new(%res, nil)
+            end
+            {% else %}
+              {nil, nil}
+            {% end %}
+        end.tap do |rule|
+          if {{state}} == :ALL
+            @@rules.each_key { |k| @@rules[k] << rule }
+          elsif @@rules[{{state}}]?
+            @@rules[{{state}}] << rule
+          else
+            @@rules[{{state}}] = [ rule ]
+          end
         end
       end
     end
 
     def self.rule(pattern, state = :default, flags = [] of String)
-      # If no action is given we will set it to an empty
-      # action.
-
-      action = ->(txt: String, env: CLTK::Lexer::Environment) {}
-      pattern = Regex.new(pattern) if pattern.is_a?(String)
-
-      r = Rule.new(pattern, action, state, flags)
-
-      if state == :ALL && @@rules.is_a?(Hash)
-        (@@rules as Hash).keys.each do |key|
-          (@@rules as Hash)[key as Symbol] = @@rules.not_nil![key] << r
-        end
-      end
-      if @@rules
-        rules = (@@rules as Hash(Symbol, Array(Rule)))
-        if rules.has_key? state
-          (rules[state] as Array(Rule)) << r
-        else
-          rules[state] = [r]
-        end
+      self.rule(pattern, state, flags) do
+        {nil, nil}
       end
     end
-
 
     # Changes the starting state of the lexer.
     #
@@ -254,7 +249,7 @@ module CLTK
       getter :flags
 
       # @return [Match] Match object generated by a rule's regular expression.
-      property :match
+      #property :match
 
       # Instantiates a new Environment object.
       #
@@ -263,28 +258,21 @@ module CLTK
 
       @state: Array(Symbol)
       @match: Regex::MatchData?
-      def initialize(start_state, match = nil)
-        @state	= [start_state]
-        @match	= match
-        @flags	= [] of Symbol
+
+      def match
+        @match as Regex::MatchData
       end
 
-      # This function will instance_exec a block for a rule after
-      # setting the match value.
-      #
-      # @param [Match]	match	Match object for matching text.
-      # @param [String]	txt		Text of matching string.
-      # @param [Proc]	block	Block for matched rule.
-      def rule_exec(match, txt, block)
-        self.match = match
-        res = block.call(txt, self)
-        if res.is_a? Void
-          {nil, nil}
-        elsif res.is_a? Tuple
-          res
-        else
-          {res, nil}
-        end
+      macro method_missing(name, args, block)
+        {% if name == "yield_with_match" %}
+          @match = {{args.first}}.not_nil!
+          with self as {{@type}} yield
+        {% end%}
+      end
+
+      def initialize(start_state, @match = nil)
+        @state	= [start_state]
+        @flags	= [] of Symbol
       end
 
       # Pops a state from the state stack.
@@ -301,7 +289,6 @@ module CLTK
       # @return [void]
       def push_state(state)
         @state << state
-
         nil
       end
 
@@ -312,7 +299,6 @@ module CLTK
       # @return [void]
       def set_state(state)
         @state[-1] = state
-
         nil
       end
 
@@ -330,7 +316,6 @@ module CLTK
         unless @flags.includes?(flag)
 	  @flags << flag
         end
-
         nil
       end
 
@@ -341,7 +326,6 @@ module CLTK
       # @return [void]
       def unset_flag(flag)
         @flags.delete(flag)
-
         nil
       end
 
@@ -350,7 +334,6 @@ module CLTK
       # @return [void]
       def clear_flags
         @flags = Array.new
-
         nil
       end
     end
@@ -365,7 +348,7 @@ module CLTK
     @env: Environment
 
     def initialize
-      @env = (@@env || Environment).new(self.class.start_state)
+      @env = @@env.new(self.class.start_state)
     end
 
     # Lexes a string using the encapsulated environment.
@@ -392,8 +375,6 @@ module CLTK
       # @return [Proc] Token producting action to be taken when this rule is matched.
       getter :action
 
-      @action : ((String, CLTK::Lexer::Environment -> (Symbol | {String, String} | {Symbol, Array(String)} | {Symbol, Float64} | {Symbol, Int32} | {Symbol, String} | Nil)) | (String, CLTK::Lexer::Environment -> Nil) )
-
       # @return [Regexp] Regular expression for matching this rule.
       getter :pattern
 
@@ -407,11 +388,8 @@ module CLTK
       # @param [Symbol]		state	State in which this rule is active.
       # @param [Array<Symbol>]	flags	Flags that must be enabled for this rule to match.
 
-      def initialize(@pattern : Regex, action, @state : Symbol, flags)
-        @flags = (
-          Array(String|Symbol).new + flags
-        ) as Array(String|Symbol)
-        @action = action
+      def initialize(@pattern : Regex, @state : Symbol, @flags : Array(Symbol),
+                    &@action : Proc(Regex::MatchData, String, CLTK::Lexer::Environment, BlockReturn))
       end
     end
   end

@@ -53,9 +53,9 @@ module EXP_LANG
 		rule(/\d+\.\d+/)	{ |t| {:NUMBER, t.to_f} as BlockReturn}
 
 		# Comment rules.
-		rule(/#/)				{ |a, e| e.push_state :comment }
-		rule(/\n/, :comment) do |a,e|
-                  e.pop_state
+		rule(/#/)				{ |a| push_state :comment }
+		rule(/\n/, :comment) do |a|
+                  pop_state
                   :CR
                 end
 
