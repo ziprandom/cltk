@@ -42,7 +42,7 @@ abstract class CLTK::ASTNode
     {% end %}
     {% for value_name, value_type in values_hash %}
       def {{value_name.id}}
-        @{{value_name.id}} || {% if  value_type.id.stringify.starts_with? "Array" %} [] of {{value_type.id.gsub(/^Array\(|\)$/, "")}} {% else %} nil {% end %}
+        @{{value_name.id}}.nil? ? {% if  value_type.id.stringify.starts_with? "Array" %} [] of {{value_type.id.gsub(/^Array\(|\)$/, "")}} {% else %} nil {% end %} : @{{value_name.id}}
       end
 
       def {{value_name.id}}=(value : {{value_type}})

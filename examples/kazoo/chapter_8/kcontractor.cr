@@ -6,7 +6,7 @@ module Kazoo
   ZERO = LLVM.double(0.0)
 
   class Contractor
-    include CLTK::Visitor
+    include CLTK::Visitor(LLVM::Builder)
 
     getter :main_module
     @fpm : LLVM::FunctionPassManager
@@ -106,7 +106,7 @@ module Kazoo
              end
       # Name each of the function paramaters.
       func.tap do
-	node.arg_names.each_with_index do |name, i|
+	node.arg_names.not_nil!.each_with_index do |name, i|
 	  func.params[i].name = name
 	end
       end

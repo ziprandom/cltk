@@ -23,6 +23,7 @@ See the example languages (and their specs) **WIP** :
 * **interpreted language EXP_LANG** (`examples/exp_lang`)
 * **kazoo**  (`examples/kazoo/chapter 8`) with LLVM IR generation
 * **brainfuck** (`examples/brainfuck`)
+* **json_parser** (`examples/json_parser`) example of a linter / xml converter
 
 ## Contributing
 

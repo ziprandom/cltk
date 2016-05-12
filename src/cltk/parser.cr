@@ -846,6 +846,10 @@ module CLTK
     #
     # @return [Object, Array<Object>]  Result or results of parsing the given tokens.
     def self.parse(tokens, opts = {} of Symbol => (Symbol))
+      if @@symbols.nil?
+	raise "\n\n!!! The Parser doesn't have any Symbols defined, did you forget to call the 'finalize' class method ?\n\n"
+      end
+
       # Get the full options hash.
       opts = build_parse_opts({ verbose: false }.merge(opts))
       v = STDOUT
