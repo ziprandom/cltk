@@ -6,7 +6,6 @@
 # Tutorial Files
 require "./klexer"
 require "./kparser"
-require "./llvm_binding_extensions"
 require "./kcontractor"
 
 # Load the Kazoo library.
