@@ -177,10 +177,10 @@ module CLTK
     private def self.build_parse_opts(opts)
 
       {
-	accept:     :first,
-	env:        (@@env || Environment).new,
-	parse_tree: nil,
-	verbose:    STDOUT
+	:accept     => :first,
+	:env        => (@@env || Environment).new,
+	:parse_tree => nil,
+	:verbose    => STDOUT
       }.merge(opts)
     end
 
@@ -851,7 +851,7 @@ module CLTK
       end
 
       # Get the full options hash.
-      opts = build_parse_opts({ verbose: false }.merge(opts))
+      opts = build_parse_opts({ :verbose => false }.merge(opts))
       v = STDOUT
 
       if opts[:verbose]

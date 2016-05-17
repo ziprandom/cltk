@@ -29,15 +29,15 @@ abstract class CLTK::ASTNode
   end
 
   macro custom_order(*custom_order)
-    CUSTOM_ORDER = {{custom_order}}
+    CUSTOM_ORDER = {{custom_order}}.to_a
   end
 
   macro values(values_hash)
     {% if @type.superclass == CLTK::ASTNode %}
-      VALUES_NAMES = {{values_hash.keys}}
+      VALUES_NAMES = [{%for value_name, index in values_hash.keys %}:{{value_name}}{%if index < values_hash.keys.size%}, {%end%}{% end %}]
       VALUES_DEFAULTS = Array(({%for type in values_hash.values%}{{type.id}}|{%end%}Nil)).new
     {% else %}
-      VALUES_NAMES = ({{@type.superclass}}::VALUES_NAMES as Array(Symbol)) + {{values_hash.keys}}
+      VALUES_NAMES = ({{@type.superclass}}::VALUES_NAMES as Array(Symbol)) + [{%for value_name, index in values_hash.keys %}:{{value_name}}{%if index < values_hash.keys.size%}, {%end%}{% end %}]
       VALUES_DEFAULTS =  {{@type.superclass}}::VALUES_DEFAULTS.clone
     {% end %}
     {% for value_name, value_type in values_hash %}
@@ -108,10 +108,10 @@ abstract class CLTK::ASTNode
 
   macro children(childrens_hash)
     {% if @type.superclass == CLTK::ASTNode %}
-      CHILDREN_NAMES = {{childrens_hash.keys}}
+      CHILDREN_NAMES = [{%for child_name, index in childrens_hash.keys %}:{{child_name}}{%if index < childrens_hash.keys.size%}, {%end%}{% end %}]
       CHILDREN_DEFAULTS = Array(CLTK::ASTNode?|Array(CLTK::ASTNode?)).new
     {% else %}
-      CHILDREN_NAMES = ({{@type.superclass}}::CHILDREN_NAMES as Array(Symbol)) + {{childrens_hash.keys}}
+      CHILDREN_NAMES = ({{@type.superclass}}::CHILDREN_NAMES as Array(Symbol)) + [{%for child_name, index in childrens_hash.keys %}:{{child_name}}{%if index < childrens_hash.keys.size%},{%end%}{% end %}]
       CHILDREN_DEFAULTS = {{@type.superclass}}::CHILDREN_DEFAULTS.clone
     {% end %}
     {% for child_name, child_type in childrens_hash %}

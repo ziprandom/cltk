@@ -177,7 +177,7 @@ end
 class NonEmptyListParser1 < CLTK::Parser
   build_nonempty_list_production("list", [:A, :B], :COMMA)
 
-  finalize({explain: "nelp1.tbl"})
+  finalize({:explain => "nelp1.tbl"})
 end
 
 class NonEmptyListParser2 < CLTK::Parser
