@@ -22,6 +22,7 @@ module JSON_PARSE
 
     rule(/true/)  { {:BOOL, 0} }
     rule(/false/) { {:BOOL, 1} }
+    rule(/null/)  { {:NULL, nil} }
 
     # String with included quoted strings
     rule(/"(?:[^"\\]|\\.)*"/) { |t| {:STRING, t[1...-1]}}
@@ -40,6 +41,8 @@ module JSON_PARSE
              bool: Bool
            })
   end
+
+  class JsonNull < JsonExpression; end
 
   class JsonNumber < JsonExpression
     values({
@@ -79,6 +82,7 @@ module JSON_PARSE
       clause(:json_string) { |s| s }
       clause(:json_number) { |n| n }
       clause(:json_bool)   { |b| b }
+      clause(:json_null)   { |b| b }
     end
 
     production(:json_number) do
@@ -91,6 +95,10 @@ module JSON_PARSE
 
     production(:json_bool) do
       clause(:BOOL)	{ |b| JsonBool.new( b == 0 ? true : false) }
+    end
+
+    production(:json_null) do
+      clause(:NULL)	{ JsonNull.new }
     end
 
     production(:json_array) do
@@ -191,6 +199,10 @@ module JSON_PARSE
       bool.bool ? "true" : "false"
     end
 
+    on JsonNull do |bool|
+      "null"
+    end
+
     on JsonString do |string|
       "\"" + string.string.not_nil! + "\""
     end
@@ -221,6 +233,10 @@ module JSON_PARSE
 
     on JsonBool do |bool|
       bool.bool ? "true" : "false"
+    end
+
+    on JsonBool do |bool|
+      "null"
     end
 
     on JsonString do |string|

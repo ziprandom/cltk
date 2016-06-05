@@ -38,6 +38,10 @@ describe("json_lexer") do
     result.bool.should eq(true)
   end
 
+  it "parses a null" do
+    result = parse_json("null") as JSON_PARSE::JsonNull
+  end
+
   it "parses a string" do
     result = parse_json("\"hallo json\"") as JSON_PARSE::JsonString
     JSON_PARSE::JsonOutputer.new(result).print.should eq("\"hallo json\"")
@@ -46,8 +50,8 @@ describe("json_lexer") do
   it "parses an array" do
     result = parse_json("[12              ,
                           123,
-                          \"json\"               ]") as JSON_PARSE::JsonArray
-    JSON_PARSE::JsonOutputer.new(result).print.should eq("[\n  12,\n  123,\n  \"json\"\n]")
+                          \"json\"     ,null          ]") as JSON_PARSE::JsonArray
+    JSON_PARSE::JsonOutputer.new(result).print.should eq("[\n  12,\n  123,\n  \"json\",\n  null\n]")
   end
 
   it "parses an object" do
