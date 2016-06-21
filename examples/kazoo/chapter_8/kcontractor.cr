@@ -48,65 +48,65 @@ module Kazoo
     def add(ast)
       case ast
       when Function, Prototype then visit ast
-      when Expression          then visit Function.new(Kazoo::Prototype.new("", [] of CLTK::ASTNode), ast)
+      when Expression          then visit Function.new(
+                                            proto: Kazoo::Prototype.new(name: "", arg_names: [] of String),
+                                            body: ast)
       else raise "Attempting to add an unhandled node type to the JIT."
       end as LLVM::Function
     end
 
     on Assign do |node|
       right = visit node.right
-      name = node.name.not_nil!
       loc =
-    	if @st.has_key?(name)
-    	  @st[name]
+    	if @st.has_key?(node.name)
+    	  @st[node.name]
     	else
-    	  @st[name] = alloca LLVM::Double, name
+    	  @st[node.name] = alloca LLVM::Double, node.name
     	end
       store(right, loc)
       right
     end
 
     on Variable do |node|
-      name = node.name.not_nil!
-      if @st[name]?
-	   load @st[name], name
+      if @st[node.name]?
+	   load @st[node.name], node.name
       else
-	raise "Unitialized variable \"#{name}\"."
+	raise "Unitialized variable \"#{node.name}\"."
       end
     end
 
     on Call do |node|
-      callee = @main_module.functions[node.name.not_nil!]
+      callee = @main_module.functions[node.name]
       if !callee
 	raise "Unknown function referenced."
       end
-      args = (node.args as Array)
-      if callee.params.size != args.size
-	raise "Function #{node.name} expected #{callee.params.size} argument(s) but was called with #{args.size}."
+      if callee.params.size != node.args.size
+	raise "Function #{node.name} expected #{callee.params.size} argument(s) but was called with #{node.args.size}."
       end
 
-      args = args.map { |arg| (visit arg) as LLVM::Value }
-      call callee, args, "calltmp"
+
+      call callee,
+           node.args.map { |arg| (visit arg) as LLVM::Value },
+           "calltmp"
     end
 
     on Prototype do |node|
-      name = node.name.not_nil!
       func = begin
                # get function if it"s already defined
-               @main_module.functions[name].tap do |func|
+               @main_module.functions[node.name].tap do |func|
 	         if LibLLVM.count_basic_blocks(func) != 0
-	           raise "Redefinition of function #{name}."
-	         elsif func.params.size != (node.arg_names as Array).size
-	           raise "Redefinition of function #{name} with different number of arguments."
+	           raise "Redefinition of function #{node.name}."
+	         elsif func.params.size != node.arg_names.size
+	           raise "Redefinition of function #{node.name} with different number of arguments."
 	         end
                end
              rescue
                # add function, if not
-	       @main_module.functions.add(name, Array.new((node.arg_names as Array).size, LLVM::Double), LLVM::Double)
+	       @main_module.functions.add(node.name, Array.new(node.arg_names.size, LLVM::Double), LLVM::Double)
              end
       # Name each of the function paramaters.
       func.tap do
-	node.arg_names.not_nil!.each_with_index do |name, i|
+	node.arg_names.each_with_index do |name, i|
 	  func.params[i].name = name
 	end
       end
@@ -119,8 +119,7 @@ module Kazoo
       # Translate the function"s prototype.
       func = visit node.proto as Prototype
       func.params.to_a.each do |param|
-        name = param.name.not_nil!
-	@st[name] = alloca LLVM::Double, name
+	@st[param.name] = alloca LLVM::Double, param.name
 	store param, @st[param.name]
       end
       # Create a new basic block to insert into, allocate space for
@@ -131,7 +130,7 @@ module Kazoo
           body = node.body
           case body
           when ExpressionList then
-            expressions = body.expressions as Array
+            expressions = body.expressions
             expressions.each_with_index do |expression, index|
               if index < (expressions.size - 1)
                 visit expression
@@ -159,12 +158,11 @@ module Kazoo
 
       loop_cond_bb = func.basic_blocks.append("loop_cond")
 
-      var_name = node.var.not_nil!
-      loc = alloca LLVM::Double, var_name
+      loc = alloca LLVM::Double, node.var
       store (visit node.init), loc
 
-      old_var = @st[var_name]? ? @st[var_name] : loc
-      @st[var_name] = loc
+      old_var = @st[node.var]? ? @st[node.var] : loc
+      @st[node.var] = loc
 
       br loop_cond_bb
       position_at_end(loop_cond_bb)
@@ -177,12 +175,10 @@ module Kazoo
          visit node.body
          loop_bb1 = builder.insert_block
          step_val = visit node.step
-         var	  = load loc, var_name
+         var	  = load loc, node.var
          next_var = fadd var, step_val, "nextvar"
          store next_var, loc
-
          br loop_cond_bb
-
         end
       end
 
@@ -198,7 +194,7 @@ module Kazoo
 
       position_at_end(after_bb)
 
-      @st[var_name] = old_var
+      @st[node.var] = old_var
 
       ZERO
     end
@@ -273,7 +269,7 @@ module Kazoo
     end
 
     on ANumber do |node|
-      LLVM.double(node.value.not_nil!)
+      LLVM.double(node.value)
     end
   end
 end

@@ -23,7 +23,7 @@ module BrainFuck
   # Parser
   #
   class Parser < CLTK::Parser
-    production(:program, "op+") { |ops| Program.new(ops) }
+    production(:program, "op+") { |ops| Program.new(operations: ops) }
 
     production(:op) do
       clause("PTRRIGHT")                      { |_| PtrRight.new  }
@@ -32,7 +32,7 @@ module BrainFuck
       clause("DEC")                           { |_| Decrement.new }
       clause("PUT")                           { |_| Put.new       }
       clause("GET")                           { |_| Get.new       }
-      clause("LBRACKET op+ RBRACKET") { |_, ops, _| Loop.new(ops) }
+      clause("LBRACKET op+ RBRACKET") { |_, ops, _| Loop.new(operations: ops) }
     end
 
     finalize
@@ -50,13 +50,13 @@ module BrainFuck
   class Get < Operation; end
 
   class Loop < Operation
-    children({
+    values({
       operations: Array(Operation),
     })
   end
 
   class Program < CLTK::ASTNode
-    children({
+    values({
       operations: Array(Operation),
     })
   end
@@ -89,7 +89,7 @@ module BrainFuck
         @tape[@pointer] = (gets(1) || "").to_i
       when Loop
         while @tape[@pointer] != 0
-          (cmd.operations as Array).each do |op|
+          cmd.operations.each do |op|
             exec_cmd op
           end
         end
@@ -97,7 +97,7 @@ module BrainFuck
     end
 
     def run
-      (@program.operations as Array).each { |op|
+      @program.operations.each { |op|
         exec_cmd op
       }
       @output

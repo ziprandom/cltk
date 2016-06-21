@@ -44,7 +44,7 @@ describe "CLTK::CFG" do
     end
 
 
-    grammar1.production(:a, "A?") { |a| a }
+    grammar1.production(:a, "A?")# { |a| a }
     call_count.should eq 2
 
     call_count = 0
@@ -73,7 +73,7 @@ describe "CLTK::CFG" do
       nil
     end
 
-    grammar1.production(:a, "A*") { |a| a }
+    grammar1.production(:a, "A*")# { |a| a }
     call_count.should eq 4
 
     call_count = 0
@@ -90,7 +90,7 @@ describe "CLTK::CFG" do
       nil
     end
 
-    grammar1.production(:a, "A+") { |a| a }
+    grammar1.production(:a, "A+")# { |a| a }
     call_count.should eq 2
   end
 

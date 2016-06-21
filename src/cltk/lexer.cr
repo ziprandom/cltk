@@ -68,16 +68,19 @@ module CLTK
       @@env = env
     end
 
+    @@match_type	= :longest
+    @@start_state	= :default
+
+    @@rules : Hash(Symbol, Array(Rule) ) = {} of Symbol => Array(Rule)
+
     # Called when the Lexer class is sub-classed, it installes
     # necessary instance class variables.
     #
     # @return [void]
     macro inherited
       @@env = Environment
-      @@match_type	= :longest
       @@rules		= {} of Symbol => Array(Rule)
       @@rules[:default] = [] of Rule
-      @@start_state	= :default
     end
 
     # Lex *string*, using *env* as the environment.  This method will
@@ -262,9 +265,9 @@ module CLTK
         @match as Regex::MatchData
       end
 
-      macro method_missing(name, args, block)
-        {% if name == "yield_with_match" %}
-          @match = {{args.first}}.not_nil!
+      macro method_missing(call)
+        {% if call.name == "yield_with_match" %}
+          @match = {{call.args.first}}.not_nil!
           with self as {{@type}} yield
         {% end%}
       end

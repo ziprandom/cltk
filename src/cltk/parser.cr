@@ -22,6 +22,7 @@ require "./parser/parse_stack"
 require "./parser/state"
 require "./parser/prod_proc"
 require "./parser/actions"
+require "./parser/parser"
 
 #######################
 # Classes and Modules #
@@ -53,43 +54,41 @@ module CLTK
       end
     end
 
+
+    @@production_precs :  Array(String | {String, Int32} | Nil)
+    @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
+    @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
+    @@grammar          : CLTK::CFG              = CLTK::CFG.new
+    @@conflicts        : Hash(Int32, Array({ String, String })) = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
+    @@prec_counts      : Hash(Symbol, Int32) = {:left => 0, :right => 0, :non => 0}
+    @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
+      h[k] = [] of Proc(Environment, Nil)
+    end
+
     # Installs instance class variables into a class.
     #
     # @return [void]
     macro inherited
       @@symbols : Array(String)?
       @@start_symbol : String?
-      @@production_precs : Hash(Int32, String | Nil | {String, Int32}) | Array(String | {String, Int32} | Nil) | Nil
-      @@token_precs      : Hash(String, {String, Int32})?
       @@env : (Environment.class) | Nil
       @@grammar_prime : CLTK::CFG?
-      @@grammar : CLTK::CFG?
-      @@conflicts :  Hash(Int32, Array({ String, String }))?
 
       @@curr_lhs  = nil
       @@curr_prec = nil
-      @@conflicts = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
-      @@prec_counts : Hash(Symbol, Int32)?
 
-      @@grammar   = CLTK::CFG.new
 
       @@lh_sides  = {} of Int32 => String
       @@procs     = {} of Int32 => { ProdProc, Int32 }
       @@states    = Array(State).new
 
       # Variables for dealing with precedence.
-      @@prec_counts      = {:left => 0, :right => 0, :non => 0}
-      @@production_precs = {} of Int32 => (String | Nil | {String, Int32})
-      @@token_precs      = {} of String => {String, Int32}
-      @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
-        h[k] = [] of Proc(Environment, Nil)
-      end
 
       # Set the default argument handling policy.  Valid values
       # are :array and :splat.
       @@default_arg_type = :splat
 
-      @@grammar.not_nil!.callback do |type, which, p, sels|
+      @@grammar.callback do |type, which, p, sels|
         proc = case type
 	       when :optional
 	         case which
@@ -123,11 +122,14 @@ module CLTK
                  raise "this should never happen"
 	       end
 	@@procs.not_nil![p.id] = { proc, p.rhs.size }
-	@@production_precs.not_nil![p.id] = p.last_terminal
+	@@production_precs_prepare[p.id] = p.last_terminal
         nil
       end
     end
 
+    def self.parser
+      Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, @@env)
+    end
     # If *state* (or its equivalent) is not in the state list it is
     # added and it's ID is returned.  If there is already a state
     # with the same items as *state* in the state list its ID is
@@ -154,33 +156,17 @@ module CLTK
     # @param [Hash{Symbol => Object}] opts Hash containing options for finalize.
     #
     # @return [Hash{Symbol => Object}]
-    private def self.build_finalize_opts(opts)
+    private def self.build_finalize_opts(opts : Hash)
 
       opts[:explain] =
         opts[:explain] ?
           self.get_io(opts[:explain] as String) : nil
 
       {
-	explain:    false,
-	lookahead:  true,
-	precedence: true,
-	use:        false
-      }.merge(opts)
-    end
-
-    # Build a hash with the default options for Parser.parse and
-    # then update it with the values from *opts*.
-    #
-    # @param [Hash{Symbol => Object}] opts Hash containing options for parse.
-    #
-    # @return [Hash{Symbol => Object}]
-    private def self.build_parse_opts(opts)
-
-      {
-	:accept     => :first,
-	:env        => (@@env || Environment).new,
-	:parse_tree => nil,
-	:verbose    => STDOUT
+	explain =>    false,
+	lookahead =>  true,
+	precedence => true,
+	use =>        false
       }.merge(opts)
     end
 
@@ -199,7 +185,7 @@ module CLTK
     def self.check_sanity
       # Check to make sure all non-terminals appear on the
       # left-hand side of some production.
-      @@grammar.not_nil!.nonterms.each do |sym|
+      @@grammar.nonterms.each do |sym|
 	unless @@lh_sides.not_nil!.values.includes?(sym)
 	  raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
 	end
@@ -291,7 +277,7 @@ module CLTK
         arg_type   = param_tupel[2]
 
         production, selections = if @@grammar
-                                   (@@grammar as CLTK::CFG).clause({{expression}})
+                                   (@@grammar as CLTK::CFG).clause({{expression}}).values
                                  else
                                    raise "NO GRAMMAR DEFINED"
                                  end
@@ -330,7 +316,7 @@ module CLTK
         }
         # If no precedence is specified use the precedence of the
         # last terminal in the production.
-        @@production_precs.not_nil![production.id] = precedence || production.last_terminal
+        @@production_precs_prepare[production.id] = precedence || production.last_terminal
       end
     end
 
@@ -346,7 +332,7 @@ module CLTK
       @@conflicts = nil
 
       # Drop the grammar and the grammar'.
-      @@grammar       = nil
+      #@@grammar       = nil
       @@grammar_prime = nil
 
       # Drop precedence and bookkeeping information.
@@ -354,7 +340,7 @@ module CLTK
       @@curr_prec = nil
 
       @@prec_counts      = nil
-      @@production_precs = nil
+      #@@production_precs = nil
       @@token_precs      = nil
 
       # Drop the items from each of the states.
@@ -385,7 +371,7 @@ module CLTK
       else
         list_elements = list_elements.to_s
       end
-      @@grammar.not_nil!.build_list_production(symbol, list_elements, separator.to_s)
+      @@grammar.build_list_production(symbol.to_s, list_elements, separator.to_s)
     end
 
     def self.list(symbol, list_elements, separator = "")
@@ -405,10 +391,10 @@ module CLTK
 	io.puts("###############")
 	io.puts
 
-	max_id_length = @@grammar.not_nil!.productions(:id).not_nil!.size.to_s.size
+	max_id_length = @@grammar.productions_id.not_nil!.size.to_s.size
 
 	# Print the productions.
-	@@grammar.not_nil!.productions.not_nil!.each do |sym, productions|
+	@@grammar.productions.not_nil!.each do |sym, productions|
           productions = productions as Array(CLTK::CFG::Production)
 	  max_rhs_length = (productions).reduce(0) do |m, p|
             if (len = p.to_s.not_nil!.size) > m
@@ -422,7 +408,7 @@ module CLTK
 	    p_string = production.to_s
 
             #	      io.print("\tProduction #{sprintf("%#{max_id_length}d", production.id)}: #{p_string}")
-            prec = @@production_precs.not_nil![production.id];
+            prec = @@production_precs_prepare[production.id];
 	    if (prec.is_a?({Int32, String}))
 	      io.print(" " * (max_rhs_length - p_string.not_nil!.size))
 	      io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
@@ -439,14 +425,14 @@ module CLTK
 	io.puts("##########")
 	io.puts
 
-	max_token_len = @@grammar.not_nil!.terms.reduce(0) do |m, t|
+	max_token_len = @@grammar.terms.reduce(0) do |m, t|
           if t.size > m
             t.size
           else m
           end
         end
 
-	@@grammar.not_nil!.terms.to_a.sort {|a,b| a.to_s <=> b.to_s }.each do |term|
+	@@grammar.terms.to_a.sort {|a,b| a.to_s <=> b.to_s }.each do |term|
 	  io.print("\t#{term}")
 
 	  if (prec = @@token_precs.not_nil![term])
@@ -464,7 +450,7 @@ module CLTK
 	io.puts("#####################")
 	io.puts
 
-	io.puts("\tStart symbol: #{@@grammar.not_nil!.start_symbol}'")
+	io.puts("\tStart symbol: #{@@grammar.start_symbol}'")
 	io.puts
 
 	io.puts("\tTotal number of states: #{@@states.not_nil!.size}")
@@ -555,7 +541,7 @@ module CLTK
     #
     # @return [void]
     def self.finalize(opts : Hash(Symbol, Bool | String | IO) = {lookahead: true, precedence: true} )
-      if (@@grammar.not_nil!.productions(:sym) as Hash(String, Array(CLTK::CFG::Production))).empty?
+      if (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production))).empty?
 	#raise ParserConstructionException,
 	raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
       end
@@ -599,17 +585,19 @@ module CLTK
 
       # Grab all of the symbols that comprise the grammar
       # (besides the start symbol).
-      @@symbols = @@grammar.not_nil!.symbols.to_a + ["ERROR"]
+      @@symbols = @@grammar.symbols.to_a + ["ERROR"]
       # Add our starting state to the state list.
-      @@start_symbol       = (@@grammar.not_nil!.start_symbol.to_s + "\'")
-      start_production    = @@grammar.not_nil!.production(@@start_symbol, @@grammar.not_nil!.start_symbol).first
+      @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
+      start_production    = @@grammar.production(@@start_symbol as String, @@grammar.start_symbol as String)[:production]
       start_state         = State.new(@@symbols, [start_production.to_item])
-      start_state.close(@@grammar.not_nil!.productions(:sym) as Hash(String, Array(CLTK::CFG::Production)))
+      start_state.close(@@grammar.productions_sym)
       self.add_state(start_state)
 
       # Translate the precedence of productions from tokens to
       # (associativity, precedence) pairs.
-      @@production_precs = @@production_precs.not_nil!.map { |key, prec| @@token_precs.not_nil![prec]? as Nil | String | {String, Int32}}
+      @@production_precs = @@production_precs_prepare.map do |id, prec|
+        @@token_precs.not_nil![prec]?
+      end
       # Build the rest of the transition table.
       each_state do |state|
         # Transition states.
@@ -634,7 +622,7 @@ module CLTK
 	tstates.each do |symbol, tstate|
 	  tstate.each { |item| item.advance }
 
-	  tstate.close(@@grammar.not_nil!.productions(:sym) as Hash(String, Array(CLTK::CFG::Production)))
+	  tstate.close(@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
 
 	  id = self.add_state(tstate)
 
@@ -649,7 +637,7 @@ module CLTK
 	      state.on("EOS", Accept.new)
 	    else
 	      state.add_reduction(
-                (@@grammar.not_nil!.productions(:id) as Hash(Int32, CLTK::CFG::Production))[item.id]
+                (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[item.id]
               )
 	    end
 	  end
@@ -657,8 +645,8 @@ module CLTK
       end
 
       # Build the production.id -> production.lhs map.
-      @@grammar.not_nil!.productions(:id).not_nil!.each do |id, production|
-        @@lh_sides.not_nil![id as Int32] = (production as CLTK::CFG::Production).not_nil!.lhs
+      @@grammar.productions_id.each do |id, production|
+        @@lh_sides[id as Int32] = (production as CLTK::CFG::Production).not_nil!.lhs
       end
 
       # Prune the parsing table for unnecessary reduce actions.
@@ -743,10 +731,10 @@ module CLTK
 	    lhs = "#{state.id}_#{item.next_symbol}".to_s
 
 	    next unless CFG.is_nonterminal?(item.next_symbol) &&
-                        !(@@grammar_prime.not_nil!.productions(:sym) as Hash(String, Array(CLTK::CFG::Production)))
+                        !(@@grammar_prime.not_nil!.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
                           .keys.includes?(lhs)
 
-	    (@@grammar.not_nil!.productions(:sym) as Hash(String, Array(CLTK::CFG::Production)))
+	    (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
               .not_nil![item.next_symbol.not_nil!].each do |production|
 	      rhs = ""
 
@@ -810,7 +798,7 @@ module CLTK
     # Adds productions and actions for parsing nonempty lists.
     #
     # @see CFG#nonempty_list_production
-    def self.build_nonempty_list_production(symbol, list_elements, separator = "")
+    def self.build_nonempty_list_production(symbol : String | Symbol, list_elements, separator = "")
       if list_elements.is_a? Array
         list_elements = list_elements.map do |e|
           if e
@@ -822,7 +810,7 @@ module CLTK
       else
         list_elements = list_elements.to_s
       end
-      @@grammar.not_nil!.build_nonempty_list_production(symbol, list_elements, separator.to_s)
+      @@grammar.build_nonempty_list_production(symbol.to_s, list_elements, separator.to_s)
     end
 
     def self.nonempty_list(symbol, list_elements, separator = "")
@@ -846,264 +834,7 @@ module CLTK
     #
     # @return [Object, Array<Object>]  Result or results of parsing the given tokens.
     def self.parse(tokens, opts = {} of Symbol => (Symbol))
-      if @@symbols.nil?
-	raise "\n\n!!! The Parser doesn't have any Symbols defined, did you forget to call the 'finalize' class method ?\n\n"
-      end
-
-      # Get the full options hash.
-      opts = build_parse_opts({ :verbose => false }.merge(opts))
-      v = STDOUT
-
-      if opts[:verbose]
-	v.puts("Input tokens:")
-	v.puts(tokens.map { |t| t.type }.inspect)
-	v.puts
-      end
-
-      # Stack IDs to keep track of them during parsing.
-      stack_id = 0
-
-      # Error mode indicators.
-      error_mode      = false
-      reduction_guard = false
-
-      # Our various list of stacks.
-      accepted   = [] of ParseStack
-      moving_on  = [] of ParseStack
-      processing = [ParseStack.new(stack_id += 1)]
-      # Iterate over the tokens.  We don't procede to the
-      # next token until every stack is done with the
-      # current one.
-      tokens.each_with_index do |token, index|
-	# Check to make sure this token was seen in the
-	# grammar definition.
-        unless @@symbols.not_nil!.includes?(token.type.to_s)
-	  raise BadToken.new(token)
-        end
-        st = if token.value
-               "(" + (token.value.to_s as String) + ")"
-             else
-               ""
-             end
-        if opts[:verbose]
-	  v.puts("Current token: #{token.type}#{st}")
-        end
-	# Iterate over the stacks until each one is done.
-
-	while (processing.size > 0)
-          stack = processing.shift
-	  # Execute any token hooks in this stack's environment.
-	  @@token_hooks.not_nil![token.type.to_s].each { |hook| hook.call(opts[:env] as Environment)}
-
-	  # Get the available actions for this stack.
-	  actions = @@states.not_nil![stack.state as Int32].on?(token.type.to_s)
-	  if actions.empty?
-	    # If we are already in error mode and there
-	    # are no actions we skip this token.
-
-	    if error_mode
-              st = if token.value
-                     "(" + (token.value.to_s as String) + ")"
-                   end
-	      if opts[:verbose]
-	        v.puts("Discarding token: #{token.type}#{st}") if v
-              end
-	      # Add the current token to the array
-	      # that corresponds to the output value
-	      # for the ERROR token.
-              (stack.output_stack.last as Array) << token
-	      moving_on << stack
-	      next
-	    end
-
-	    # We would be dropping the last stack so we
-	    # are going to go into error mode.
-	    if accepted.empty? && moving_on.empty? && processing.empty?
-
-	      if opts[:verbose]
-	        v.puts
-	        v.puts("Current stack:")
-	        v.puts("\tID: #{stack.id}")
-	        v.puts("\tState stack:\t#{stack.state_stack.inspect}")
-	        v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
-	        v.puts
-	      end
-
-	      # Try and find a valid error state.
-	      while stack.state_stack.size > 0
-	        if (actions = @@states.not_nil![stack.state].on?(:ERROR.to_s)).empty?
-	          # This state doesn't have an
-	          # error production. Moving on.
-                  stack.pop
-	        else
-	          # Enter the found error state.
-	          stack.push(actions.first.id, [token], :ERROR.to_s, token.position)
-	          break
-	        end
-	      end
-	      if stack.state_stack.size > 0
-	        # We found a valid error state.
-	        error_mode = reduction_guard = true
-	        (opts[:env] as Environment).he = true
-	        moving_on << stack
-
-	        if opts[:verbose]
-	          v.puts("Invalid input encountered.  Entering error handling mode.")
-	          v.puts("Discarding token: #{token.type}(#{token.value})")
-		end
-	      else
-		# No valid error states could be
-		# found.  Time to print a message
-		# and leave.
-	        if opts[:verbose]
-                  v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
-                end
-	      end
-	    else
-              if opts[:verbose]
-	        v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
-              end
-	    end
-
-	    next
-	  end
-
-	  # Make (stack, action) pairs, duplicating the
-	  # stack as necessary.
-	  pairs = ([{stack, actions.pop}] + actions.map {|action| {stack.branch(stack_id += 1), action} })
-	  pairs.each do |pair|
-            stack = pair[0] as ParseStack
-            action = pair[1] as Action
-
-	    if opts[:verbose]
-	      v.puts
-	      v.puts("Current stack:")
-	      v.puts("\tID: #{stack.id}")
-	      v.puts("\tState stack:\t#{stack.state_stack.inspect}")
-	      v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
-	      v.puts
-	      v.puts("Action taken: #{action.to_s}")
-	    end
-
-	    if action.is_a?(Accept)
-	      if opts[:accept] == :all
-		accepted << stack
-	      else
-		v.puts("Accepting input.") if opts[:verbose]
-                if opts[:parse_tree]
-		  (opts[:parse_tree] as IO).puts(stack.tree)
-                end
-
-		if (opts[:env] as Environment).he
- 		  error = HandledError.new((opts[:env] as Environment).errors, stack.result as CLTK::Type)
-                  raise error
-		else
-		  return stack.result
-		end
-	      end
-
-	    elsif action.is_a?(Reduce)
-	      # Get the production associated with this reduction.
-	      production_proc, pop_size = @@procs.not_nil![action.id]
-	      if !production_proc
-		raise InternalParserException.new "No production #{action.id} found."
-	      end
-	      args, positions = stack.pop(pop_size)
-	      (opts[:env] as Environment).set_positions(positions)
-
- 	      if !production_proc.selections.empty?
-                new_args = [] of Type
-                production_proc.selections.each do |selection|
-                  new_args = new_args + [ args[selection] ]
-                end
-                args = new_args
-              end
-              a = Array(Type).new
-              args = args.each { |e| a << (e as Type)}
-
-	      result = begin
-                         production_proc.call(a as Array(Type), opts[:env])
-		       end
-	      if (goto = @@states.not_nil![stack.state].on?(@@lh_sides.not_nil![action.id]).first)
-
-		v.puts("Going to state #{goto.id}.\n") if opts[:verbose]
-		pos0 = nil
-		if args.empty?
-		  # Empty productions need to be
-		  # handled specially.
-		  pos0 = stack.position
-
-		  pos0.stream_offset	+= pos0.length + 1
-		  pos0.line_offset	+= pos0.length + 1
-
-		  pos0.length = 0
-		else
-		  pos0 = (opts[:env] as Environment).pos( 0) as StreamPosition
-		  pos1 = (opts[:env] as Environment).pos(-1) as StreamPosition
-		  pos0.length = (pos1.stream_offset + pos1.length) - pos0.stream_offset
-		end
-                result = nil if result.is_a? Void
-		stack.push(goto.id, result, @@lh_sides.not_nil![action.id], pos0)
-	      else
-		raise InternalParserException.new "No GoTo action found in state #{stack.state} " +
-					       "after reducing by production #{action.id}"
-	      end
-
-	      # This stack is NOT ready for the next
-	      # token.
-	      processing << stack
-
-	      # Exit error mode if necessary.
-	      error_mode = false if error_mode && !reduction_guard
-
-	    elsif action.is_a?(Shift)
-	      stack.push(action.id, token.value, token.type, token.position)
-              # This stack is ready for the next
-	      # token.
-	      moving_on << stack
-
-	      # Exit error mode.
-	      error_mode = false
-	    end
-	  end
-	end
-
-	v.puts("\n\n") if opts[:verbose]
-
-	processing = moving_on
-	moving_on  = [] of ParseStack
-
-	# If we don't have any active stacks at this point the
-	# string isn't in the language.
-	if opts[:accept] == :first && processing.size == 0
-#	  v.close if v && v != $stdout
-#	  raise NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
-	  raise NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
-
-	end
-
-	reduction_guard = false
-      end
-
-      # If we have reached this point we are accepting all parse
-      # trees.
-      if opts[:verbose]
-	v.puts("Accepting input with #{accepted.size} derivation(s).")
-
-#	v.close if v != $stdout
-      end
-      if opts[:parse_tree]?
-        accepted.each do |stack|
-	  (opts[:parse_tree] as IO).puts(stack.tree)
-        end
-      end
-      results = accepted.map { |stack| stack.result as CLTK::Type}
-
-      if (opts[:env] as Environment).he
-	raise HandledError.new((opts[:env] as Environment).errors, results as CLTK::Type)
-      else
-	return results
-      end
+      parser.parse(tokens, opts)
     end
 
     # Adds a new production to the parser with a left-hand value of
@@ -1132,7 +863,7 @@ module CLTK
         raise Exception.new "Production symbols must be Strings or Symbols and be in all lowercase."
       end
 
-      @@grammar.not_nil!.curr_lhs = symbol
+      @@grammar.curr_lhs = symbol.to_s
       @@curr_prec        = precedence
       @@orig : Symbol? = @@default_arg_type
       if {{arg_type}}
@@ -1148,7 +879,7 @@ module CLTK
 
       @@default_arg_type = @@orig
 
-      @@grammar.not_nil!.curr_lhs = nil
+      @@grammar.curr_lhs = nil
       @@curr_prec        = nil
 
     end
@@ -1169,7 +900,7 @@ module CLTK
     #
     # @return [void]
     def self.prune(do_lookahead, do_precedence)
-      terms = @@grammar.not_nil!.terms
+      terms = @@grammar.terms
 
       # If both options are false there is no pruning to do.
       return if !(do_lookahead || do_precedence)
@@ -1186,7 +917,7 @@ module CLTK
           # reduction is ok ..
 	  reductions.each do |reduction|
             raction_id = (reduction as Action).id.not_nil!
-	    production = (@@grammar.not_nil!.productions(:id) as Hash(Int32, CLTK::CFG::Production))[raction_id]
+	    production = (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[raction_id]
 	    lookahead = Array(String).new
 
 	    # Build the lookahead set.
@@ -1230,10 +961,9 @@ module CLTK
 	    # possibility of a Shift/Reduce or
 	    # Reduce/Reduce conflict.
 	    next unless actions && actions.size > 1
-
 	    resolve_ok = actions.reduce(true) do |m, a|
 	      if a.is_a?(Reduce)
-		m && @@production_precs.not_nil![a.id.not_nil!]
+		m && @@production_precs[a.id.not_nil!]
 	      else
 		m
 	      end
@@ -1247,7 +977,9 @@ module CLTK
 	      tassoc, tprec = @@token_precs.not_nil![symbol]
 
 	      actions.each do |a|
-		assoc, prec = (a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs.not_nil![a.id.not_nil!] ) as {String, Int32}
+		assoc, prec = (
+                  a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs[a.id.not_nil!]
+                ) as {String, Int32}
 
 		# If two actions have the same precedence we
 		# will only replace the previous production if:

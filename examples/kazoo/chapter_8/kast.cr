@@ -9,11 +9,10 @@ require "../../../src/cltk/ast"
 module Kazoo
 
   class Expression < CLTK::ASTNode
-    ORDER = :values
   end
 
   class ExpressionList < Expression
-    children({expressions: Array(Expression)})
+    values({expressions: Array(Expression)})
   end
 
   class ANumber < Expression
@@ -25,22 +24,24 @@ module Kazoo
   end
 
   class Assign < Expression
-    values({name: String})
-    children({right: Expression})
+    values({
+             name: String,
+             right: Expression
+           })
   end
 
   class Unary < Expression
-    children({operand: Expression})
+    values({operand: Expression})
   end
 
   class Not < Unary; end
   class Neg < Unary; end
 
   class Binary < Expression
-    children({
-               right: Expression,
-               left: Expression
-             })
+    values({
+             right: Expression,
+             left: Expression
+           })
   end
 
   class Add < Binary; end
@@ -54,16 +55,14 @@ module Kazoo
   class And < Binary; end
 
   class Call < Expression
-    values(
-      {name: String}
-    )
-    children(
-      {args: Array(Expression)}
-    )
+    values({
+             name: String,
+             args: Array(Expression)
+           })
   end
 
   class If < Expression
-    children({
+    values({
         cond: Expression,
         thenExp: Expression,
         elseExp: Expression
@@ -71,15 +70,13 @@ module Kazoo
   end
 
   class For < Expression
-    values({var: String})
-    children(
-      {
-        init: Expression,
-        cond: Expression,
-        step: Expression,
-        body: Expression
-      }
-    )
+    values({
+             var: String,
+             init: Expression,
+             cond: Expression,
+             step: Expression,
+             body: Expression
+           })
   end
 
   class Prototype < Expression
@@ -90,9 +87,9 @@ module Kazoo
   end
 
   class Function < Expression
-    children({
-               proto: Prototype,
-               body: Expression
-             })
+    values({
+             proto: Prototype,
+             body: Expression
+           })
   end
 end

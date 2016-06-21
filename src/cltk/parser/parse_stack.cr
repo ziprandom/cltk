@@ -42,28 +42,8 @@ module CLTK
       #
       # @return [ParseStack]
       def branch(new_id)
-        # We have to do a deeper copy of the output stack to avoid
-        # interactions between the Proc objects for the different
-        # parsing paths.
-        #
-        # The being/rescue block is needed because some classes
-        # respond to `clone` but always raise an error.
-        new_output_stack = [] of Type
-        @output_stack.each do |o|
-	  # Check to see if we can obtain a deep copy.
-	  if o.responds_to?(:copy)
-	    new_output_stack.push o.copy as Type
-	  else
-	    begin
-              new_output_stack.push o.clone as Type
-            rescue
-              new_output_stack.push o as Type
-            end
-	  end
-        end
-
-        ParseStack.new(new_id, new_output_stack, @state_stack.clone,
-		       @node_stack.clone, @connections.clone, @labels.clone, @positions.clone)
+        ParseStack.new(new_id, @output_stack.dup, @state_stack.dup,
+		       @node_stack.dup, @connections.dup, @labels.dup, @positions.dup)
       end
 
       # @return [StreamPosition] Position data for the last symbol on the stack.
@@ -71,7 +51,7 @@ module CLTK
         if @positions.empty?
 	  StreamPosition.new
         else
-	  @positions.last.clone
+	  @positions.last.dup
         end
       end
 

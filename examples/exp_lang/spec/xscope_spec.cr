@@ -69,7 +69,7 @@ describe "EXP_LANG::Scope" do
 
   context "more complex types (ASTNode)" do
     parent = EXP_LANG::Scope(Expression).new
-    parent["n"] = ANumber.new(2)
+    parent["n"] = ANumber.new(value: 2.to_f)
     scope = EXP_LANG::Scope(Expression).new(parent)
 
     it "holds a reference to its parent" do
@@ -77,11 +77,11 @@ describe "EXP_LANG::Scope" do
     end
 
     it "can set a key to a value" do
-      scope.set("n", ANumber.new(2)).should eq(ANumber.new(2))
+      scope.set("n", ANumber.new(value: 2.to_f)).should eq(ANumber.new(value: 2.to_f))
     end
 
     it "can get a value for a key" do
-      scope.get("n").should eq ANumber.new(2)
+      scope.get("n").should eq ANumber.new(value: 2.to_f)
     end
 
     it "returns undefined if a key is not set" do
@@ -94,8 +94,8 @@ describe "EXP_LANG::Scope" do
     scope = EXP_LANG::Scope(Expression).new
 
     it "should eval a simple variable identifier to its expression" do
-      scope["x"] = ANumber.new(2.to_f);
-      scope.eval(Variable.new("x")).should eq ANumber.new(2.to_f)
+      scope["x"] = ANumber.new(value: 2.to_f);
+      scope.eval(Variable.new(name: "x")).should eq ANumber.new(value: 2.to_f)
     end
 
   end

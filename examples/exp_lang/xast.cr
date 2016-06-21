@@ -11,12 +11,12 @@ class Expression < CLTK::ASTNode
 end
 
 class XProgram < Expression
-  children({
+  values({
              expressions: Array(CLTK::ASTNode)
            })
 
   def eval_scope(scope)
-    (expressions as Array).compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
+    expressions.compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
       exp.eval_scope(scope)
     end
   end
@@ -57,9 +57,8 @@ class AHash < Expression
            dict: Hash(Variable, Expression)
          })
   def eval_scope(scope)
-    h = AHash.new(
-      (dict as Hash(Variable, Expression)).reduce({} of Variable => Expression) do |memo, key, value|
-        (memo as Hash)[key] = (value as Expression).eval_scope(scope) as Expression
+    h = AHash.new(dict: dict.reduce({} of Variable => Expression) do |memo, pair|
+        memo[pair[0]] = pair[1].eval_scope(scope) as Expression
         memo
       end
     )
@@ -67,10 +66,10 @@ class AHash < Expression
   end
 
   def to_s
-    if (dict as Hash(Variable, Expression)).keys.size == 0
+    if dict.keys.size == 0
       return "{}"
     end
-    "{\n" + (dict as Hash(Variable, Expression)).map do |key, value|
+    "{\n" + dict.map do |key, value|
       indented_value = value.to_s.gsub(/\n(.)/) do |s|
         "#{s[0]}  #{s[1]}"
       end
@@ -83,12 +82,12 @@ class AHash < Expression
 end
 
 class AArray < Expression
-  children({
+  values({
              members: Array(Expression)
            })
   def eval_scope(scope)
-    AArray.new(
-      (members as Array).map do |m|
+    AArray.new(members:
+      members.map do |m|
         if m.is_a? Expression
           m.eval_scope(scope)
         end
@@ -97,7 +96,7 @@ class AArray < Expression
   end
 
   def to_s
-    "[ " + (members as Array).map { |m| m.to_s.not_nil! }.join(", ") + " ]"
+    "[ " + members.map { |m| m.to_s.not_nil! }.join(", ") + " ]"
   end
 
 end
@@ -128,17 +127,17 @@ end
 
 class FunCall < Expression
 
-  children({
+  values({
              prototype_exp: Expression,
              parameters: Array(Expression)
            })
   def eval_scope(scope)
-    prototype = (prototype_exp as Expression).eval_scope(scope)
+    prototype = prototype_exp.eval_scope(scope)
     raise "#{prototype} is not a Function" unless prototype.is_a? Prototype
-    param_names = ((prototype as Prototype).args as Array).map do |arg_name|
-      (arg_name as Variable).name as String
+    param_names = prototype.args.map do |arg_name|
+      arg_name.name as String
     end
-    param_values = (parameters as Array).map do |exp|
+    param_values = parameters.map do |exp|
       if exp.responds_to? :eval_scope
         exp.eval_scope(scope)
       else
@@ -158,19 +157,19 @@ class FunCall < Expression
       param_values
     )
     param_scope = EXP_LANG::Scope(Expression).new(
-      (prototype as Prototype).scope,
+      prototype.scope,
       param_dict
     )
     res = EXP_LANG::Undefined
-    (((prototype as Prototype).body as FunBody).expressions as Array).each do |exp|
-      res = (exp as Expression).eval_scope(param_scope)
+    prototype.body.expressions.each do |exp|
+      res = exp.eval_scope(param_scope)
     end
     res
   end
 end
 
 class Binary < Expression
-  children({
+  values({
              left: Expression,
              right: Expression
            })
@@ -178,9 +177,9 @@ end
 
 class KOr < Binary
   def eval_scope(scope)
-    l = (left as Expression).eval_scope(scope)
+    l = left.eval_scope(scope)
     if l.class == KNil || l.class == KFalse
-      (right as Expression).eval_scope(scope)
+      right.eval_scope(scope)
     else
       l
     end
@@ -189,8 +188,8 @@ end
 
 class KAnd < Binary
   def eval_scope(scope)
-    l = (left as Expression).eval_scope(scope)
-    r = (right as Expression).eval_scope(scope)
+    l = left.eval_scope(scope)
+    r = right.eval_scope(scope)
     if l.class == KNil || l.class == KFalse || r.class == KNil || r.class == KFalse
       KFalse.new
     else
@@ -200,31 +199,32 @@ class KAnd < Binary
 end
 
 class VarAssign < Expression
-  children({
+  values({
              left: Variable,
              right: Expression
            })
 
   def eval_scope(scope)
-    l = left
-    r = right as Expression
-    if l.is_a? Variable
-      if r.responds_to? :eval_scope
-        scope[l.name.not_nil!] = (r as Expression).eval_scope(scope) as Expression
+    if left.is_a? Variable
+      if right.responds_to? :eval_scope
+        scope[left.name.not_nil!] = right.eval_scope(scope) as Expression
       else
-        scope[l.name.not_nil!] = (r as Expression)
+        scope[left.name.not_nil!] = right
       end
     end
   end
 
   def to_s
-    (left as Expression).to_s + " << " + (right as Expression).to_s
+    left.to_s + " << " + right.to_s
   end
 end
 
 class Add < Binary
   def eval_scope(scope)
-    ANumber.new(((left.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil! + ((right.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil!)
+    ANumber.new(
+      value: (left.eval_scope(scope) as ANumber).value +
+      (right.eval_scope(scope) as ANumber).value
+    )
   end
 
   def to_s
@@ -233,53 +233,49 @@ class Add < Binary
 end
 class Sub < Binary
   def eval_scope(scope)
-    ANumber.new(((left.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil! - ((right.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil!)
+    ANumber.new(value: (left.eval_scope(scope) as ANumber).value - (right.eval_scope(scope) as ANumber).value)
   end
 end
 class Mul < Binary
   def eval_scope(scope)
-    ANumber.new(((left.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil! * ((right.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil!)
+    ANumber.new(value: (left.eval_scope(scope) as ANumber).value * (right.eval_scope(scope) as ANumber).value)
   end
 end
 
 
 class Div < Binary
   def eval_scope(scope)
-    ANumber.new(((left.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil! / ((right.not_nil! as CLTK::ASTNode).eval_scope(scope) as ANumber).value.not_nil!)
+    ANumber.new(value: (left.eval_scope(scope) as ANumber).value / (right.eval_scope(scope) as ANumber).value)
   end
 end
 class LT  < Binary; end
 
 
 class Call < Expression
-  ORDER = :values
-  values({
-           name: String
-         })
 
-  children({
+  values({
+             name: String,
              args: Array(Expression)
            })
 end
 
 class FunBody < CLTK::ASTNode
-  children({
+  values({
     expressions: Array(Expression)
   })
 end
 
 class Prototype < Expression
-  ORDER = :values
-  children({
-             args: Array(Variable),
-             body: FunBody
-  })
   values({
-           name: String,
-           scope: EXP_LANG::Scope(Expression)
-         })
+             args: Array(Variable),
+             body: FunBody,
+             name: String | Nil,
+             scope: EXP_LANG::Scope(Expression) | Nil
+
+  })
+
   def to_s
-    "Function #{name}(" + (args as Array).map {|v| (v as Variable).name}.join(',') + ")"
+    "Function #{name}(" + args.map {|v| v.name}.join(',') + ")"
   end
 
   def eval_scope(sscope)
@@ -292,7 +288,7 @@ class Prototype < Expression
 end
 
 class Function < CLTK::ASTNode
-  children({
+  values({
              proto: Prototype,
              body: Expression
            })

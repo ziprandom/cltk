@@ -153,7 +153,7 @@ module CLTK
       #
       # @return [Array<Action>] Actions that should be taken.
       def on?(symbol)
-        @actions.not_nil![symbol].clone
+        @actions.not_nil![symbol].dup
       end
     end
 

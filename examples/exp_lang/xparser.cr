@@ -19,7 +19,7 @@ module EXP_LANG
 
     production(:statement) do
       clause("expressions sep*") do |e|
-        XProgram.new(e)
+        XProgram.new(expressions: e)
       end
       nil
     end
@@ -53,13 +53,13 @@ module EXP_LANG
 
     production(:function_call) do
       clause("e LPAREN array_elements RPAREN") do |e, _, arguments, _|
-        FunCall.new(e, arguments)
+        FunCall.new(prototype_exp: e, parameters: arguments)
       end
     end
 
     production(:array) do
       clause("LBRACK array_elements RBRACK") do |_, elements, _|
-        a = AArray.new(elements)
+        a = AArray.new(members: elements)
       end
     end
 
@@ -74,7 +74,7 @@ module EXP_LANG
           end
           hash
         end
-        AHash.new(hash)
+        AHash.new(dict: hash)
       end
     end
 
@@ -85,29 +85,29 @@ module EXP_LANG
     build_list_production(:hash_pairs, :hash_pair, :comma)
 
     production(:binary_expressions) do
-      clause("e OR e")          { |e0, _, e2| KOr.new(e0, e2)  }
-      clause("e AND e")         { |e0, _, e2| KAnd.new(e0, e2) }
-      clause("e PLUS e")	{ |e0, _, e1| Add.new(e0, e1)  }
-      clause("e SUB e")	        { |e0, _, e1| Sub.new(e0, e1)  }
-      clause("e MUL e")	        { |e0, _, e1| Mul.new(e0, e1)  }
-      clause("e DIV e")	        { |e0, _, e1| Div.new(e0, e1)  }
+      clause("e OR e")          { |e0, _, e2| KOr.new(left: e0, right: e2)  }
+      clause("e AND e")         { |e0, _, e2| KAnd.new(left: e0, right: e2) }
+      clause("e PLUS e")	{ |e0, _, e1| Add.new(left: e0, right: e1)  }
+      clause("e SUB e")	        { |e0, _, e1| Sub.new(left: e0, right: e1)  }
+      clause("e MUL e")	        { |e0, _, e1| Mul.new(left: e0, right: e1)  }
+      clause("e DIV e")	        { |e0, _, e1| Div.new(left: e0, right: e1)  }
     end
 
     production(:identifier) do
-      clause(:IDENT) { |i| Variable.new(i) }
+      clause(:IDENT) { |i| Variable.new(name: i) }
     end
 
     production(:string) do
-      clause(:STRING)	{ |s| AString.new(s) }
+      clause(:STRING)	{ |s| AString.new(value: s) }
     end
 
     production(:number) do
-      clause(:NUMBER)	{ |n| ANumber.new(n as Float64) }
+      clause(:NUMBER)	{ |n| ANumber.new(value: n as Float64) }
     end
 
     production(:varassign) do
       clause("IDENT ASSIGN e") do |ident, _, e|
-        VarAssign.new(Variable.new(ident), e)
+        VarAssign.new(left: Variable.new(name: ident), right: e)
       end
     end
 
@@ -123,12 +123,12 @@ module EXP_LANG
 
     production(:fun_def) do
       clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
-        args_vars = ((head as Array)[1] as Array).map {|v| Variable.new v}
+        args_vars = ((head as Array)[1] as Array).map {|v| Variable.new(name: v)}
         exps = (body as Array)
                .reduce([] of Expression) do |a, exp|
           a = a + [exp as Expression]
         end
-        Prototype.new((head as Array).first, args_vars as Array, FunBody.new(exps))
+        Prototype.new(name: (head as Array).first, args: args_vars as Array, body: FunBody.new(expressions: exps), scope: nil)
       end
     end
 

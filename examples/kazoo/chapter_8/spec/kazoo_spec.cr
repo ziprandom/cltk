@@ -38,13 +38,13 @@ describe "CLTK::Kazoo" do
 
   it "parses, translates and evaluates a for loop" do
 
-    result = run("a = 0; for x = 1, x > 10, 1 in a = a + (x * 5) end; a;");
+    result = run("a = 0; for x = 1, x < 10, 1 in a = a + (x * 5) end; a;");
     result.should eq 225
   end
 
   it "parses, translates and evaluates a for loop" do
 
-    result = run("a = 0; for x = 1, x > 10, 1 in a = a + (x * 5) end; a;")
+    result = run("a = 0; for x = 1, x < 10, 1 in a = a + (x * 5) end; a;")
     result.should eq 225
   end
 

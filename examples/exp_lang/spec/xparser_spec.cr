@@ -47,11 +47,11 @@ describe "EXP_LANG::Parser::VariableAssignment" do
   it "should parse different right hands" do
 
     srcs = {
-      "a = 1" => "a << 1",
-      "a = 1 + 1" => "a << 1 + 1",
-      "a = [1,2,3]" => "a << [ 1, 2, 3 ]",
-      "a = [1,2,3] + [3,2,1]" => "a << [ 1, 2, 3 ] + [ 3, 2, 1 ]",
-      "a = [1,2,3, def add(x,y); x + y; end]" => "a << [ 1, 2, 3, Function add(x,y) ]"
+      "a = 1" => "a << 1.0",
+      "a = 1 + 1" => "a << 1.0 + 1.0",
+      "a = [1,2,3]" => "a << [ 1.0, 2.0, 3.0 ]",
+      "a = [1,2,3] + [3,2,1]" => "a << [ 1.0, 2.0, 3.0 ] + [ 3.0, 2.0, 1.0 ]",
+      "a = [1,2,3, def add(x,y); x + y; end]" => "a << [ 1.0, 2.0, 3.0, Function add(x,y) ]"
     }
 
     srcs.each do |src, s|
@@ -131,11 +131,11 @@ end
 describe "EXP_LANG::Language" do
   tuples = [
     {"\"[y(y(7))]\"", "\"[y(y(7))]\""},
-    {"1 + 1", "2"},
-    {"1 + 1;", "2"},
-    {"1 + 1;23", "23"},
-    {"1 + 1;23;", "23"},
-    {"[1+1, 2*2, true]", "[ 2, 4, true ]"},
+    {"1 + 1", "2.0"},
+    {"1 + 1;", "2.0"},
+    {"1 + 1;23", "23.0"},
+    {"1 + 1;23;", "23.0"},
+    {"[1+1, 2*2, true]", "[ 2.0, 4.0, true ]"},
     {"fun(x)
         x + 2
       end", "Function (x)"},
@@ -145,39 +145,39 @@ describe "EXP_LANG::Language" do
     {"def add_two(x)
           x + 2
         end
-      add_two(2)", "4"},
+      add_two(2)", "4.0"},
     {"add = fun(x)
           x + 2
         end
-      add(2)", "4"},
+      add(2)", "4.0"},
     {"addX = fun(x)
           fun(y)
             x + y
           end
         end
       add10 = addX(10)
-      add10(10)", "20"},
+      add10(10)", "20.0"},
     {"x = fun(x)
         fun(y)
           x * y
         end
       end
       y = x(7)
-      [y(y(7))]", "[ 343 ]"},
+      [y(y(7))]", "[ 343.0 ]"},
     {"send = fun(f,p)
         f(p)
       end
       add2 = fun(x)
         x + 2
       end
-      send(add2,5)", "7"},
+      send(add2,5)", "7.0"},
     {"hash = { a: 1,
                c: true,
                d: fun(x)
                     x + 1
                   end }
       hash", "{
-  a: 1,
+  a: 1.0,
   c: true,
   d: Function (x)
 }"}

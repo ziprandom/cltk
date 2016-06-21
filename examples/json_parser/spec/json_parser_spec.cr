@@ -43,14 +43,14 @@ describe("json_lexer") do
   end
 
   it "parses a string" do
-    result = parse_json("\"hallo json\"") as JSON_PARSE::JsonString
+    result = parse_json("\"hallo json\"")
     JSON_PARSE::JsonOutputer.new(result).print.should eq("\"hallo json\"")
   end
 
   it "parses an array" do
     result = parse_json("[12              ,
                           123,
-                          \"json\"     ,null          ]") as JSON_PARSE::JsonArray
+                          \"json\"     ,null          ]")
     JSON_PARSE::JsonOutputer.new(result).print.should eq("[\n  12,\n  123,\n  \"json\",\n  null\n]")
   end
 

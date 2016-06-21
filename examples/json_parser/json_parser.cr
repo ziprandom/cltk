@@ -28,13 +28,13 @@ module JSON_PARSE
     rule(/"(?:[^"\\]|\\.)*"/) { |t| {:STRING, t[1...-1]}}
 
     # Numeric rules.
-    rule(/\-?\d+/)            { |t| {:NUMBER, t.to_f} }
-    rule(/\-?\d+\.\d+/)	      { |t| {:NUMBER, t.to_f} }
+    rule(/\-?\d+/)            { |t| {:INTEGER, t.to_i} }
+    rule(/\-?\d+\.\d+/)	      { |t| {:FLOAT, t.to_f} }
   end
 
   # The AST Nodes
 
-  class JsonExpression < CLTK::ASTNode;  end
+  abstract class JsonExpression < CLTK::ASTNode;  end
 
   class JsonBool < JsonExpression
     values({
@@ -44,7 +44,16 @@ module JSON_PARSE
 
   class JsonNull < JsonExpression; end
 
-  class JsonNumber < JsonExpression
+  abstract class JsonNumber < JsonExpression
+  end
+
+  class JsonInteger < JsonNumber
+    values({
+             number: Int32
+           })
+  end
+
+  class JsonFloat < JsonNumber
     values({
              number: Float64
            })
@@ -63,7 +72,7 @@ module JSON_PARSE
   end
 
   class JsonArray < JsonExpression
-    children({
+    values({
                elements: Array(JsonExpression),
              })
   end
@@ -77,24 +86,29 @@ module JSON_PARSE
     end
 
     production(:expression) do
-      clause(:json_object) { |o| o }
-      clause(:json_array)  { |a| a }
-      clause(:json_string) { |s| s }
-      clause(:json_number) { |n| n }
-      clause(:json_bool)   { |b| b }
-      clause(:json_null)   { |b| b }
+      clause(:json_object)  { |o| o }
+      clause(:json_array)   { |a| a }
+      clause(:json_string)  { |s| s }
+      clause(:json_integer) { |i| i }
+      clause(:json_float)   { |f| f }
+      clause(:json_bool)    { |b| b }
+      clause(:json_null)    { |b| b }
     end
 
-    production(:json_number) do
-      clause(:NUMBER)	{ |n| JsonNumber.new(n as Float64); }
+    production(:json_integer) do
+      clause(:INTEGER)	{ |i| JsonInteger.new(number: i as Int32); }
+    end
+
+    production(:json_float) do
+      clause(:FLOAT)	{ |f| JsonFloat.new(number: f as Float64); }
     end
 
     production(:json_string) do
-      clause(:STRING)	{ |s| JsonString.new(s) }
+      clause(:STRING)	{ |s| JsonString.new(string: s as String) }
     end
 
     production(:json_bool) do
-      clause(:BOOL)	{ |b| JsonBool.new( b == 0 ? true : false) }
+      clause(:BOOL)	{ |b| JsonBool.new(bool:  b == 0 ? true : false) }
     end
 
     production(:json_null) do
@@ -103,7 +117,7 @@ module JSON_PARSE
 
     production(:json_array) do
       clause("LBRACK array_elements RBRACK") do |_, elements, _|
-        JsonArray.new(elements)
+        JsonArray.new(elements: elements)
       end
     end
 
@@ -118,7 +132,7 @@ module JSON_PARSE
           hash[key.string.not_nil!] = value
           hash
         end
-        JsonObject.new(hash)
+        JsonObject.new(hash: hash)
       end
     end
 
@@ -207,9 +221,14 @@ module JSON_PARSE
       "\"" + string.string.not_nil! + "\""
     end
 
-    on JsonNumber do |number|
+    on JsonInteger do |number|
       number.number.to_s
     end
+
+    on JsonFloat do |number|
+      number.number.to_s
+    end
+
   end
 
   #
@@ -235,7 +254,7 @@ module JSON_PARSE
       bool.bool ? "true" : "false"
     end
 
-    on JsonBool do |bool|
+    on JsonNull do |null|
       "null"
     end
 
@@ -243,9 +262,14 @@ module JSON_PARSE
       string.string.not_nil!
     end
 
-    on JsonNumber do |number|
+    on JsonFloat do |number|
       number.number.to_s
     end
+
+    on JsonInteger do |number|
+      number.number.to_s
+    end
+
   end
 
 end
