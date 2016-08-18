@@ -55,7 +55,7 @@ module CLTK
     end
 
 
-    @@production_precs :  Array(String | {String, Int32} | Nil)
+    @@production_precs :  Array(String | {String, Int32} | Nil) = Array(String | {String, Int32} | Nil).new
     @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
     @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
     @@grammar          : CLTK::CFG              = CLTK::CFG.new
