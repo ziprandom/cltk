@@ -16,8 +16,8 @@ module CLTK
         @arg_type   = arg_type
         @selections = selections
       end
-      def call(args, env)
-        @block.call(args as Array(Type), env as Environment)
+      def call(args : Array(Type), env : Environment)
+        @block.call(args, env)
       end
   end
 end

@@ -36,653 +36,617 @@ module CLTK
   # The Parser class may be sub-classed to produce new parsers.  These
   # parsers have a lot of features, and are described in the main
   # documentation.
-  class Parser
-    # @return [Environment] Environment used by the instantiated parser.
-    getter :env
+  abstract class Parser
+             # @return [Environment] Environment used by the instantiated parser.
+             getter :env
 
-    #################
-    # Class Methods #
-    #################
+             #################
+             # Class Methods #
+             #################
 
-    # The overridden new prevents un-finalized parsers from being
-    # instantiated.
-    def self.new(*args)
-      if @@symbols.nil?
-	raise UselessParserException.new
-      else
-	super(*args)
-      end
-    end
-
-
-    @@production_precs :  Array(String | {String, Int32} | Nil) = Array(String | {String, Int32} | Nil).new
-    @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
-    @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
-    @@grammar          : CLTK::CFG              = CLTK::CFG.new
-    @@conflicts        : Hash(Int32, Array({ String, String })) = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
-    @@prec_counts      : Hash(Symbol, Int32) = {:left => 0, :right => 0, :non => 0}
-    @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
-      h[k] = [] of Proc(Environment, Nil)
-    end
-
-    # Installs instance class variables into a class.
-    #
-    # @return [void]
-    macro inherited
-      @@symbols : Array(String)?
-      @@start_symbol : String?
-      @@env : (Environment.class) | Nil
-      @@grammar_prime : CLTK::CFG?
-
-      @@curr_lhs  = nil
-      @@curr_prec = nil
-
-
-      @@lh_sides  = {} of Int32 => String
-      @@procs     = {} of Int32 => { ProdProc, Int32 }
-      @@states    = Array(State).new
-
-      # Variables for dealing with precedence.
-
-      # Set the default argument handling policy.  Valid values
-      # are :array and :splat.
-      @@default_arg_type = :splat
-
-      @@grammar.callback do |type, which, p, sels|
-        proc = case type
-	       when :optional
-	         case which
-	         when :empty then ProdProc.new { nil }
-	         else             ProdProc.new { |o| o[0] }
-	         end
-
-	       when :elp
-	         case which
-	         when :empty then ProdProc.new { [] of CLTK::Type}
-	         else             ProdProc.new { |prime| prime[0] }
-	         end
-	       when :nelp
-	         case which
-	         when :single
-	           ProdProc.new { |el| [el[0]].map { |x| x as CLTK::Type } }
-	         when :multiple
-	           ProdProc.new(:splat, sels) do |syms|
-                     syms  = syms as Array
-                     first = syms.shift as Array
-                     rest  = syms.size > 1 ? syms : syms.first
-                     first << rest
-	           end
-	         else
-	           ProdProc.new do |el|
-                     el = el as Array
-                     el.size > 1 ? el : el.first
-                   end
-	         end
+             # The overridden new prevents un-finalized parsers from being
+             # instantiated.
+             def self.new(*args)
+               if @@symbols.nil?
+	         raise UselessParserException.new
                else
-                 raise "this should never happen"
-	       end
-	@@procs.not_nil![p.id] = { proc, p.rhs.size }
-	@@production_precs_prepare[p.id] = p.last_terminal
-        nil
-      end
-    end
+	         super(*args)
+               end
+             end
 
-    def self.parser
-      Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, @@env)
-    end
-    # If *state* (or its equivalent) is not in the state list it is
-    # added and it's ID is returned.  If there is already a state
-    # with the same items as *state* in the state list its ID is
-    # returned and *state* is discarded.
-    #
-    # @param [State] state State to add to the parser.
-    #
-    # @return [Integer] The ID of the state.
-    def self.add_state(state)
-      states = @@states.not_nil!
-      id = states.index(state)
-      if id
-	id
-      else
-	state.id = states.size
-	states << state
-	states.size - 1
-      end
-    end
+             @@production_precs :  Array(String | {String, Int32} | Nil) = Array(String | {String, Int32} | Nil).new
+             @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
+             @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
+             @@grammar          : CLTK::CFG              = CLTK::CFG.new
+             @@conflicts        : Hash(Int32, Array({ String, String })) = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
+             @@prec_counts      : Hash(Symbol, Int32) = {:left => 0, :right => 0, :non => 0}
+             @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
+               h[k] = [] of Proc(Environment, Nil)
+             end
 
-    # Build a hash with the default options for Parser.finalize
-    # and then update it with the values from *opts*.
-    #
-    # @param [Hash{Symbol => Object}] opts Hash containing options for finalize.
-    #
-    # @return [Hash{Symbol => Object}]
-    private def self.build_finalize_opts(opts : Hash)
+             # Installs instance class variables into a class.
+             #
+             # @return [void]
+             macro inherited
+               @@symbols : Array(String)?
+                             @@start_symbol : String?
+               @@env : {{@type}}::Environment.class | Nil
+               @@grammar_prime : CLTK::CFG?
 
-      opts[:explain] =
-        opts[:explain] ?
-          self.get_io(opts[:explain] as String) : nil
+               @@curr_lhs  = nil
+               @@curr_prec = nil
 
-      {
-	explain =>    false,
-	lookahead =>  true,
-	precedence => true,
-	use =>        false
-      }.merge(opts)
-    end
 
-    def self.setenv(env)
-      @@env = env
-    end
+               @@lh_sides  = {} of Int32 => String
+               @@procs     = {} of Int32 => { ProdProc, Int32 }
+               @@states    = Array(State).new
 
-    # This method is used to (surprise) check the sanity of the
-    # constructed parser.  It checks to make sure all non-terminals
-    # used in the grammar definition appear on the left-hand side of
-    # one or more productions, and that none of the parser's states
-    # have invalid actions.  If a problem is encountered a
-    # ParserConstructionException is raised.
-    #
-    # @return [void]
-    def self.check_sanity
-      # Check to make sure all non-terminals appear on the
-      # left-hand side of some production.
-      @@grammar.nonterms.each do |sym|
-	unless @@lh_sides.not_nil!.values.includes?(sym)
-	  raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
-	end
-      end
-      # Check the actions in each state.
-      each_state do |state|
-	state.actions.not_nil!.each do |sym, actions|
-	  if CFG.is_terminal?(sym)
-	    # Here we check actions for terminals.
-	    actions.each do |action|
-	      if action.is_a?(Accept)
-		if sym.to_s != "EOS"
-		  raise ParserConstructionException.new "Accept action found for terminal #{sym} in state #{state.id}."
-		end
+               # Variables for dealing with precedence.
 
-	      elsif !(action.is_a?(GoTo) || action.is_a?(Reduce) || action.is_a?(Shift))
-		raise ParserConstructionException.new "Object of type #{action.class} found in actions for terminal " +
-						   "#{sym} in state #{state.id}."
+               # Set the default argument handling policy.  Valid values
+               # are :array and :splat.
+               @@default_arg_type = :splat
 
-	      end
-	    end
+               @@grammar.callback do |type, which, p, sels|
+                 proc = case type
+	                when :optional
+	                  case which
+	                  when :empty then ProdProc.new { nil }
+	                  else             ProdProc.new { |o| o[0] }
+	                  end
 
-	    if (conflict = state.conflict_on?(sym))
-	      self.inform_conflict(state.id, conflict, sym)
-	    end
-	  else
-	    # Here we check actions for non-terminals.
-	    if actions.size > 1
-	      raise ParserConstructionException.new "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+	                when :elp
+	                  case which
+	                  when :empty then ProdProc.new { [] of CLTK::Type}
+	                  else             ProdProc.new { |prime| prime[0] }
+	                  end
+	                when :nelp
+	                  case which
+	                  when :single
+	                    ProdProc.new { |el| [el[0]].map { |x| x as CLTK::Type } }
+	                  when :multiple
+	                    ProdProc.new(:splat, sels) do |syms|
+                              syms  = syms as Array
+                              first = syms.shift as Array
+                              rest  = syms.size > 1 ? syms : syms.first
+                              first << rest
+	                    end
+	                  else
+	                    ProdProc.new do |el|
+                              el = el as Array
+                              el.size > 1 ? el : el.first
+                            end
+	                  end
+                        else
+                          raise "this should never happen"
+	                end
+	         @@procs.not_nil![p.id] = { proc, p.rhs.size }
+	         @@production_precs_prepare[p.id] = p.last_terminal
+                 nil
+               end
 
-	    elsif actions.size == 1 && !actions.first.is_a?(GoTo)
-	      raise ParserConstructionException.new "State #{state.id} has non-GoTo action for non-terminal #{sym}."
+               # Instantiates a new parser and creates an environment to be
+               # used for subsequent calls.
+               @env : {{@type}}::Environment
+               def initialize
+                 @env = {{@type}}::Environment.new
+               end
 
-	    end
-	  end
-	end
-      end
-    end
+               def self.parser
+                 Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
+               end
 
-    # This method checks to see if the parser would be in parse state
-    # *dest* after starting in state *start* and reading *symbols*.
-    #
-    # @param [Symbol]         start    Symbol representing a CFG production.
-    # @param [Symbol]         dest     Symbol representing a CFG production.
-    # @param [Array<Symbol>]  symbols  Grammar symbols.
-    #
-    # @return [Boolean] If the destination symbol is reachable from the start symbol after reading *symbols*.
-    def self.check_reachability(start, dest, symbols)
-      path_exists = true
-      cur_state   = start
+             end
 
-      symbols.each do |sym|
+             # If *state* (or its equivalent) is not in the state list it is
+             # added and it's ID is returned.  If there is already a state
+             # with the same items as *state* in the state list its ID is
+             # returned and *state* is discarded.
+             #
+             # @param [State] state State to add to the parser.
+             #
+             # @return [Integer] The ID of the state.
+             def self.add_state(state)
+               states = @@states.not_nil!
+               id = states.index(state)
+               if id
+	         id
+               else
+	         state.id = states.size
+	         states << state
+	         states.size - 1
+               end
+             end
 
-	actions = @@states.not_nil![cur_state.id.not_nil!].on?(sym)
-	actions = actions.select { |a| a.is_a?(Shift) } if CFG.is_terminal?(sym)
+             # Build a hash with the default options for Parser.finalize
+             # and then update it with the values from *opts*.
+             #
+             # @param [Hash{Symbol => Object}] opts Hash containing options for finalize.
+             #
+             # @return [Hash{Symbol => Object}]
+             private def self.build_finalize_opts(opts : Hash)
 
-	if actions.empty?
-	  path_exists = false
-	  break
-	end
+               opts[:explain] =
+                 opts[:explain] ?
+                   self.get_io(opts[:explain] as String) : nil
 
-	# There can only be one Shift action for terminals and
-	# one GoTo action for non-terminals, so we know the
-	# first action is the only one in the list.
-	cur_state = @@states.not_nil![actions.first.id.not_nil!]
-      end
+               {
+	         explain =>    false,
+	         lookahead =>  true,
+	         precedence => true,
+	         use =>        false
+               }.merge(opts)
+             end
 
-      path_exists && cur_state.id == dest.id
-    end
+             def self.setenv(env)
+               @@env = env
+             end
 
-    # Declares a new clause inside of a production.  The right-hand
-    # side is specified by *expression* and the precedence of this
-    # production can be changed by setting the *precedence* argument
-    # to some terminal symbol.
-    #
-    # @param [String, Symbol]  expression  Right-hand side of a production.
-    # @param [Symbol]          precedence  Symbol representing the precedence of this production.
-    # @param [:array, :splat]  arg_type    Method to use when passing arguments to the action.
-    # @param [Proc]            action      Action to be taken when the production is reduced.
-    #
-    # @return [void]
-    macro clause(expression, precedence = nil, arg_type = nil, &action: _ -> _)
-      # Use the curr_prec only if it isn't overridden for this
-      # clause.
-      Tuple.new({{expression}}, {{precedence}}, {{arg_type}}).tap do |param_tupel|
+             # This method is used to (surprise) check the sanity of the
+             # constructed parser.  It checks to make sure all non-terminals
+             # used in the grammar definition appear on the left-hand side of
+             # one or more productions, and that none of the parser's states
+             # have invalid actions.  If a problem is encountered a
+             # ParserConstructionException is raised.
+             #
+             # @return [void]
+             def self.check_sanity
+               # Check to make sure all non-terminals appear on the
+               # left-hand side of some production.
+               @@grammar.nonterms.each do |sym|
+	         unless @@lh_sides.not_nil!.values.includes?(sym)
+	           raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
+	         end
+               end
+               # Check the actions in each state.
+               each_state do |state|
+	         state.actions.not_nil!.each do |sym, actions|
+	           if CFG.is_terminal?(sym)
+	             # Here we check actions for terminals.
+	             actions.each do |action|
+	               if action.is_a?(Accept)
+		         if sym.to_s != "EOS"
+		           raise ParserConstructionException.new "Accept action found for terminal #{sym} in state #{state.id}."
+		         end
 
-        expression = param_tupel[0]
-        precedence = param_tupel[1] || @@curr_prec
-        arg_type   = param_tupel[2]
+	               elsif !(action.is_a?(GoTo) || action.is_a?(Reduce) || action.is_a?(Shift))
+		         raise ParserConstructionException.new "Object of type #{action.class} found in actions for terminal " +
+						               "#{sym} in state #{state.id}."
 
-        production, selections = if @@grammar
-                                   (@@grammar as CLTK::CFG).clause({{expression}}).values
-                                 else
-                                   raise "NO GRAMMAR DEFINED"
-                                 end
-        expected_arity = (selections.empty? ? production.rhs.size : selections.size)
-        if arg_type == :splat && {{action.args.size}} != expected_arity
-  	  raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
-        end
+	               end
+	             end
 
-        # Add the action to our proc list.
-        @@procs.not_nil![production.id] = {
-          ## new ProdProc
-          ProdProc.new(:splat, selections) do |%a, %env|
-            %env.yield_with_self do
-              {%for arg, index in action.args%}
+	             if (conflict = state.conflict_on?(sym))
+	               self.inform_conflict(state.id, conflict, sym)
+	             end
+	           else
+	             # Here we check actions for non-terminals.
+	             if actions.size > 1
+	               raise ParserConstructionException.new "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+
+	             elsif actions.size == 1 && !actions.first.is_a?(GoTo)
+	               raise ParserConstructionException.new "State #{state.id} has non-GoTo action for non-terminal #{sym}."
+
+	             end
+	           end
+	         end
+               end
+             end
+
+             # This method checks to see if the parser would be in parse state
+             # *dest* after starting in state *start* and reading *symbols*.
+             #
+             # @param [Symbol]         start    Symbol representing a CFG production.
+             # @param [Symbol]         dest     Symbol representing a CFG production.
+             # @param [Array<Symbol>]  symbols  Grammar symbols.
+             #
+             # @return [Boolean] If the destination symbol is reachable from the start symbol after reading *symbols*.
+             def self.check_reachability(start, dest, symbols)
+               path_exists = true
+               cur_state   = start
+
+               symbols.each do |sym|
+
+	         actions = @@states.not_nil![cur_state.id.not_nil!].on?(sym)
+	         actions = actions.select { |a| a.is_a?(Shift) } if CFG.is_terminal?(sym)
+
+	         if actions.empty?
+	           path_exists = false
+	           break
+	         end
+
+	         # There can only be one Shift action for terminals and
+	         # one GoTo action for non-terminals, so we know the
+	         # first action is the only one in the list.
+	         cur_state = @@states.not_nil![actions.first.id.not_nil!]
+               end
+
+               path_exists && cur_state.id == dest.id
+             end
+
+             # Declares a new clause inside of a production.  The right-hand
+             # side is specified by *expression* and the precedence of this
+             # production can be changed by setting the *precedence* argument
+             # to some terminal symbol.
+             #
+             # @param [String, Symbol]  expression  Right-hand side of a production.
+             # @param [Symbol]          precedence  Symbol representing the precedence of this production.
+             # @param [:array, :splat]  arg_type    Method to use when passing arguments to the action.
+             # @param [Proc]            action      Action to be taken when the production is reduced.
+             #
+             # @return [void]
+             macro clause(expression, precedence = nil, arg_type = nil, &action: _ -> _)
+               # Use the curr_prec only if it isn't overridden for this
+               # clause.
+               Tuple.new({{expression}}, {{precedence}}, {{arg_type}}).tap do |param_tupel|
+
+                 expression = param_tupel[0]
+                 precedence = param_tupel[1] || @@curr_prec
+                 arg_type   = param_tupel[2]
+
+                 production, selections = if @@grammar
+                                            (@@grammar as CLTK::CFG).clause({{expression}}).values
+                                          else
+                                            raise "NO GRAMMAR DEFINED"
+                                          end
+                 expected_arity = (selections.empty? ? production.rhs.size : selections.size)
+                 if arg_type == :splat && {{action.args.size}} != expected_arity
+  	           raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
+                 end
+
+                 # Add the action to our proc list.
+                 @@procs.not_nil![production.id] = {
+                   ## new ProdProc
+                   ProdProc.new(:splat, selections) do |%a, %env|
+                   (%env as {{@type}}::Environment).yield_with_self do
+                     {%for arg, index in action.args%}
                 {{arg}} = (%a as Array(CLTK::Type))[{{index}}]
-              {%end%}
-              # reassign the first block argument to
-              # the whole arguments array if arg_type
-              # evaluates to :array
-              {%if action.args.size > 0%}
-                if (arg_type || @@default_arg_type) == :array
-                  {{action.args.first}} = %a as Array
-                end
-              {%end %}
-              result = begin
-                          {{action.body}}
-                        end
-              if result.is_a? Array
-                result.map { |r| r as CLTK::Type}
-              else
-                result as CLTK::Type
-              end
-            end
-          end,
-          production.rhs.size
-        }
-        # If no precedence is specified use the precedence of the
-        # last terminal in the production.
-        @@production_precs_prepare[production.id] = precedence || production.last_terminal
-      end
-    end
+                     {%end%}
+                       # reassign the first block argument to
+                       # the whole arguments array if arg_type
+                       # evaluates to :array
+                       {%if action.args.size > 0%}
+                         if (arg_type || @@default_arg_type) == :array
+                           {{action.args.first}} = %a as Array
+                         end
+                       {%end %}
+                       result = begin
+                                  {{action.body}}
+                                end
+                     if result.is_a? Array
+                       result.map { |r| r as CLTK::Type}
+                     else
+                       result as CLTK::Type
+                     end
+                   end
+                                                    end,
+                                                    production.rhs.size
+                 }
+                 # If no precedence is specified use the precedence of the
+                 # last terminal in the production.
+                 @@production_precs_prepare[production.id] = precedence || production.last_terminal
+               end
+             end
 
-    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
-      self.clause(expression, precedence, arg_type, &action)
-    end
-    # Removes resources that were needed to generate the parser but
-    # aren't needed when actually parsing input.
-    #
-    # @return [void]
-    def self.clean
-      # We've told the developer about conflicts by now.
-      @@conflicts = nil
+             def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+               self.clause(expression, precedence, arg_type, &action)
+             end
+             # Removes resources that were needed to generate the parser but
+             # aren't needed when actually parsing input.
+             #
+             # @return [void]
+             def self.clean
+               # We've told the developer about conflicts by now.
+               @@conflicts = nil
 
-      # Drop the grammar and the grammar'.
-      #@@grammar       = nil
-      @@grammar_prime = nil
+               # Drop the grammar and the grammar'.
+               #@@grammar       = nil
+               @@grammar_prime = nil
 
-      # Drop precedence and bookkeeping information.
-      @@curr_lhs  = nil
-      @@curr_prec = nil
+               # Drop precedence and bookkeeping information.
+               @@curr_lhs  = nil
+               @@curr_prec = nil
 
-      @@prec_counts      = nil
-      #@@production_precs = nil
-      @@token_precs      = nil
+               @@prec_counts      = nil
+               #@@production_precs = nil
+               @@token_precs      = nil
 
-      # Drop the items from each of the states.
-      each_state { |state| state.clean }
-    end
+               # Drop the items from each of the states.
+               each_state { |state| state.clean }
+             end
 
-    # Set the default argument type for the actions associated with
-    # clauses.  All actions defined after this call will be passed
-    # arguments in the way specified here, unless overridden in the
-    # call to {Parser.clause}.
-    #
-    # @param [:array, :splat] type The default argument type.
-    #
-    # @return [void]
-    def self.default_arg_type(type)
-      @@default_arg_type = type if type == :array || type == :splat
-    end
+             # Set the default argument type for the actions associated with
+             # clauses.  All actions defined after this call will be passed
+             # arguments in the way specified here, unless overridden in the
+             # call to {Parser.clause}.
+             #
+             # @param [:array, :splat] type The default argument type.
+             #
+             # @return [void]
+             def self.default_arg_type(type)
+               @@default_arg_type = type if type == :array || type == :splat
+             end
 
-    def self.dat(type)
-      self.default_arg_type(type)
-    end
-    # Adds productions and actions for parsing empty lists.
-    #
-    # @see CFG#empty_list_production
-    def self.build_list_production(symbol, list_elements, separator = "")
-      if list_elements.is_a? Array
-        list_elements = list_elements.map {|e| e.to_s}
-      else
-        list_elements = list_elements.to_s
-      end
-      @@grammar.build_list_production(symbol.to_s, list_elements, separator.to_s)
-    end
+             def self.dat(type)
+               self.default_arg_type(type)
+             end
+             # Adds productions and actions for parsing empty lists.
+             #
+             # @see CFG#empty_list_production
+             def self.build_list_production(symbol, list_elements, separator = "")
+               if list_elements.is_a? Array
+                 list_elements = list_elements.map {|e| e.to_s}
+               else
+                 list_elements = list_elements.to_s
+               end
+               @@grammar.build_list_production(symbol.to_s, list_elements, separator.to_s)
+             end
 
-    def self.list(symbol, list_elements, separator = "")
-      self.build_list_production(symbol, list_elements, separator)
-    end
+             def self.list(symbol, list_elements, separator = "")
+               self.build_list_production(symbol, list_elements, separator)
+             end
 
-    # This function will print a description of the parser to the
-    # provided IO object.
-    #
-    # @param [IO] io Input/Output object used for printing the parser's explanation.
-    #
-    # @return [void]
-    def self.explain(io : IO)
-      if @@grammar && !@@states.not_nil!.empty?
-	io.puts("###############")
-	io.puts("# Productions #")
-	io.puts("###############")
-	io.puts
+             # This function will print a description of the parser to the
+             # provided IO object.
+             #
+             # @param [IO] io Input/Output object used for printing the parser's explanation.
+             #
+             # @return [void]
+             def self.explain(io : IO)
+               if @@grammar && !@@states.not_nil!.empty?
+	         io.puts("###############")
+	         io.puts("# Productions #")
+	         io.puts("###############")
+	         io.puts
 
-	max_id_length = @@grammar.productions_id.not_nil!.size.to_s.size
+	         max_id_length = @@grammar.productions_id.not_nil!.size.to_s.size
 
-	# Print the productions.
-	@@grammar.productions.not_nil!.each do |sym, productions|
-          productions = productions as Array(CLTK::CFG::Production)
-	  max_rhs_length = (productions).reduce(0) do |m, p|
-            if (len = p.to_s.not_nil!.size) > m
-              len
-            else
-              m
-            end
-          end
+	         # Print the productions.
+	         @@grammar.productions.not_nil!.each do |sym, productions|
+                   productions = productions as Array(CLTK::CFG::Production)
+	           max_rhs_length = (productions).reduce(0) do |m, p|
+                     if (len = p.to_s.not_nil!.size) > m
+                       len
+                     else
+                       m
+                     end
+                   end
 
-	  productions.not_nil!.each do |production|
-	    p_string = production.to_s
+	           productions.not_nil!.each do |production|
+	             p_string = production.to_s
 
-            #	      io.print("\tProduction #{sprintf("%#{max_id_length}d", production.id)}: #{p_string}")
-            prec = @@production_precs_prepare[production.id];
-	    if (prec.is_a?({Int32, String}))
-	      io.print(" " * (max_rhs_length - p_string.not_nil!.size))
-	      io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
-	    end
+                     #	      io.print("\tProduction #{sprintf("%#{max_id_length}d", production.id)}: #{p_string}")
+                     prec = @@production_precs_prepare[production.id];
+	             if (prec.is_a?({Int32, String}))
+	               io.print(" " * (max_rhs_length - p_string.not_nil!.size))
+	               io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
+	             end
 
-	    io.puts
-	  end
+	             io.puts
+	           end
 
-	  io.puts
-	end
+	           io.puts
+	         end
 
-	io.puts("##########")
-	io.puts("# Tokens #")
-	io.puts("##########")
-	io.puts
+	         io.puts("##########")
+	         io.puts("# Tokens #")
+	         io.puts("##########")
+	         io.puts
 
-	max_token_len = @@grammar.terms.reduce(0) do |m, t|
-          if t.size > m
-            t.size
-          else m
-          end
-        end
+	         max_token_len = @@grammar.terms.reduce(0) do |m, t|
+                   if t.size > m
+                     t.size
+                   else m
+                   end
+                 end
 
-	@@grammar.terms.to_a.sort {|a,b| a.to_s <=> b.to_s }.each do |term|
-	  io.print("\t#{term}")
+	         @@grammar.terms.to_a.sort {|a,b| a.to_s <=> b.to_s }.each do |term|
+	           io.print("\t#{term}")
 
-	  if (prec = @@token_precs.not_nil![term])
-	    io.print(" " * (max_token_len - term.size))
-	    io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
-	  end
+	           if (prec = @@token_precs.not_nil![term])
+	             io.print(" " * (max_token_len - term.size))
+	             io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
+	           end
 
-	  io.puts
-	end
+	           io.puts
+	         end
 
-	io.puts
+	         io.puts
 
-	io.puts("#####################")
-	io.puts("# Table Information #")
-	io.puts("#####################")
-	io.puts
+	         io.puts("#####################")
+	         io.puts("# Table Information #")
+	         io.puts("#####################")
+	         io.puts
 
-	io.puts("\tStart symbol: #{@@grammar.start_symbol}'")
-	io.puts
+	         io.puts("\tStart symbol: #{@@grammar.start_symbol}'")
+	         io.puts
 
-	io.puts("\tTotal number of states: #{@@states.not_nil!.size}")
-	io.puts
+	         io.puts("\tTotal number of states: #{@@states.not_nil!.size}")
+	         io.puts
 
-	io.puts("\tTotal conflicts (maybe wrong - flatten impl): #{@@conflicts.not_nil!.values.flatten.size}")
-	io.puts
+	         io.puts("\tTotal conflicts (maybe wrong - flatten impl): #{@@conflicts.not_nil!.values.flatten.size}")
+	         io.puts
 
-	@@conflicts.not_nil!.each do |state_id, conflicts|
-	  io.puts("\tState #{state_id} has #{@@conflicts.not_nil!.size} conflict(s)")
-	end
-        @@conflicts = @@conflicts.not_nil!
-	io.puts unless @@conflicts.not_nil!.empty?
+	         @@conflicts.not_nil!.each do |state_id, conflicts|
+	           io.puts("\tState #{state_id} has #{@@conflicts.not_nil!.size} conflict(s)")
+	         end
+                 @@conflicts = @@conflicts.not_nil!
+	         io.puts unless @@conflicts.not_nil!.empty?
 
-	# Print the parse table.
-	io.puts("###############")
-	io.puts("# Parse Table #")
-	io.puts("###############")
-	io.puts
+	         # Print the parse table.
+	         io.puts("###############")
+	         io.puts("# Parse Table #")
+	         io.puts("###############")
+	         io.puts
 
-	each_state do |state|
-	  io.puts("State #{state.id}:")
-	  io.puts
+	         each_state do |state|
+	           io.puts("State #{state.id}:")
+	           io.puts
 
-	  io.puts("\t# ITEMS #")
-	  max = state.items.not_nil!.reduce(0) do |max, item|
-	    if item.lhs.to_s.size > max
-              item.lhs.to_s.size
-            else
-              max
-            end
-	  end
+	           io.puts("\t# ITEMS #")
+	           max = state.items.not_nil!.reduce(0) do |max, item|
+	             if item.lhs.to_s.size > max
+                       item.lhs.to_s.size
+                     else
+                       max
+                     end
+	           end
 
-	  state.each do |item|
-	    io.puts("\t#{item.to_s(max)}")
-	  end
+	           state.each do |item|
+	             io.puts("\t#{item.to_s(max)}")
+	           end
 
-	  io.puts
-	  io.puts("\t# ACTIONS #")
+	           io.puts
+	           io.puts("\t# ACTIONS #")
 
-	  state.actions.not_nil!.keys.sort {|a,b| a.to_s <=> b.to_s}.each do |sym|
-	    state.actions.not_nil![sym].each do |action|
-	      io.puts("\tOn #{sym} #{action}")
-	    end
-	  end
+	           state.actions.not_nil!.keys.sort {|a,b| a.to_s <=> b.to_s}.each do |sym|
+	             state.actions.not_nil![sym].each do |action|
+	               io.puts("\tOn #{sym} #{action}")
+	             end
+	           end
 
-	  io.puts
-	  io.puts("\t# CONFLICTS #")
+	           io.puts
+	           io.puts("\t# CONFLICTS #")
 
-	  if @@conflicts.not_nil![state.id.not_nil!].size == 0
-	    io.puts("\tNone\n\n")
-	  else
-	    @@conflicts.not_nil![state.id.not_nil!].each do |conflict|
-	      type, sym = conflict
+	           if @@conflicts.not_nil![state.id.not_nil!].size == 0
+	             io.puts("\tNone\n\n")
+	           else
+	             @@conflicts.not_nil![state.id.not_nil!].each do |conflict|
+	               type, sym = conflict
 
-	      io.print("\t#{if type == :SR; "Shift/Reduce"; else "Reduce/Reduce"; end} conflict")
+	               io.print("\t#{if type == :SR; "Shift/Reduce"; else "Reduce/Reduce"; end} conflict")
 
-	      io.puts(" on #{sym}")
-	    end
+	               io.puts(" on #{sym}")
+	             end
 
-	    io.puts
-	  end
-	end
+	             io.puts
+	           end
+	         end
 
-	# Close any IO objects that aren't $stdout.
-	if io.is_a?(IO)
-          if io != $stdout
-            #io.close
-          end
-        end
-      else
-	#raise ParserConstructionException.new "Parser.explain called outside of finalize."
-      end
-    end
-    # This method will finalize the parser causing the construction
-    # of states and their actions, and the resolution of conflicts
-    # using lookahead and precedence information.
-    #
-    # No calls to {Parser.production} may appear after the call to
-    # Parser.finalize.
-    #
-    # @param [Hash] opts Options describing how to finalize the parser.
-    #
-    # @option opts [Boolean,String,IO]  :explain     To explain the parser or not.
-    # @option opts [Boolean]            :lookahead   To use lookahead info for conflict resolution.
-    # @option opts [Boolean]            :precedence  To use precedence info for conflict resolution.
-    # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
-    #
-    # @return [void]
-    def self.finalize(opts : Hash(Symbol, Bool | String | IO) = {lookahead: true, precedence: true} )
-      if (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production))).empty?
-	#raise ParserConstructionException,
-	raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
-      end
+	         # Close any IO objects that aren't $stdout.
+	         if io.is_a?(IO)
+                   if io != $stdout
+                     #io.close
+                   end
+                 end
+               else
+	         #raise ParserConstructionException.new "Parser.explain called outside of finalize."
+               end
+             end
+             # This method will finalize the parser causing the construction
+             # of states and their actions, and the resolution of conflicts
+             # using lookahead and precedence information.
+             #
+             # No calls to {Parser.production} may appear after the call to
+             # Parser.finalize.
+             #
+             # @param [Hash] opts Options describing how to finalize the parser.
+             #
+             # @option opts [Boolean,String,IO]  :explain     To explain the parser or not.
+             # @option opts [Boolean]            :lookahead   To use lookahead info for conflict resolution.
+             # @option opts [Boolean]            :precedence  To use precedence info for conflict resolution.
+             # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
+             #
+             # @return [void]
+             alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
 
-      # Get the full options hash.
-#      if (opts.is_a? Hash(Symbol, Bool | String ))
-#        opts = {
-#          lookahead: true,
-#	  precedence: true
-#        }.merge opts
-#      end
-      # Get the name of the file in which the parser is defined.
-      #
-      # FIXME: See why this is failing for the simple ListParser example.
-      def_file = caller()[2].split(':')[0] if opts.has_key? :use
+             def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
+               if (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production))).empty?
+	         #raise ParserConstructionException,
+	         raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
+               end
 
-      # Check to make sure we can load the necessary information
-      # from the specified object.
-      if opts.has_key? :use
-        raise Exception.new "reading the parser from a file is not yet supported"
-#        && (
-#	   (opts[:use].is_a?(String) && File.exists?(opts[:use] as String) #&& File::Stat.mtime(opts[:use]) > File.mtime(def_file)
-#           ) ||
-#	   (opts[:use].is_a?(File) #&& opts[:use].mtime > File.mtime(def_file)
-#           )
-#	 )
-#
-#	file = self.get_io(opts[:use], 'r')
-#
-#	# Un-marshal our saved data structures.
-##	file.flock(File::LOCK_SH)
-#	@lh_sides, @states, @symbols = Marshal.load(file)
-##	file.flock(File::LOCK_UN)
-#
-#	# Close the file if we opened it.
-#	file.close if opts[:use].is_a?(String)
-#
-#	# Remove any un-needed data and return.
-#	return self.clean
-      end
+               # FIXME: See why this is failing for the simple ListParser example.
+               def_file = caller()[2].split(':')[0] if opts.has_key? :use
 
-      # Grab all of the symbols that comprise the grammar
-      # (besides the start symbol).
-      @@symbols = @@grammar.symbols.to_a + ["ERROR"]
-      # Add our starting state to the state list.
-      @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
-      start_production    = @@grammar.production(@@start_symbol as String, @@grammar.start_symbol as String)[:production]
-      start_state         = State.new(@@symbols, [start_production.to_item])
-      start_state.close(@@grammar.productions_sym)
-      self.add_state(start_state)
+               # Grab all of the symbols that comprise the grammar
+               # (besides the start symbol).
+               @@symbols = @@grammar.symbols.to_a + ["ERROR"]
+               # Add our starting state to the state list.
+               @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
+               start_production    = @@grammar.production(@@start_symbol as String, @@grammar.start_symbol as String)[:production]
+               start_state         = State.new(@@symbols, [start_production.to_item])
+               start_state.close(@@grammar.productions_sym)
+               self.add_state(start_state)
 
-      # Translate the precedence of productions from tokens to
-      # (associativity, precedence) pairs.
-      @@production_precs = @@production_precs_prepare.map do |id, prec|
-        @@token_precs.not_nil![prec]?
-      end
-      # Build the rest of the transition table.
-      each_state do |state|
-        # Transition states.
-        tstates = Hash(String, State).new {|h,k| h[k] = State.new(@@symbols) }
+               # Translate the precedence of productions from tokens to
+               # (associativity, precedence) pairs.
+               @@production_precs = @@production_precs_prepare.map do |id, prec|
+                 @@token_precs.not_nil![prec]?
+               end
+               # Build the rest of the transition table.
+               each_state do |state|
+                 # Transition states.
+                 tstates = Hash(String, State).new {|h,k| h[k] = State.new(@@symbols) }
 
-	#Bin each item in this set into reachable transition
-	#states.
+	         #Bin each item in this set into reachable transition
+	         #states.
 
-	state.each do |item|
-	  if (next_symbol = item.next_symbol)
-            unless tstates[next_symbol]?
-              tstates[next_symbol] = State.new(@@symbols)
-            end
-            tstates[next_symbol] << item.copy
-	  end
-	end
-	# For each transition state:
-	#  1) Get transition symbol
-	#  2) Advance dot
-	#  3) Close it
-	#  4) Get state id and add transition
-	tstates.each do |symbol, tstate|
-	  tstate.each { |item| item.advance }
+	         state.each do |item|
+	           if (next_symbol = item.next_symbol)
+                     unless tstates[next_symbol]?
+                              tstates[next_symbol] = State.new(@@symbols)
+                     end
+                     tstates[next_symbol] << item.copy
+	           end
+	         end
+	         # For each transition state:
+	         #  1) Get transition symbol
+	         #  2) Advance dot
+	         #  3) Close it
+	         #  4) Get state id and add transition
+	         tstates.each do |symbol, tstate|
+	           tstate.each { |item| item.advance }
 
-	  tstate.close(@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
+	           tstate.close(@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
 
-	  id = self.add_state(tstate)
+	           id = self.add_state(tstate)
 
-	  # Add Goto and Shift actions.
-	  state.on(symbol, CFG.is_nonterminal?(symbol) ? GoTo.new(id) : Shift.new(id))
-	end
+	           # Add Goto and Shift actions.
+	           state.on(symbol, CFG.is_nonterminal?(symbol) ? GoTo.new(id) : Shift.new(id))
+	         end
 
-	# Find the Accept and Reduce actions for this state.
-	state.each do |item|
-	  if item.at_end?
-	    if item.lhs == @@start_symbol
-	      state.on("EOS", Accept.new)
-	    else
-	      state.add_reduction(
-                (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[item.id]
-              )
-	    end
-	  end
-	end
-      end
+	         # Find the Accept and Reduce actions for this state.
+	         state.each do |item|
+	           if item.at_end?
+	             if item.lhs == @@start_symbol
+	               state.on("EOS", Accept.new)
+	             else
+	               state.add_reduction(
+                         (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[item.id]
+                       )
+	             end
+	           end
+	         end
+               end
 
-      # Build the production.id -> production.lhs map.
-      @@grammar.productions_id.each do |id, production|
-        @@lh_sides[id as Int32] = (production as CLTK::CFG::Production).not_nil!.lhs
-      end
+               # Build the production.id -> production.lhs map.
+               @@grammar.productions_id.each do |id, production|
+                 @@lh_sides[id as Int32] = (production as CLTK::CFG::Production).not_nil!.lhs
+               end
 
-      # Prune the parsing table for unnecessary reduce actions.
-      self.prune(opts[:lookahead]?, opts[:precedence]?)
+               # Prune the parsing table for unnecessary reduce actions.
+               self.prune(opts[:lookahead]?, opts[:precedence]?)
 
-      # Check the parser for inconsistencies.
-      self.check_sanity
+               # Check the parser for inconsistencies.
+               self.check_sanity
 
-      # Print the table if requested.
-      exp = opts[:explain]?
-      if exp.is_a? IO
-        self.explain(exp)
-      end
+               # Print the table if requested.
+               exp = opts[:explain]?
+                       if exp.is_a? IO
+                         self.explain(exp)
+                       end
 
-      # Remove any data that is no longer needed.
-      self.clean
-      # Store the parser's final data structures if requested.
-      if opts[:use]?
-        raise Exception.new "storing the parser to a file is not yet supported"
-        #	io = self.get_io(opts[:use])
-        #
-        #	io.flock(File::LOCK_EX) if io.is_a?(File)
-        #	Marshal.dump([@lh_sides, @states, @symbols], io)
-        #	io.flock(File::LOCK_UN) if io.is_a?(File)
-        #
-        #	# Close the IO object if we opened it.
-        #	io.close if opts[:use].is_a?(String)
-      end
-    end
+                       # Remove any data that is no longer needed.
+                       self.clean
+             end
 
-    # Converts an object into an IO object as appropriate.
-    #
-    # @param [Object]  o     Object to be converted into an IO object.
-    # @param [String]  mode  String representing the mode to open the IO object in.
-    #
-    # @return [IO, false] The IO object or false if a conversion wasn't possible.
+             # Converts an object into an IO object as appropriate.
+             #
+             # @param [Object]  o     Object to be converted into an IO object.
+             # @param [String]  mode  String representing the mode to open the IO object in.
+             #
+             # @return [IO, false] The IO object or false if a conversion wasn't possible.
     def self.get_io(o, mode = "w")
       if o.is_a?(Bool)
         STDOUT
@@ -833,7 +797,7 @@ module CLTK
     # @option opts [Boolean,String,IO]  :verbose     To be verbose or not.
     #
     # @return [Object, Array<Object>]  Result or results of parsing the given tokens.
-    def self.parse(tokens, opts = {} of Symbol => (Symbol))
+    def self.parse(tokens, opts = nil)
       parser.parse(tokens, opts)
     end
 
@@ -1047,18 +1011,11 @@ module CLTK
     # Instance Methods #
     ####################
 
-    # Instantiates a new parser and creates an environment to be
-    # used for subsequent calls.
-    @env : Environment
-    def  initialize
-      @env = (@@env || Environment).new
-    end
-
     # Parses the given token stream using the encapsulated environment.
     #
     # @see .parse
     def parse(tokens)
-      self.class.parse(tokens, {:env => @env})
+      self.class.parse(tokens, {env: @env})
     end
   end
 end

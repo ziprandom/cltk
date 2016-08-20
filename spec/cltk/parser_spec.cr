@@ -265,38 +265,41 @@ class UnderscoreParser < CLTK::Parser
   finalize
 end
 
-#class RotatingCalc < CLTK::Parser
-#  class MyEnvironment < Environment
-#    def initialize
-#      @map = { :+ => 0, :- => 1, :* => 2, :/ => 3 }
-#      @ops = [ :+, :-, :*, :/ ]
-#      super()
-#    end
-#
-#    def get_op(orig_op)
-#      new_op = @ops[@map[orig_op]]
-#
-#      @ops = @ops[1..-1] << @ops[0]
-#
-#      new_op
-#    end
-#  end
-#
-#  setenv MyEnvironment
-#
-#  production(:e) do
-#    clause("NUM") {|n| n}
-#
-#    clause("PLS e e") { | e, env| e[0].send((env as MyEnvironment).get_op(:+), e[1]) as Int32}
-#    clause("SUB e e") { | e, env| e[0].send((env as MyEnvironment).get_op(:-), e[1]) as Int32}
-#    clause("MUL e e") { | e, env| e[0].send((env as MyEnvironment).get_op(:*), e[1]) as Int32}
-#    clause("DIV e e") { | e, env| e[0].send((env as MyEnvironment).get_op(:/), e[1]) as Int32}
-#    nil
-#  end
-#
-#
-#  finalize
-#end
+class RotatingCalc < CLTK::Parser
+  class Environment < Environment
+    @map = { :+ => 0, :- => 1, :* => 2, :/ => 3 }
+    @ops : Array(
+             Proc(Int32, Int32, Int32)
+           ) = [
+      ->(a : Int32, b : Int32) { a + b }, # +
+      ->(a : Int32, b : Int32) { a - b }, # -
+      ->(a : Int32, b : Int32) { a * b }, # *
+      ->(a : Int32, b : Int32) { a / b }  # /
+    ]
+
+    def get_op(orig_op)
+      new_op = @ops[@map[orig_op]]
+
+      @ops = @ops[1..-1] << @ops[0]
+
+      new_op
+    end
+  end
+
+  production(:e) do
+    clause("NUM") {|n| n}
+
+    clause("PLS e e") { | op, e1, e2| get_op(:+).call(e1 as Int32, e2 as Int32) }
+    clause("SUB e e") { | op, e1, e2| get_op(:-).call(e1 as Int32, e2 as Int32) }
+    clause("MUL e e") { | op, e1, e2| get_op(:*).call(e1 as Int32, e2 as Int32) }
+    clause("DIV e e") { | op, e1, e2| get_op(:/).call(e1 as Int32, e2 as Int32) }
+    nil
+  end
+
+
+  finalize
+end
+
 class SelectionParser < CLTK::Parser
   production(:s, "A+ .B+") do |bs|
     (bs as Array).reduce(0) do |sum, add|
@@ -320,7 +323,7 @@ class TokenHookParser < CLTK::Parser
     nil
   end
 
-  class CounterEnvironment < Environment
+  class Environment < Environment
     property :counter
 
     def initialize
@@ -330,10 +333,8 @@ class TokenHookParser < CLTK::Parser
 
   end
 
-  setenv CounterEnvironment
-
-  token_hook(:A) { |env| (env as CounterEnvironment).counter += 1; next nil }
-  token_hook(:B) { |env| (env as CounterEnvironment).counter += 2; next nil }
+  token_hook(:A) { |env| (env as Environment).counter += 1; next nil }
+  token_hook(:B) { |env| (env as Environment).counter += 2; next nil }
 
   finalize
 end
@@ -341,7 +342,7 @@ end
 describe "CLTK::Parser" do
 
   it "test_ambiguous_grammar" do
-    actual = AmbiguousParser.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3"), {:accept => :all})
+    actual = AmbiguousParser.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3"), {accept: :all})
     actual.should eq [9,7]
   end
 
@@ -504,7 +505,7 @@ describe "CLTK::Parser" do
 
   end
 
-  pending "test_environment" do
+  it "test_environment" do
     actual = RotatingCalc.parse(CLTK::Lexers::Calculator.lex("+ 1 2"))
     actual.should eq 3
 
@@ -703,10 +704,10 @@ describe "CLTK::Parser" do
     parser = TokenHookParser.new
 
     parser.parse(AlphaLexer.lex("a a a a"))
-    (parser.env as TokenHookParser::CounterEnvironment).counter.should eq 4
+    (parser.env as TokenHookParser::Environment).counter.should eq 4
 
     parser.parse(AlphaLexer.lex("b b b b"))
-    (parser.env as TokenHookParser::CounterEnvironment).counter.should eq 12
+    (parser.env as TokenHookParser::Environment).counter.should eq 12
   end
 
   it "test_underscore_tokens" do

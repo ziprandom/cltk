@@ -12,22 +12,22 @@ module CLTK
 
       def initialize(@symbols, @lh_sides, @states, @procs, @token_hooks, @env); end
 
-      private def build_parse_opts(opts)
+      private def build_parse_opts(opts : NamedTuple?)
         {
-	  :accept     => :first,
-	  :env        => (@env || Environment).new,
-	  :parse_tree => nil,
-	  :verbose    => STDOUT
+	  accept:     :first,
+	  env:        (@env || Environment).new,
+	  parse_tree: nil,
+	  verbose:    nil
         }.merge(opts)
       end
 
-      def parse(tokens, opts = {} of Symbol => (Symbol))
+      def parse(tokens, popts : NamedTuple?)
         if @symbols.nil?
 	  raise "\n\n!!! The Parser doesn't have any Symbols defined, did you forget to call the 'finalize' class method ?\n\n"
         end
 
         # Get the full options hash.
-        opts = build_parse_opts({ :verbose => false }.merge(opts))
+        opts = build_parse_opts(popts)
         v = STDOUT
 
         if opts[:verbose]
@@ -69,7 +69,7 @@ module CLTK
 	  while (processing.size > 0)
             stack = processing.shift
 	    # Execute any token hooks in this stack's environment.
-	    @token_hooks.not_nil![token.type.to_s].each { |hook| hook.call(opts[:env] as Environment)}
+	    @token_hooks.not_nil![token.type.to_s].each { |hook| hook.call(opts[:env])}
 
 	    # Get the available actions for this stack.
 	    actions = @states.not_nil![stack.state as Int32].on?(token.type.to_s)

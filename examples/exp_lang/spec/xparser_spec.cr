@@ -10,7 +10,7 @@ it "EXP_LANG::Parser::Comments" do
            "# several lines \n"
   tokens = lexer.lex(string)
   it "parses a programm ignoring commented lines" do
-    res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
+    res = ((parser.parse(tokens, {accept: :first}) as XProgram).expressions as Array).first
     res.class.should eq Add
     rright = (res as Add).right as ANumber
     rleft = (res as Add).left as ANumber
@@ -24,7 +24,7 @@ describe "EXP_LANG::Parser::VariableAssignment" do
   parser = EXP_LANG::Parser
   string = "b = 123 + 3"
   tokens = lexer.lex(string)
-  res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
+  res = ((parser.parse(tokens, {accept: :first}) as XProgram).expressions as Array).first
   it "should parse an Assignment as such" do
     res.class.should eq VarAssign
   end
@@ -58,7 +58,7 @@ describe "EXP_LANG::Parser::VariableAssignment" do
       lexer = EXP_LANG::Lexer
       parser = EXP_LANG::Parser
       tokens = lexer.lex(src)
-      res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
+      res = ((parser.parse(tokens, {accept: :first}) as XProgram).expressions as Array).first
       res.class.should eq VarAssign
       res.to_s.should eq s
     end
@@ -78,7 +78,7 @@ describe "EXP_LANG::Parser::FunDef" do
 #  string = "def stuff(a,b,c);10+2;end"
   tokens = lexer.lex(string)
 #  pp tokens.map &.type
-  res = ((parser.parse(tokens, {:accept => :first}) as XProgram).expressions as Array).first
+  res = ((parser.parse(tokens, {accept: :first}) as XProgram).expressions as Array).first
 
   it "should parse a list of expressions as a Prototype" do
       res.class.should eq Prototype
@@ -191,7 +191,7 @@ describe "EXP_LANG::Language" do
       lexer = EXP_LANG::Lexer
       parser = EXP_LANG::Parser
       tokens = lexer.lex(program)
-      res = parser.parse(tokens, {:accept => :first}) as Expression
+      res = parser.parse(tokens, {accept: :first}) as Expression
       res.eval_scope(scope).to_s.should eq result
     end
 
