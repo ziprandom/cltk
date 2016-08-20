@@ -2,7 +2,7 @@ module CLTK
   class Parser
     # The Action class is used to indicate what action the parser should
     # take given a current state and input token.
-    class Action
+    abstract struct Action
       # @return [Integer] ID of this action.
       getter :id
 
@@ -13,7 +13,7 @@ module CLTK
 
     # The Accept class indicates to the parser that it should accept the
     # current parse tree.
-    class Accept < Action
+    struct Accept < Action
       # @return [String] String representation of this action.
       def to_s
         "Accept"
@@ -22,7 +22,7 @@ module CLTK
 
     # The GoTo class indicates to the parser that it should goto the state
     # specified by GoTo.id.
-    class GoTo < Action
+    struct GoTo < Action
       # @return [String] String representation of this action.
       def to_s
         "GoTo #{self.id}"
@@ -31,7 +31,7 @@ module CLTK
 
     # The Reduce class indicates to the parser that it should reduce the
     # input stack by the rule specified by Reduce.id.
-    class Reduce < Action
+    struct Reduce < Action
 
       # @param [Production]  production  Production to reduce by
       def initialize(production : CLTK::CFG::Production)
@@ -48,7 +48,7 @@ module CLTK
 
     # The Shift class indicates to the parser that it should shift the
     # current input token.
-    class Shift < Action
+    struct Shift < Action
       # @return [String] String representation of this action.
       def to_s
         "Shift to State #{self.id}"

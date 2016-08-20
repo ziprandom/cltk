@@ -3,14 +3,14 @@ require "./state"
 module CLTK
   class Parser
     class Parser
-      @symbols: Array(String) | Nil
+      @symbols: Array(String)
       @lh_sides: Hash(Int32, String)
       @states: Array(State)
       @procs: Hash(Int32, {ProdProc, Int32})
       @token_hooks: Hash(String, Array(Proc(Environment, Nil)))
       @env : (Environment.class) | Nil
 
-      def initialize(@symbols, @lh_sides, @states, @procs, @token_hooks, @env); end
+      def initialize(@symbols : Array(String), @lh_sides, @states, @procs, @token_hooks, @env); end
 
       private def build_parse_opts(opts : NamedTuple?)
         {
@@ -22,19 +22,15 @@ module CLTK
       end
 
       def parse(tokens, popts : NamedTuple?)
-        if @symbols.nil?
-	  raise "\n\n!!! The Parser doesn't have any Symbols defined, did you forget to call the 'finalize' class method ?\n\n"
-        end
-
         # Get the full options hash.
         opts = build_parse_opts(popts)
-        v = STDOUT
 
-        if opts[:verbose]
+        {% if env("VERBOSE") %}
+          v = STDOUT
 	  v.puts("Input tokens:")
 	  v.puts(tokens.map { |t| t.type }.inspect)
 	  v.puts
-        end
+        {% end %}
 
         # Stack IDs to keep track of them during parsing.
         stack_id = 0
@@ -53,37 +49,37 @@ module CLTK
         tokens.each_with_index do |token, index|
 	  # Check to make sure this token was seen in the
 	  # grammar definition.
-          unless @symbols.not_nil!.includes?(token.type.to_s)
+          unless @symbols.includes?(token.type.to_s)
 	    raise BadToken.new(token)
           end
-          st = if token.value
-                 "(" + (token.value.to_s as String) + ")"
-               else
-                 ""
-               end
-          if opts[:verbose]
-	    v.puts("Current token: #{token.type}#{st}")
-          end
-	  # Iterate over the stacks until each one is done.
 
-	  while (processing.size > 0)
+          {% if env("VERBOSE") %}
+            st = if token.value
+                   "(" + (token.value.to_s as String) + ")"
+                 else
+                   ""
+                 end
+	    v.puts("Current token: #{token.type}#{st}")
+          {% end %}
+
+	  # Iterate over the stacks until each one is done.
+	  while (processing.any?)
             stack = processing.shift
 	    # Execute any token hooks in this stack's environment.
-	    @token_hooks.not_nil![token.type.to_s].each { |hook| hook.call(opts[:env])}
+	    @token_hooks.[token.type.to_s].each { |hook| hook.call(opts[:env])}
 
-	    # Get the available actions for this stack.
-	    actions = @states.not_nil![stack.state as Int32].on?(token.type.to_s)
+	    # Get the available actions for
+	    actions = @states[stack.state].on?(token.type.to_s)
 	    if actions.empty?
 	      # If we are already in error mode and there
 	      # are no actions we skip this token.
-
 	      if error_mode
-                st = if token.value
-                       "(" + (token.value.to_s as String) + ")"
-                     end
-	        if opts[:verbose]
+	        {% if env("VERBOSE") %}
+                  st = if token.value
+                         "(" + (token.value.to_s as String) + ")"
+                       end
 	          v.puts("Discarding token: #{token.type}#{st}") if v
-                end
+                {% end %}
 	        # Add the current token to the array
 	        # that corresponds to the output value
 	        # for the ERROR token.
@@ -96,18 +92,18 @@ module CLTK
 	      # are going to go into error mode.
 	      if accepted.empty? && moving_on.empty? && processing.empty?
 
-	        if opts[:verbose]
+                {% if env("VERBOSE") %}
 	          v.puts
 	          v.puts("Current stack:")
 	          v.puts("\tID: #{stack.id}")
 	          v.puts("\tState stack:\t#{stack.state_stack.inspect}")
 	          v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
 	          v.puts
-	        end
+                {% end %}
 
 	        # Try and find a valid error state.
-	        while stack.state_stack.size > 0
-	          if (actions = @states.not_nil![stack.state].on?(:ERROR.to_s)).empty?
+	        while stack.state_stack.any?
+	          if (actions = @states[stack.state].on?(:ERROR.to_s)).empty?
 	            # This state doesn't have an
 	            # error production. Moving on.
                     stack.pop
@@ -117,28 +113,28 @@ module CLTK
 	            break
 	          end
 	        end
-	        if stack.state_stack.size > 0
+	        if stack.state_stack.any?
 	          # We found a valid error state.
 	          error_mode = reduction_guard = true
-	          (opts[:env] as Environment).he = true
+	          opts[:env].he = true
 	          moving_on << stack
 
-	          if opts[:verbose]
+                  {% if env("VERBOSE") %}
 	            v.puts("Invalid input encountered.  Entering error handling mode.")
 	            v.puts("Discarding token: #{token.type}(#{token.value})")
-		  end
+                  {% end %}
 	        else
 		  # No valid error states could be
 		  # found.  Time to print a message
 		  # and leave.
-	          if opts[:verbose]
+                  {% if env("VERBOSE") %}
                     v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
-                  end
+                  {% end %}
 	        end
 	      else
-                if opts[:verbose]
+                {% if env("VERBOSE") %}
 	          v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
-                end
+                {% end %}
 	      end
 
 	      next
@@ -148,10 +144,9 @@ module CLTK
 	    # stack as necessary.
 	    pairs = ([{stack, actions.pop}] + actions.map {|action| {stack.branch(stack_id += 1), action} })
 	    pairs.each do |pair|
-              stack = pair[0] as ParseStack
-              action = pair[1] as Action
+              stack, action = pair
 
-	      if opts[:verbose]
+              {% if env("VERBOSE") %}
 	        v.puts
 	        v.puts("Current stack:")
 	        v.puts("\tID: #{stack.id}")
@@ -159,19 +154,23 @@ module CLTK
 	        v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
 	        v.puts
 	        v.puts("Action taken: #{action.to_s}")
-	      end
+	      {% end %}
 
 	      if action.is_a?(Accept)
 	        if opts[:accept] == :all
 		  accepted << stack
 	        else
-		  v.puts("Accepting input.") if opts[:verbose]
+                  {% if env("VERBOSE") %}
+		    v.puts("Accepting input.")
+                  {% end %}
                   if opts[:parse_tree]
 		    (opts[:parse_tree] as IO).puts(stack.tree)
                   end
 
-		  if (opts[:env] as Environment).he
- 		    error = HandledError.new((opts[:env] as Environment).errors, stack.result as CLTK::Type)
+		  if opts[:env].he
+ 		    error = HandledError.new(
+                      opts[:env].errors, stack.result
+                    )
                     raise error
 		  else
 		    return stack.result
@@ -180,29 +179,26 @@ module CLTK
 
 	      elsif action.is_a?(Reduce)
 	        # Get the production associated with this reduction.
-	        production_proc, pop_size = @procs.not_nil![action.id]
+	        production_proc, pop_size = @procs[action.id]
 	        if !production_proc
 		  raise InternalParserException.new "No production #{action.id} found."
 	        end
 	        args, positions = stack.pop(pop_size)
-	        (opts[:env] as Environment).set_positions(positions)
+	        opts[:env].set_positions(positions)
 
  	        if !production_proc.selections.empty?
-                  new_args = [] of Type
-                  production_proc.selections.each do |selection|
-                    new_args = new_args + [ args[selection] ]
+                  args = production_proc.selections.map do |selection|
+                    args[selection] as Type
                   end
-                  args = new_args
                 end
-                a = Array(Type).new
-                args = args.each { |e| a << (e as Type)}
 
 	        result = begin
-                           production_proc.call(a as Array(Type), opts[:env])
+                           production_proc.call(args, opts[:env])
 		         end
-	        if (goto = @states.not_nil![stack.state].on?(@lh_sides.not_nil![action.id]).first)
-
-		  v.puts("Going to state #{goto.id}.\n") if opts[:verbose]
+	        if (goto = @states[stack.state].on?(@lh_sides[action.id]).first)
+                  {% if env("VERBOSE") %}
+		    v.puts("Going to state #{goto.id}.\n")
+                  {% end %}
 		  pos0 = nil
 		  if args.empty?
 		    # Empty productions need to be
@@ -214,12 +210,12 @@ module CLTK
 
 		    pos0.length = 0
 		  else
-		    pos0 = (opts[:env] as Environment).pos( 0) as StreamPosition
-		    pos1 = (opts[:env] as Environment).pos(-1) as StreamPosition
+		    pos0 = opts[:env].pos( 0) as StreamPosition
+		    pos1 = opts[:env].pos(-1) as StreamPosition
 		    pos0.length = (pos1.stream_offset + pos1.length) - pos0.stream_offset
 		  end
                   result = nil if result.is_a? Void
-		  stack.push(goto.id, result, @lh_sides.not_nil![action.id], pos0)
+		  stack.push(goto.id, result, @lh_sides[action.id], pos0)
 	        else
 		  raise InternalParserException.new "No GoTo action found in state #{stack.state} " +
 					            "after reducing by production #{action.id}"
@@ -244,7 +240,9 @@ module CLTK
 	    end
 	  end
 
-	  v.puts("\n\n") if opts[:verbose]
+          {% if env("VERBOSE") %}
+	    v.puts("\n\n")
+          {% end %}
 
 	  processing = moving_on
 	  moving_on  = [] of ParseStack
@@ -252,8 +250,9 @@ module CLTK
 	  # If we don't have any active stacks at this point the
 	  # string isn't in the language.
 	  if opts[:accept] == :first && processing.size == 0
-            #	  v.close if v && v != $stdout
-            #	  raise NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
+            {% if env("VERBOSE") %}
+              v.close unless v == STDOUT
+            {% end%}
 	    raise NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
 
 	  end
@@ -263,19 +262,20 @@ module CLTK
 
         # If we have reached this point we are accepting all parse
         # trees.
-        if opts[:verbose]
+        {% if env("VERBOSE") %}
 	  v.puts("Accepting input with #{accepted.size} derivation(s).")
+          v.close unless v == STDOUT
+        {% end %}
 
-          #	v.close if v != $stdout
-        end
         if opts[:parse_tree]?
              accepted.each do |stack|
 	       (opts[:parse_tree] as IO).puts(stack.tree)
              end
         end
+
         results = accepted.map { |stack| stack.result as CLTK::Type}
 
-        if (opts[:env] as Environment).he
+        if (opts[:env]).he
 	  raise HandledError.new((opts[:env] as Environment).errors, results as CLTK::Type)
         else
 	  return results

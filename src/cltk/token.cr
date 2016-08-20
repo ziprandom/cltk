@@ -7,7 +7,7 @@
 module CLTK
   # The StreamPosition class is used to indicate the position of a token or
   # other text inside a stream.
-  class StreamPosition
+  struct StreamPosition
     # @return [Integer]
     property :stream_offset
 
@@ -40,7 +40,7 @@ module CLTK
 
   # The Token class is used to represent the output of a RLTK::Lexer and the
   # input of a RLTK::Parser.
-  class Token
+  struct Token
     # @return [Symbol]
     getter :type
 

@@ -25,7 +25,7 @@ module CLTK
       # @param [Item]  other  Another item to compare to.
       #
       # @return [Boolean]
-      def ==(other)
+      def ==(other : Item)
         self.dot == other.dot && self.lhs == other.lhs && self.rhs == other.rhs
       end
 

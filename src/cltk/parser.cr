@@ -139,7 +139,7 @@ module CLTK
         unless @@symbols
           raise CLTK::UselessParserException.new
         end
-        Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
+        Parser.new(@@symbols.not_nil!, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
       end
 
     end
