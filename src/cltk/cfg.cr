@@ -20,7 +20,7 @@ module CLTK
     @callback            : ProductionCallbackType           =  ProductionCallbackType.new {}
     @start_symbol        : String?                          =  nil
     @curr_lhs            : String?                          =  nil
-    @lexer               : Lexer                            =  Lexers::EBNF.new
+    @lexer               : Lexers::EBNF                     =  Lexers::EBNF.new
     @production_buffer   : Array(ProductionBufferType)      = [] of ProductionBufferType
     @terms               : Set(String)                      = Set(String).new(["EOS"])
     @nonterms            : Set(String)                      = Set(String).new
