@@ -717,35 +717,7 @@ describe "CLTK::Parser" do
     actual.should eq expected
   end
 
-  pending "test_use" do
-    tmpfile = File.join(Dir.tmpdir, "usetest")
-
-    FileUtils.rm(tmpfile) if File.exist?(tmpfile)
-
-    parser0 = Class.new(CLTK::Parser) do
-      production(:a, "A+") { |a| a.size }
-
-      finalize use: tmpfile
-    end
-
-    result0 = parser0.parse(ABLexer.lex("a"))
-
-    assert(File.exist?(tmpfile), "Serialized parser file not found.")
-
-    parser1 = Class.new(CLTK::Parser) do
-      production(:a, "A+") { |a| a.size }
-
-      finalize use: tmpfile
-    end
-
-    result1 = parser1.parse(ABLexer.lex("a"))
-
-    assert_equal(result0, result1)
-
-    File.unlink(tmpfile)
-  end
-
-  pending "test_useless_parser_exception" do
+  it "test_useless_parser_exception" do
     expect_raises(CLTK::UselessParserException) { UselessParser.new }
   end
 end
