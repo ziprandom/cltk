@@ -14,7 +14,7 @@ class ENVLexer < CLTK::Lexer
 
     def next_value
       @value += 1
-      @value as Int32
+      @value.as(Int32)
     end
 
   end

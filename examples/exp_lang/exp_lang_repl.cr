@@ -28,7 +28,7 @@ while true
     tokens = lexer.lex(input)
 
     # parse lexed tokens
-    res = parser.parse(tokens, {:accept => :first}) as CLTK::ASTNode
+    res = parser.parse(tokens, {accept: :first}).as(CLTK::ASTNode)
 
     # evaluate the result with a given scope
     # (scope my be altered by the expression)

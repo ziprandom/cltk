@@ -67,10 +67,10 @@ module EXP_LANG
 
     production(:hash) do
       clause("LCBRACK hash_pairs RCBRACK") do |_, hash_pairs, _|
-        hash = (hash_pairs as Array).reduce(Hash(Variable, Expression).new) do |hash, pair|
-          key, value = pair as Array
+        hash = hash_pairs.as(Array).reduce(Hash(Variable, Expression).new) do |hash, pair|
+          key, value = pair.as(Array)
           if value.is_a? Expression
-            hash[key as Variable] = value
+            hash[key.as(Variable)] = value
           end
           hash
         end
@@ -102,7 +102,7 @@ module EXP_LANG
     end
 
     production(:number) do
-      clause(:NUMBER)	{ |n| ANumber.new(value: n as Float64) }
+      clause(:NUMBER)	{ |n| ANumber.new(value: n.as(Float64)) }
     end
 
     production(:varassign) do
@@ -123,12 +123,12 @@ module EXP_LANG
 
     production(:fun_def) do
       clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
-        args_vars = ((head as Array)[1] as Array).map {|v| Variable.new(name: v)}
-        exps = (body as Array)
+        args_vars = head.as(Array)[1].as(Array).map {|v| Variable.new(name: v)}
+        exps = body.as(Array)
                .reduce([] of Expression) do |a, exp|
-          a = a + [exp as Expression]
+          a = a + [exp.as(Expression)]
         end
-        Prototype.new(name: (head as Array).first, args: args_vars as Array, body: FunBody.new(expressions: exps), scope: nil)
+        Prototype.new(name: head.as(Array).first, args: args_vars.as(Array), body: FunBody.new(expressions: exps), scope: nil)
       end
     end
 

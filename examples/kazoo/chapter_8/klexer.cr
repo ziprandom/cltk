@@ -40,12 +40,12 @@ module Kazoo
     rule(/:/)		{ :SEQ    }
 
     # Identifier rule.
-    rule(/[A-Za-z][A-Za-z0-9]*/) { |t| {:IDENT, t} as BlockReturn}
+    rule(/[A-Za-z][A-Za-z0-9]*/) { |t| {:IDENT, t}.as(BlockReturn)}
 
     # Numeric rules.
-    rule(/\d+/)		 { |t| {:NUMBER, t.to_f} as BlockReturn}
-    rule(/\.\d+/)	 { |t| {:NUMBER, t.to_f} as BlockReturn}
-    rule(/\d+\.\d+/)	 { |t| {:NUMBER, t.to_f} as BlockReturn}
+    rule(/\d+/)		 { |t| {:NUMBER, t.to_f}.as(BlockReturn)}
+    rule(/\.\d+/)	 { |t| {:NUMBER, t.to_f}.as(BlockReturn)}
+    rule(/\d+\.\d+/)	 { |t| {:NUMBER, t.to_f}.as(BlockReturn)}
 
     # Comment rules.
     rule(/#/)		 { |m| push_state :comment }

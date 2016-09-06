@@ -44,13 +44,13 @@ module EXP_LANG
                 rule(/else/) { :ELSE   }
 
 		# Identifier rule.
-		rule(/"[^\"]*"/) { |t| {:STRING, t[1...-1]} as BlockReturn}
-		rule(/[A-Za-z][_A-Za-z0-9]*/) { |t| {:IDENT, t} as BlockReturn}
+		rule(/"[^\"]*"/) { |t| {:STRING, t[1...-1]}.as(BlockReturn) }
+		rule(/[A-Za-z][_A-Za-z0-9]*/) { |t| {:IDENT, t}.as(BlockReturn) }
 
 		# Numeric rules.
-		rule(/\d+/)		{ |t| {:NUMBER, t.to_f} as BlockReturn}
-		rule(/\.\d+/)		{ |t| {:NUMBER, t.to_f} as BlockReturn}
-		rule(/\d+\.\d+/)	{ |t| {:NUMBER, t.to_f} as BlockReturn}
+		rule(/\d+/)		{ |t| {:NUMBER, t.to_f}.as(BlockReturn) }
+		rule(/\.\d+/)		{ |t| {:NUMBER, t.to_f}.as(BlockReturn) }
+		rule(/\d+\.\d+/)	{ |t| {:NUMBER, t.to_f}.as(BlockReturn) }
 
 		# Comment rules.
 		rule(/#/)				{ |a| push_state :comment }

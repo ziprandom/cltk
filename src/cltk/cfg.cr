@@ -87,9 +87,9 @@ module CLTK
         if token.type.in? [:TERM, :NONTERM]
 	  # Add this symbol to the correct collection.
 	  if token.type == :TERM
-            @terms << token.value as String
+            @terms << token.value.as(String)
           else
-            @nonterms << token.value as String
+            @nonterms << token.value.as(String)
           end
 
           if (next_token = tokens[i + 1]?)
@@ -97,18 +97,18 @@ module CLTK
             rhs << case next_token.type
 	           when :QUESTION then
                      self.get_optional_production(
-                       "#{tvalue}_optional", token.value as String)
+                       "#{tvalue}_optional", token.value.as(String))
 	           when :STAR     then
                      self.get_list_production(
-                       "#{tvalue}_list", token.value as String)
+                       "#{tvalue}_list", token.value.as(String))
 	           when :PLUS     then
                      self.get_nonempty_list_production(
-                       "#{tvalue}_nonempty_list",token.value as String)
-	           else token.value as String
+                       "#{tvalue}_nonempty_list",token.value.as(String))
+	           else token.value.as(String)
                    end
             symbol_count += 1
           else
-	    rhs << token.value as String
+	    rhs << token.value.as(String)
           end
         elsif token.type == :DOT
 	  selections << symbol_count

@@ -66,13 +66,13 @@ module CLTK
     def push(state, o, node0, position)
       @state_stack << state.not_nil!
       if o.is_a? Array
-        a = [] of Type as Type
-        o.each { |e| (a as Array(Type)).push(e as Type) }
+        a = ([] of Type).as(Type)
+        o.each { |e| (a.as(Array(Type))).push(e.as(Type)) }
         @output_stack = @output_stack + [a]
       elsif o.is_a? Type
         @output_stack << o
       else
-        @output_stack << (o as Type)
+        @output_stack << o.as(Type)
       end
 
       @node_stack	<< @labels.size
@@ -80,7 +80,7 @@ module CLTK
       node0.to_s + "(#{o})"
     else
       node0.to_s
-    end as String
+    end.as(String)
     @positions	<< position.not_nil!
 
     if CFG.is_nonterminal?(node0)

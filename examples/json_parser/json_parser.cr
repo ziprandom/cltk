@@ -96,15 +96,15 @@ module JSON_PARSE
     end
 
     production(:json_integer) do
-      clause(:INTEGER)	{ |i| JsonInteger.new(number: i as Int32); }
+      clause(:INTEGER)	{ |i| JsonInteger.new(number: i.as(Int32)); }
     end
 
     production(:json_float) do
-      clause(:FLOAT)	{ |f| JsonFloat.new(number: f as Float64); }
+      clause(:FLOAT)	{ |f| JsonFloat.new(number: f.as(Float64)); }
     end
 
     production(:json_string) do
-      clause(:STRING)	{ |s| JsonString.new(string: s as String) }
+      clause(:STRING)	{ |s| JsonString.new(string: s.as(String)) }
     end
 
     production(:json_bool) do
@@ -125,10 +125,10 @@ module JSON_PARSE
 
     production(:json_object) do
       clause("LCBRACK hash_pairs RCBRACK") do |_, hash_pairs, _|
-        hash = (hash_pairs as Array).reduce(Hash(String, JsonExpression).new) do |hash, pair|
-          pair = pair as Array
-          key = pair[0] as JsonString
-          value = pair[1] as JsonExpression
+        hash = (hash_pairs.as(Array)).reduce(Hash(String, JsonExpression).new) do |hash, pair|
+          pair = pair.as(Array)
+          key = pair[0].as(JsonString)
+          value = pair[1].as(JsonExpression)
           hash[key.string.not_nil!] = value
           hash
         end
@@ -165,9 +165,9 @@ module JSON_PARSE
     def visit(node, skip_first_line = false)
       result = ""
       @env = @env.tap do |env|
-        @env = 2 + env as Int32
+        @env = 2 + env.as(Int32)
         result = indent_text(
-          (wrapped_visit(node) as String),
+          (wrapped_visit(node).as(String)),
           @env, skip_first_line
         )
       end
@@ -196,15 +196,15 @@ module JSON_PARSE
   class JsonOutputer < JsonSerializer
 
     on JsonArray do |array|
-      serialized_children = (array.elements as Array).map do |child|
-        "  " + (visit child, true) as String
+      serialized_children = array.elements.as(Array).map do |child|
+        "  " + (visit child, true).as(String)
       end.join(",\n")
       "[\n" + serialized_children + "\n]"
     end
 
     on JsonObject do |object|
-      serialized_children = (object.hash as Hash).map do |key, value|
-        ("  \"#{key}\": " + visit(value, true) as String)
+      serialized_children = object.hash.as(Hash).map do |key, value|
+        ("  \"#{key}\": " + visit(value, true).as(String))
        end.join(",\n")
       "{\n" + serialized_children + "\n}"
     end
@@ -237,17 +237,17 @@ module JSON_PARSE
   class XmlOutputer < JsonSerializer
 
     on JsonArray do |array|
-      serialized_children = (array.elements as Array).map do |child|
-        "  <item>\n" + (visit child) as String + "\n  </item>"
+      serialized_children = array.elements.as(Array).map do |child|
+        "  <item>\n" + (visit child).as(String) + "\n  </item>"
       end.join("\n")
       "<list>\n" + serialized_children + "\n</list>"
     end
 
     on JsonObject do |object|
-      serialized_children = (object.hash as Hash).map do |key, value|
-          ("<#{key}>\n" + visit(value) as String + "\n</#{key}>")
+      serialized_children = object.hash.as(Hash).map do |key, value|
+          ("<#{key}>\n" + visit(value).as(String) + "\n</#{key}>")
       end.join("\n")
-      serialized_children as String
+      serialized_children.as(String)
     end
 
     on JsonBool do |bool|

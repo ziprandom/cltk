@@ -50,15 +50,17 @@ describe("brainfuck") do
 
       # lex, parse, interpret
       tokens = lexer.lex(program_text)
-      intermediate_representation = parser.parse(tokens) as BrainFuck::Program
-      result = interpreter.new(intermediate_representation).run
+      intermediate_representation = parser.parse(tokens).as(BrainFuck::Program)
+
+      result1 = interpreter.new(intermediate_representation).run
 
       # output map ordinal integers to chars and join
-      result.map do |ordinal_number|
+      result1.map do |ordinal_number|
         if (ordinal_number)
           ordinal_number.chr
         end
       end.join
+
 
     rescue e: CLTK::LexingError
       puts "Lexing Error"

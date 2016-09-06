@@ -14,7 +14,7 @@ def parse_json(json_text)
     puts "Not In Language"
   rescue e
     puts "an error occured"
-  end as JSON_PARSE::JsonExpression
+  end.as(JSON_PARSE::JsonExpression)
 end
 
 piped_in = IO::ARGF.new(ARGV, STDIN).gets_to_end

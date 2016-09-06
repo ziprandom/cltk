@@ -232,7 +232,7 @@ module CLTK
                 {{action.args.first.id}} = %txt
               {% end %}
             %env.match = %match
-            %res = yield_with(%env as {{@type}}::Environment) do
+            %res = yield_with(%env.as({{@type}}::Environment)) do
               {{action.body}}
             end
 

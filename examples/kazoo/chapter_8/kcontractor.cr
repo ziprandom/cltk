@@ -52,7 +52,7 @@ module Kazoo
                                             proto: Kazoo::Prototype.new(name: "", arg_names: [] of String),
                                             body: ast)
       else raise "Attempting to add an unhandled node type to the JIT."
-      end as LLVM::Function
+      end.as(LLVM::Function)
     end
 
     on Assign do |node|
@@ -86,7 +86,7 @@ module Kazoo
 
 
       call callee,
-           node.args.map { |arg| (visit arg) as LLVM::Value },
+           node.args.map { |arg| (visit arg).as(LLVM::Value) },
            "calltmp"
     end
 
@@ -117,7 +117,7 @@ module Kazoo
       # @st.clear
 
       # Translate the function"s prototype.
-      func = visit node.proto as Prototype
+      func = visit node.proto.as(Prototype)
       func.params.to_a.each do |param|
 	@st[param.name] = alloca LLVM::Double, param.name
 	store param, @st[param.name]
@@ -213,7 +213,7 @@ module Kazoo
         then_val, new_then_bb = with_builder(builder) do
           { visit(node.elseExp), builder.insert_block }
         end
-        table.add(new_then_bb, then_val as LLVM::Value)
+        table.add(new_then_bb, then_val.as(LLVM::Value))
       end
 
       ## ELSE
@@ -222,7 +222,7 @@ module Kazoo
         else_val, new_else_bb = with_builder(builder) do
           { visit(node.thenExp), builder.insert_block }
         end
-        table.add(new_else_bb, else_val as LLVM::Value)
+        table.add(new_else_bb, else_val.as(LLVM::Value))
       end
 
       merge_bb = func.basic_blocks.append("merge")

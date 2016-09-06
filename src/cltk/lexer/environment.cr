@@ -21,7 +21,7 @@ module CLTK
       @match: Regex::MatchData?
 
       def match
-        @match as Regex::MatchData
+        @match.as(Regex::MatchData)
       end
 
       def initialize(start_state, @match = nil)

@@ -31,7 +31,7 @@ module Kazoo
 
     production(:e_list) do
       clause("e SEMI e")                 { |e1, _, e2| ExpressionList.new( expressions: [e1, e2] ) }
-      clause("e_list SEMI e")            { |e1, _, e2| ExpressionList.new( expressions: (e1 as ExpressionList).expressions + [e2] ) }
+      clause("e_list SEMI e")            { |e1, _, e2| ExpressionList.new( expressions: e1.as(ExpressionList).expressions + [e2] ) }
 
     end
 
@@ -75,7 +75,7 @@ module Kazoo
     production(:f, "p e END")		 { |p, e| Function.new(proto: p, body: e) }
 
     production(:p_body, "IDENT LPAREN arg_defs RPAREN") do |name, _, arg_names, _|
-      x = Prototype.new(name: name, arg_names: (arg_names as Array).map {|a| a as String})
+      x = Prototype.new(name: name, arg_names: arg_names.as(Array).map {|a| a.as(String)})
     end
 
     list(:arg_defs, :IDENT, :COMMA)

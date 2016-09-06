@@ -140,7 +140,7 @@ module CLTK
       # @return [void]
       def on(symbol, action)
         if @actions.not_nil!.has_key?(symbol.to_s)
-          @actions.not_nil![symbol.to_s] = (@actions.not_nil![symbol.to_s] as Array(Action)) << action as Action
+          @actions.not_nil![symbol.to_s] = @actions.not_nil![symbol.to_s].as(Array(Action)) << action.as(Action)
         else
           raise Exception.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
         end

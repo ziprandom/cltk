@@ -58,7 +58,7 @@ class AHash < Expression
          })
   def eval_scope(scope)
     h = AHash.new(dict: dict.reduce({} of Variable => Expression) do |memo, pair|
-        memo[pair[0]] = pair[1].eval_scope(scope) as Expression
+        memo[pair[0]] = pair[1].eval_scope(scope).as(Expression)
         memo
       end
     )
@@ -135,14 +135,14 @@ class FunCall < Expression
     prototype = prototype_exp.eval_scope(scope)
     raise "#{prototype} is not a Function" unless prototype.is_a? Prototype
     param_names = prototype.args.map do |arg_name|
-      arg_name.name as String
+      arg_name.name.as(String)
     end
     param_values = parameters.map do |exp|
       if exp.responds_to? :eval_scope
         exp.eval_scope(scope)
       else
         exp
-      end as Expression
+      end.as(Expression)
     end
     param_values = (0..(param_names.size-1)).map do |index|
       if param_values[index]?
@@ -207,7 +207,7 @@ class VarAssign < Expression
   def eval_scope(scope)
     if left.is_a? Variable
       if right.responds_to? :eval_scope
-        scope[left.name.not_nil!] = right.eval_scope(scope) as Expression
+        scope[left.name.not_nil!] = right.eval_scope(scope).as(Expression)
       else
         scope[left.name.not_nil!] = right
       end
@@ -222,8 +222,8 @@ end
 class Add < Binary
   def eval_scope(scope)
     ANumber.new(
-      value: (left.eval_scope(scope) as ANumber).value +
-      (right.eval_scope(scope) as ANumber).value
+      value: left.eval_scope(scope).as(ANumber).value +
+      right.eval_scope(scope).as(ANumber).value
     )
   end
 
@@ -233,19 +233,19 @@ class Add < Binary
 end
 class Sub < Binary
   def eval_scope(scope)
-    ANumber.new(value: (left.eval_scope(scope) as ANumber).value - (right.eval_scope(scope) as ANumber).value)
+    ANumber.new(value: left.eval_scope(scope).as(ANumber).value - right.eval_scope(scope).as(ANumber).value)
   end
 end
 class Mul < Binary
   def eval_scope(scope)
-    ANumber.new(value: (left.eval_scope(scope) as ANumber).value * (right.eval_scope(scope) as ANumber).value)
+    ANumber.new(value: left.eval_scope(scope).as(ANumber).value * right.eval_scope(scope).as(ANumber).value)
   end
 end
 
 
 class Div < Binary
   def eval_scope(scope)
-    ANumber.new(value: (left.eval_scope(scope) as ANumber).value / (right.eval_scope(scope) as ANumber).value)
+    ANumber.new(value: left.eval_scope(scope).as(ANumber).value / right.eval_scope(scope).as(ANumber).value)
   end
 end
 class LT  < Binary; end

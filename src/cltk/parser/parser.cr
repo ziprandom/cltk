@@ -55,7 +55,7 @@ module CLTK
 
           {% if env("VERBOSE") %}
             st = if token.value
-                   "(" + (token.value.to_s as String) + ")"
+                   "(" + token.value.to_s.as(String) + ")"
                  else
                    ""
                  end
@@ -76,14 +76,14 @@ module CLTK
 	      if error_mode
 	        {% if env("VERBOSE") %}
                   st = if token.value
-                         "(" + (token.value.to_s as String) + ")"
+                         "(" + token.value.to_s.as(String) + ")"
                        end
 	          v.puts("Discarding token: #{token.type}#{st}") if v
                 {% end %}
 	        # Add the current token to the array
 	        # that corresponds to the output value
 	        # for the ERROR token.
-                (stack.output_stack.last as Array) << token
+                stack.output_stack.last.as(Array) << token
 	        moving_on << stack
 	        next
 	      end
@@ -164,7 +164,7 @@ module CLTK
 		    v.puts("Accepting input.")
                   {% end %}
                   if opts[:parse_tree]
-		    (opts[:parse_tree] as IO).puts(stack.tree)
+		    opts[:parse_tree].as(IO).puts(stack.tree)
                   end
 
 		  if opts[:env].he
@@ -188,7 +188,7 @@ module CLTK
 
  	        if !production_proc.selections.empty?
                   args = production_proc.selections.map do |selection|
-                    args[selection] as Type
+                    args[selection].as(Type)
                   end
                 end
 
@@ -210,8 +210,8 @@ module CLTK
 
 		    pos0.length = 0
 		  else
-		    pos0 = opts[:env].pos( 0) as StreamPosition
-		    pos1 = opts[:env].pos(-1) as StreamPosition
+		    pos0 = opts[:env].pos( 0).as(StreamPosition)
+		    pos1 = opts[:env].pos(-1).as(StreamPosition)
 		    pos0.length = (pos1.stream_offset + pos1.length) - pos0.stream_offset
 		  end
                   result = nil if result.is_a? Void
@@ -269,14 +269,14 @@ module CLTK
 
         if opts[:parse_tree]?
              accepted.each do |stack|
-	       (opts[:parse_tree] as IO).puts(stack.tree)
+	       opts[:parse_tree].as(IO).puts(stack.tree)
              end
         end
 
-        results = accepted.map { |stack| stack.result as CLTK::Type}
+        results = accepted.map { |stack| stack.result.as(CLTK::Type) }
 
         if (opts[:env]).he
-	  raise HandledError.new((opts[:env] as Environment).errors, results as CLTK::Type)
+	  raise HandledError.new(opts[:env].as(Environment).errors, results.as(CLTK::Type))
         else
 	  return results
         end

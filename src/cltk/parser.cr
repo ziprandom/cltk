@@ -103,17 +103,17 @@ module CLTK
 	       when :nelp
 	         case which
 	         when :single
-	           ProdProc.new { |el| [el[0]].map { |x| x as CLTK::Type } }
+	           ProdProc.new { |el| [el[0]].map { |x| x.as(CLTK::Type) } }
 	         when :multiple
 	           ProdProc.new(:splat, sels) do |syms|
-                     syms  = syms as Array
-                     first = syms.shift as Array
+                     syms  = syms.as(Array)
+                     first = syms.shift.as(Array)
                      rest  = syms.size > 1 ? syms : syms.first
                      first << rest
 	           end
 	         else
 	           ProdProc.new do |el|
-                     el = el as Array
+                     el = el.as(Array)
                      el.size > 1 ? el : el.first
                    end
 	         end
@@ -174,7 +174,7 @@ module CLTK
 
       opts[:explain] =
         opts[:explain] ?
-          self.get_io(opts[:explain] as String) : nil
+          self.get_io(opts[:explain].as(String)) : nil
 
       {
 	explain =>    false,
@@ -291,7 +291,7 @@ module CLTK
         arg_type   = param_tupel[2]
 
         production, selections = if @@grammar
-                                   (@@grammar as CLTK::CFG).clause({{expression}}).values
+                                   @@grammar.as(CLTK::CFG).clause({{expression}}).values
                                  else
                                    raise "NO GRAMMAR DEFINED"
                                  end
@@ -304,25 +304,25 @@ module CLTK
         @@procs.not_nil![production.id] = {
           ## new ProdProc
           ProdProc.new(:splat, selections) do |%a, %env|
-          (%env as {{@type}}::Environment).yield_with_self do
+          %env.as({{@type}}::Environment).yield_with_self do
             {%for arg, index in action.args%}
-                {{arg}} = (%a as Array(CLTK::Type))[{{index}}]
+                {{arg}} = %a.as(Array(CLTK::Type))[{{index}}]
             {%end%}
               # reassign the first block argument to
               # the whole arguments array if arg_type
               # evaluates to :array
               {%if action.args.size > 0%}
                 if (arg_type || @@default_arg_type) == :array
-                  {{action.args.first}} = %a as Array
+                  {{action.args.first}} = %a.as(Array)
                 end
               {%end %}
               result = begin
                          {{action.body}}
                        end
             if result.is_a? Array
-              result.map { |r| r as CLTK::Type}
+              result.map { |r| r.as(CLTK::Type)}
             else
-              result as CLTK::Type
+              result.as(CLTK::Type)
             end
           end
                                            end,
@@ -409,7 +409,7 @@ module CLTK
 
 	# Print the productions.
 	@@grammar.productions.not_nil!.each do |sym, productions|
-          productions = productions as Array(CLTK::CFG::Production)
+          productions = productions.as(Array(CLTK::CFG::Production))
 	  max_rhs_length = (productions).reduce(0) do |m, p|
             if (len = p.to_s.not_nil!.size) > m
               len
@@ -531,7 +531,7 @@ module CLTK
 
 	# Close any IO objects that aren't $stdout.
 	if io.is_a?(IO)
-          if io != $stdout
+          if io != STDOUT
             #io.close
           end
         end
@@ -557,7 +557,7 @@ module CLTK
     alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
 
     def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
-      if (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production))).empty?
+      if @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))).empty?
 	#raise ParserConstructionException,
 	raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
       end
@@ -570,7 +570,7 @@ module CLTK
       @@symbols = @@grammar.symbols.to_a + ["ERROR"]
       # Add our starting state to the state list.
       @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
-      start_production    = @@grammar.production(@@start_symbol as String, @@grammar.start_symbol as String)[:production]
+      start_production    = @@grammar.production(@@start_symbol.as(String), @@grammar.start_symbol.as(String))[:production]
       start_state         = State.new(@@symbols, [start_production.to_item])
       start_state.close(@@grammar.productions_sym)
       self.add_state(start_state)
@@ -604,7 +604,7 @@ module CLTK
 	tstates.each do |symbol, tstate|
 	  tstate.each { |item| item.advance }
 
-	  tstate.close(@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
+	  tstate.close(@@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))))
 
 	  id = self.add_state(tstate)
 
@@ -619,7 +619,7 @@ module CLTK
 	      state.on("EOS", Accept.new)
 	    else
 	      state.add_reduction(
-                (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[item.id]
+                @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[item.id]
               )
 	    end
 	  end
@@ -628,7 +628,7 @@ module CLTK
 
       # Build the production.id -> production.lhs map.
       @@grammar.productions_id.each do |id, production|
-        @@lh_sides[id as Int32] = (production as CLTK::CFG::Production).not_nil!.lhs
+        @@lh_sides[id.as(Int32)] = production.as(CLTK::CFG::Production).not_nil!.lhs
       end
 
       # Prune the parsing table for unnecessary reduce actions.
@@ -701,10 +701,10 @@ module CLTK
 	    lhs = "#{state.id}_#{item.next_symbol}".to_s
 
 	    next unless CFG.is_nonterminal?(item.next_symbol) &&
-                        !(@@grammar_prime.not_nil!.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
+                        !@@grammar_prime.not_nil!.productions_sym.as(Hash(String, Array(CLTK::CFG::Production)))
                           .keys.includes?(lhs)
 
-	    (@@grammar.productions_sym as Hash(String, Array(CLTK::CFG::Production)))
+	    @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production)))
               .not_nil![item.next_symbol.not_nil!].each do |production|
 	      rhs = ""
 
@@ -886,8 +886,8 @@ module CLTK
 	  reductions = state0.actions.not_nil!.values.flatten.uniq.select { |a| a.is_a?(Reduce) }
           # reduction is ok ..
 	  reductions.each do |reduction|
-            raction_id = (reduction as Action).id.not_nil!
-	    production = (@@grammar.productions_id as Hash(Int32, CLTK::CFG::Production))[raction_id]
+            raction_id = reduction.as(Action).id.not_nil!
+	    production = @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[raction_id]
 	    lookahead = Array(String).new
 
 	    # Build the lookahead set.
@@ -949,7 +949,7 @@ module CLTK
 	      actions.each do |a|
 		assoc, prec = (
                   a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs[a.id.not_nil!]
-                ) as {String, Int32}
+                ).as({String, Int32})
 
 		# If two actions have the same precedence we
 		# will only replace the previous production if:
@@ -965,7 +965,7 @@ module CLTK
 		end
 	      end
 
-	      state0.actions.not_nil![symbol] = [selected_action.not_nil! as Action]
+	      state0.actions.not_nil![symbol] = [selected_action.not_nil!.as(Action)]
 	    end
 	  end
 	end

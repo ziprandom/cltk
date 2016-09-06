@@ -64,7 +64,7 @@ abstract class CLTK::ASTNode
     @{{@type.name.downcase.gsub(/:/, "")}}_values:  {{values}}
 
     def values
-      own_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (@{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}] as Array).map { |e| e as {{values[key].id.gsub(/^Array\(|\)$/, "")}} }{% else %}  {{key}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}] as {{values.values[index]}}{% end %}{%if index < values.keys.size - 1%},
+      own_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (@{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}].as(Array)).map { |e| e.as({{values[key].id.gsub(/^Array\(|\)$/, "")}})}{% else %}  {{key}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},
           {%end%}{% end %}
       }
       {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
@@ -92,7 +92,7 @@ abstract class CLTK::ASTNode
       end
       def {{key}}=(value : {{values[key]}})
         @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for tkey, index in values.keys%}
-          {% if tkey == key %}{{tkey}}: value{% else %}{{tkey}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{tkey}}] as {{values.values[index]}}{% end %}{%if index < values.keys.size - 1%},{%end%}{% end %}
+          {% if tkey == key %}{{tkey}}: value{% else %}{{tkey}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{tkey}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},{%end%}{% end %}
         }
       end
     {% end %}
@@ -101,7 +101,7 @@ abstract class CLTK::ASTNode
         #        def initialize(@values); end
 
         def initialize(**options)
-          @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (options[:{{key}}] as Array).map { |e| e as {{values[key].id.gsub(/^Array\(|\)$/, "")}} }{% else %}  {{key}}: options[:{{key}}] as {{values.values[index]}}{% end %}{%if index < values.keys.size - 1%},
+          @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (options[:{{key}}].as(Array)).map { |e| e.as({{values[key].id.gsub(/^Array\(|\)$/, "")}})}{% else %}  {{key}}: options[:{{key}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},
           {%end%}{% end %}
           }
           {% if !(@type.superclass.class.id =~ "ASTNode") %}

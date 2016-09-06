@@ -31,7 +31,7 @@ class ABLexer < CLTK::Lexer
 end
 
 class AlphaLexer < CLTK::Lexer
-  rule(/[A-Za-z]/) { |t| {t.upcase, t} as BlockReturn}
+  rule(/[A-Za-z]/) { |t| {t.upcase, t}.as(BlockReturn)}
 
   rule(/,/) { :COMMA }
 
@@ -39,13 +39,13 @@ class AlphaLexer < CLTK::Lexer
 end
 
 class UnderscoreLexer < CLTK::Lexer
-  rule(/\w/) { |t| {:A_TOKEN, t} as BlockReturn}
+  rule(/\w/) { |t| {:A_TOKEN, t}.as(BlockReturn)}
 end
 
 class APlusBParser < CLTK::Parser
   production(:a, "A+ B") do |a, b|
     if a.is_a? Array
-      (a as Array(CLTK::Type)).size
+      a.size
     end
   end
 
@@ -60,7 +60,7 @@ end
 
 class AStarBParser < CLTK::Parser
   production(:a, "A* B") do |a, b|
-    (a as Array).size
+    a.as(Array).size
   end
 
   finalize
@@ -68,12 +68,12 @@ end
 
 class AmbiguousParser < CLTK::Parser
   production(:e) do
-    clause("NUM") {|n| n as Int32}
+    clause("NUM") {|n| n.as(Int32)}
 
-    clause("e PLS e") { |e0, op, e1 | (e0 as Int32) + (e1 as Int32) }
-    clause("e SUB e") { |e0, op, e1 | (e0 as Int32) - (e1 as Int32) }
-    clause("e MUL e") { |e0, op, e1 | (e0 as Int32) * (e1 as Int32) }
-    clause("e DIV e") { |e0, op, e1 | (e0 as Int32) / (e1 as Int32) }
+    clause("e PLS e") { |e0, op, e1 | e0.as(Int32) + e1.as(Int32) }
+    clause("e SUB e") { |e0, op, e1 | e0.as(Int32) - e1.as(Int32) }
+    clause("e MUL e") { |e0, op, e1 | e0.as(Int32) * e1.as(Int32) }
+    clause("e DIV e") { |e0, op, e1 | e0.as(Int32) / e1.as(Int32) }
     nil
 
   end
@@ -85,12 +85,12 @@ class ArrayCalc < CLTK::Parser
   default_arg_type :array
 
   production(:e) do
-    clause("NUM") { |n| (n as Array)[0] as Int32 }
+    clause("NUM") { |n| n.as(Array)[0].as(Int32) }
 
-    clause("PLS e e") { |args| args = args as Array; (args[1] as Int32) + ( args[2] as Int32) }
-    clause("SUB e e") { |args| args = args as Array; (args[1] as Int32) - ( args[2] as Int32) }
-    clause("MUL e e") { |args| args = args as Array; (args[1] as Int32) * ( args[2] as Int32) }
-    clause("DIV e e") { |args| args = args as Array; (args[1] as Int32) / ( args[2] as Int32) }
+    clause("PLS e e") { |args| args = args.as(Array); args[1].as(Int32) + args[2].as(Int32) }
+    clause("SUB e e") { |args| args = args.as(Array); args[1].as(Int32) - args[2].as(Int32) }
+    clause("MUL e e") { |args| args = args.as(Array); args[1].as(Int32) * args[2].as(Int32) }
+    clause("DIV e e") { |args| args = args.as(Array); args[1].as(Int32) / args[2].as(Int32) }
     nil
   end
 
@@ -214,13 +214,13 @@ class ErrorCalc < CLTK::Parser
   production(:e) do
     clause("NUM") {|n| n}
 
-    clause("e PLS e") { |e0, op, e1| (e0 as Int32) + (e1 as Int32) }
-    clause("e SUB e") { |e0, op, e1| (e0 as Int32) - (e1 as Int32) }
-    clause("e MUL e") { |e0, op, e1| (e0 as Int32) * (e1 as Int32) }
-    clause("e DIV e") { |e0, op, e1| (e0 as Int32) / (e1 as Int32) }
+    clause("e PLS e") { |e0, op, e1| e0.as(Int32) + e1.as(Int32) }
+    clause("e SUB e") { |e0, op, e1| e0.as(Int32) - e1.as(Int32) }
+    clause("e MUL e") { |e0, op, e1| e0.as(Int32) * e1.as(Int32) }
+    clause("e DIV e") { |e0, op, e1| e0.as(Int32) / e1.as(Int32) }
     clause("e PLS ERROR e") do |e0, op, ts, e1|
       error(ts);
-      (e0 as Int32) + (e1 as Int32)
+      e0.as(Int32) + e1.as(Int32)
     end
 
     nil
@@ -236,7 +236,7 @@ class ELLexer < CLTK::Lexer
 
   rule(/\s/)
 
-  rule(/[A-Za-z]+/) { |t| {:WORD, t} as BlockReturn}
+  rule(/[A-Za-z]+/) { |t| {:WORD, t}.as(BlockReturn)}
 end
 
 class ErrorLine < CLTK::Parser
@@ -289,10 +289,10 @@ class RotatingCalc < CLTK::Parser
   production(:e) do
     clause("NUM") {|n| n}
 
-    clause("PLS e e") { | op, e1, e2| get_op(:+).call(e1 as Int32, e2 as Int32) }
-    clause("SUB e e") { | op, e1, e2| get_op(:-).call(e1 as Int32, e2 as Int32) }
-    clause("MUL e e") { | op, e1, e2| get_op(:*).call(e1 as Int32, e2 as Int32) }
-    clause("DIV e e") { | op, e1, e2| get_op(:/).call(e1 as Int32, e2 as Int32) }
+    clause("PLS e e") { | op, e1, e2| get_op(:+).call(e1.as(Int32), e2.as(Int32)) }
+    clause("SUB e e") { | op, e1, e2| get_op(:-).call(e1.as(Int32), e2.as(Int32)) }
+    clause("MUL e e") { | op, e1, e2| get_op(:*).call(e1.as(Int32), e2.as(Int32)) }
+    clause("DIV e e") { | op, e1, e2| get_op(:/).call(e1.as(Int32), e2.as(Int32)) }
     nil
   end
 
@@ -302,8 +302,8 @@ end
 
 class SelectionParser < CLTK::Parser
   production(:s, "A+ .B+") do |bs|
-    (bs as Array).reduce(0) do |sum, add|
-      sum + (add as Int32)
+    bs.as(Array).reduce(0) do |sum, add|
+      sum + add.as(Int32)
     end
   end
 
@@ -333,8 +333,8 @@ class TokenHookParser < CLTK::Parser
 
   end
 
-  token_hook(:A) { |env| (env as Environment).counter += 1; next nil }
-  token_hook(:B) { |env| (env as Environment).counter += 2; next nil }
+  token_hook(:A) { |env| env.as(Environment).counter += 1; next nil }
+  token_hook(:B) { |env| env.as(Environment).counter += 2; next nil }
 
   finalize
 end
@@ -350,7 +350,7 @@ describe "CLTK::Parser" do
   # cloned when we split the parse stack.  This was posted as Issue #17 on
   # Github.
   it "test_ambiguous_parse_stack" do
-    (AmbiguousParseStackParser.parse(ABLexer.lex("ab")) as Array).size.should eq 1
+    AmbiguousParseStackParser.parse(ABLexer.lex("ab")).as(Array).size.should eq 1
   end
 
   it "test_array_args" do
@@ -394,11 +394,11 @@ describe "CLTK::Parser" do
     # AStarBParser #
     ################
 
-    (AStarBParser.parse(ABLexer.lex("b")) as Int32).should eq 0
-    (AStarBParser.parse(ABLexer.lex("ab")) as Int32).should eq 1
-    (AStarBParser.parse(ABLexer.lex("aab")) as Int32).should eq 2
-    (AStarBParser.parse(ABLexer.lex("aaab")) as Int32).should eq 3
-    (AStarBParser.parse(ABLexer.lex("aaaab")) as Int32).should eq 4
+    AStarBParser.parse(ABLexer.lex("b")).as(Int32).should eq 0
+    AStarBParser.parse(ABLexer.lex("ab")).as(Int32).should eq 1
+    AStarBParser.parse(ABLexer.lex("aab")).as(Int32).should eq 2
+    AStarBParser.parse(ABLexer.lex("aaab")).as(Int32).should eq 3
+    AStarBParser.parse(ABLexer.lex("aaaab")).as(Int32).should eq 4
   end
 
   it "test_empty_list" do
@@ -545,7 +545,7 @@ describe "CLTK::Parser" do
     begin
       ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + 1"))
     rescue ex : CLTK::HandledError
-      (ex.errors.first as Array).size.should eq 1
+      ex.errors.first.as(Array).size.should eq 1
       ex.result.should eq 2
     end
 
@@ -554,7 +554,7 @@ describe "CLTK::Parser" do
     begin
       ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + + + + + 1"))
     rescue ex : CLTK::HandledError
-      (ex.errors.first as Array).size.should eq 5
+      ex.errors.first.as(Array).size.should eq 5
       ex.result.should eq 2
     end
   end
@@ -704,14 +704,14 @@ describe "CLTK::Parser" do
     parser = TokenHookParser.new
 
     parser.parse(AlphaLexer.lex("a a a a"))
-    (parser.env as TokenHookParser::Environment).counter.should eq 4
+    parser.env.as(TokenHookParser::Environment).counter.should eq 4
 
     parser.parse(AlphaLexer.lex("b b b b"))
-    (parser.env as TokenHookParser::Environment).counter.should eq 12
+    parser.env.as(TokenHookParser::Environment).counter.should eq 12
   end
 
   it "test_underscore_tokens" do
-    actual   = (UnderscoreParser.parse(UnderscoreLexer.lex("abc")) as Array).join
+    actual   = UnderscoreParser.parse(UnderscoreLexer.lex("abc")).as(Array).join
     expected = "abc"
 
     actual.should eq expected

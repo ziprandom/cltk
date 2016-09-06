@@ -43,7 +43,7 @@ module CLTK
       # @return [StreamPosition] Position of symbol at index n.
       def pos(n)
         if @positions
-          @positions.not_nil![n] as StreamPosition
+          @positions.not_nil![n].as(StreamPosition)
         end
       end
 
