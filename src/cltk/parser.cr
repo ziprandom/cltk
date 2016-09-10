@@ -931,13 +931,15 @@ module CLTK
 	    # possibility of a Shift/Reduce or
 	    # Reduce/Reduce conflict.
 	    next unless actions && actions.size > 1
-	    resolve_ok = actions.reduce(true) do |m, a|
-	      if a.is_a?(Reduce)
-		m && @@production_precs[a.id.not_nil!]
-	      else
-		m
-	      end
-	    end && actions.reduce(false) { |m, a| m  || a.is_a?(Shift) }
+	     resolve_ok = actions.reduce(true) do |m, a|
+	       if a.is_a?(Reduce)
+		 @@production_precs[a.id.not_nil!] && m
+	       else
+		 m
+	       end
+	     end && actions.reduce(false) do |m, a|
+               m  || a.is_a?(Shift)
+             end
 
 	    if @@token_precs.not_nil!.has_key?(symbol) && @@token_precs.not_nil![symbol] && resolve_ok
 	      max_prec = 0
