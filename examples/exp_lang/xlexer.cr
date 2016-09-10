@@ -33,7 +33,7 @@ module EXP_LANG
 		rule(/\+/)	{ :PLUS   }
 		rule(/-/)	{ :SUB    }
 		rule(/\*/)	{ :MUL    }
-		rule(/\//)	{ :DIV    }
+		rule(%r(/))	{ :DIV    }
 		rule(/</)	{ :LT     }
 		rule(/\|\|/)	{ :OR     }
 		rule(/\&\&/)	{ :AND    }

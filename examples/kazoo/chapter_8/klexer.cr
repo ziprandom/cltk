@@ -30,7 +30,7 @@ module Kazoo
     rule(/\+/)	        { :PLUS   }
     rule(/-/)		{ :SUB    }
     rule(/\*/)	        { :MUL    }
-    rule(/\//)	        { :DIV    }
+    rule(%r(/))	        { :DIV    }
     rule(/</)		{ :LT     }
     rule(/>/)		{ :GT     }
     rule(/!/)		{ :BANG   }
