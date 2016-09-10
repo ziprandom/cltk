@@ -319,14 +319,14 @@ module CLTK
               result = begin
                          {{action.body}}
                        end
-            if result.is_a? Array
-              result.map { |r| r.as(CLTK::Type)}
-            else
-              result.as(CLTK::Type)
+              if result.is_a? Array
+                result.map { |r| r.as(CLTK::Type)}
+              else
+                result.as(CLTK::Type)
+              end
             end
-          end
-                                           end,
-                                           production.rhs.size
+          end,
+          production.rhs.size
         }
         # If no precedence is specified use the precedence of the
         # last terminal in the production.
