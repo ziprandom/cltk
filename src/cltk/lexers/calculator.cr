@@ -26,7 +26,7 @@ module CLTK
       rule(/\+/)	{ :PLS }
       rule(/-/)	        { :SUB }
       rule(/\*/)	{ :MUL }
-      rule(%r(/))	{ :DIV }
+      rule(/\//)	{ :DIV }
 
       rule(/\(/)	{ :LPAREN }
       rule(/\)/)	{ :RPAREN }
