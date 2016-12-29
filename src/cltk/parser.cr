@@ -44,16 +44,6 @@ module CLTK
     # Class Methods #
     #################
 
-    # The overridden new prevents un-finalized parsers from being
-    # instantiated.
-    def self.new(*args)
-      if @@symbols.nil?
-	raise UselessParserException.new
-      else
-	super(*args)
-      end
-    end
-
     @@production_precs :  Array(String | {String, Int32} | Nil) = Array(String | {String, Int32} | Nil).new
     @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
     @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
