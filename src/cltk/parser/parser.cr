@@ -21,9 +21,9 @@ module CLTK
         }.merge(opts)
       end
 
-      def parse(tokens, popts : NamedTuple?)
+      def parse(tokens, opts : NamedTuple?)
         # Get the full options hash.
-        opts = build_parse_opts(popts)
+        opts = build_parse_opts(opts)
 
         {% if env("VERBOSE") %}
           v = STDOUT
