@@ -1,9 +1,9 @@
 struct NamedTuple
-  def -(other : U)
+  def -(other : U) forall U
     minus_implmentation(other)
   end
 
-  private def minus_implmentation(other : U)
+  private def minus_implmentation(other : U) forall U
     {% begin %}
     NamedTuple.new(
       {% for key in (T.keys + U.keys).uniq %}
@@ -23,7 +23,7 @@ struct NamedTuple
     end
   end
 
-  private def merge_implementation(other : U)
+  private def merge_implementation(other : U) forall U
     {% begin %}
     NamedTuple.new(
       {% for key in (T.keys + U.keys).uniq %}
