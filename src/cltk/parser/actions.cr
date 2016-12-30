@@ -7,7 +7,7 @@ module CLTK
       getter :id
 
       # @param [Integer] id ID of this action.
-      def initialize(@id : Int32? = nil)
+      def initialize(@id : Int32)
       end
     end
 
@@ -15,6 +15,10 @@ module CLTK
     # current parse tree.
     struct Accept < Action
       # @return [String] String representation of this action.
+      @id = 0
+      def initialize()
+      end
+
       def to_s
         "Accept"
       end

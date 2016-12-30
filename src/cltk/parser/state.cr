@@ -12,18 +12,20 @@ module CLTK
       # @return [Hash{Symbol => Array<Action>}]  Maps lookahead symbols to actions
       getter :actions
 
-      @id: Int32?
-      @actions: Hash(String, Array(CLTK::Parser::Action))?
+      @id = -1
+      @actions: Hash(String, Array(CLTK::Parser::Action))
 
       # Instantiate a new State object.
       #
       # @param [Array<Symbol>]     tokens  Tokens that represent this state
       # @param [Array<CFG::Item>]  items   Items that make up this state
-      def initialize(tokens : Array(String)?, items = [] of CFG::Item)
-        @id      = nil
-        @items   = items
-        if tokens
-          @actions = tokens.reduce({} of String => Array(CLTK::Parser::Action) ) { |h, t| h[t] = Array(CLTK::Parser::Action).new; h }
+      def initialize(tokens : Array(String), @items = [] of CFG::Item)
+        @actions = tokens.reduce(
+          {} of String => Array(CLTK::Parser::Action)
+        ) do |h, t|
+          h.tap {
+            h[t] = Array(CLTK::Parser::Action).new
+          }
         end
       end
 
@@ -35,11 +37,8 @@ module CLTK
       #
       # @return [Boolean]
       def ==(other)
-        if self.items && other.items
-          self.items == other.items
-        else
+        self.items == other.items ||
           self.id == other.id
-        end
       end
 
       # Add a Reduce action to the state.
@@ -51,7 +50,7 @@ module CLTK
         action = Reduce.new(production)
 
         # Reduce actions are not allowed for the ERROR terminal.
-        @actions.not_nil!.each do |k, v|
+        @actions.each do |k, v|
           if CFG.is_terminal?(k) && k.to_s != "ERROR"
             v << action
           end
@@ -60,8 +59,8 @@ module CLTK
 
       # @param [CFG::Item] item Item to add to this state.
       def append(item)
-        if item.is_a?(CFG::Item) &&  !@items.not_nil!.includes?(item)
-          @items.not_nil! << item
+        if item.is_a?(CFG::Item) &&  !@items.includes?(item)
+          @items << item
         end
       end
 
@@ -72,7 +71,7 @@ module CLTK
       #
       # @return [void]
       def clean
-        @items = nil
+        @items = [] of CFG::Item
       end
 
       # Close this state using *productions*.
@@ -84,7 +83,7 @@ module CLTK
         self.each do |item|
           next_symbol = item.next_symbol
           if next_symbol && CFG.is_nonterminal?(next_symbol)
-	    productions.not_nil![next_symbol].each { |p| self << p.to_item }
+	    productions[next_symbol].each { |p| self << p.to_item }
           end
         end
       end
@@ -102,7 +101,7 @@ module CLTK
         reductions	= 0
         shifts		= 0
 
-        @actions.not_nil![sym].each do |action|
+        @actions[sym].each do |action|
           if action.is_a?(Reduce)
 	    reductions += 1
 
@@ -126,8 +125,8 @@ module CLTK
       # @return [void]
       def each
         current_item = 0
-        while current_item < @items.not_nil!.size
-          yield @items.not_nil!.at(current_item)
+        while current_item < @items.size
+          yield @items.at(current_item)
           current_item += 1
         end
       end
@@ -139,8 +138,8 @@ module CLTK
       #
       # @return [void]
       def on(symbol, action)
-        if @actions.not_nil!.has_key?(symbol.to_s)
-          @actions.not_nil![symbol.to_s] = @actions.not_nil![symbol.to_s].as(Array(Action)) << action.as(Action)
+        if @actions.has_key?(symbol.to_s)
+          @actions[symbol.to_s] = @actions[symbol.to_s].as(Array(Action)) << action.as(Action)
         else
           raise Exception.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
         end
@@ -153,7 +152,7 @@ module CLTK
       #
       # @return [Array<Action>] Actions that should be taken.
       def on?(symbol)
-        @actions.not_nil![symbol].dup
+        @actions[symbol].dup
       end
     end
 

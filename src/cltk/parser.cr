@@ -18,6 +18,7 @@ require "./parser/exceptions/not_in_language_exception"
 require "./parser/exceptions/useless_parser_exception"
 
 require "./parser/environment"
+require "./parser/explain"
 require "./parser/parse_stack"
 require "./parser/state"
 require "./parser/prod_proc"
@@ -37,6 +38,8 @@ module CLTK
   # parsers have a lot of features, and are described in the main
   # documentation.
   abstract class Parser
+
+    include Explain
     # @return [Environment] Environment used by the instantiated parser.
     getter :env
 
@@ -44,12 +47,12 @@ module CLTK
     # Class Methods #
     #################
 
-    @@production_precs :  Array(String | {String, Int32} | Nil) = Array(String | {String, Int32} | Nil).new
+    @@production_precs = Array(String | {String, Int32} | Nil).new
     @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
-    @@token_precs      : Hash(String, {String, Int32})          = {} of String => {String, Int32}
-    @@grammar          : CLTK::CFG              = CLTK::CFG.new
-    @@conflicts        : Hash(Int32, Array({ String, String })) = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
-    @@prec_counts      : Hash(Symbol, Int32) = {:left => 0, :right => 0, :non => 0}
+    @@token_precs      = Hash(String, {String, Int32}).new
+    @@grammar          = CLTK::CFG.new
+    @@conflicts        = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
+    @@prec_counts      = {:left => 0, :right => 0, :non => 0}
     @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
       h[k] = [] of Proc(Environment, Nil)
     end
@@ -58,17 +61,17 @@ module CLTK
     #
     # @return [void]
     macro inherited
-      @@symbols : Array(String)?
-      @@start_symbol : String?
-      @@env : {{@type}}::Environment.class | Nil
-      @@grammar_prime : CLTK::CFG?
+      @@symbols       = Array(String).new
+      @@start_symbol  = ""
+      @@env           = Environment.new
+      @@grammar_prime = CLTK::CFG.new
 
       @@curr_lhs  = nil
       @@curr_prec = nil
 
 
-      @@lh_sides  = {} of Int32 => String
-      @@procs     = {} of Int32 => { ProdProc, Int32 }
+      @@lh_sides  = Hash(Int32, String).new
+      @@procs     = Hash(Int32, { ProdProc, Int32 }).new
       @@states    = Array(State).new
 
       # Variables for dealing with precedence.
@@ -110,7 +113,7 @@ module CLTK
                else
                  raise "this should never happen"
 	       end
-	@@procs.not_nil![p.id] = { proc, p.rhs.size }
+	@@procs[p.id] = { proc, p.rhs.size }
 	@@production_precs_prepare[p.id] = p.last_terminal
         nil
       end
@@ -118,8 +121,9 @@ module CLTK
       # Instantiates a new parser and creates an environment to be
       # used for subsequent calls.
       @env : {{@type}}::Environment
+
       def initialize
-        unless @@symbols
+        unless @@symbols.any?
           raise CLTK::UselessParserException.new
         end
         @env = {{@type}}::Environment.new
@@ -129,7 +133,7 @@ module CLTK
         unless @@symbols
           raise CLTK::UselessParserException.new
         end
-        Parser.new(@@symbols.not_nil!, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
+        Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
       end
 
     end
@@ -143,14 +147,13 @@ module CLTK
     #
     # @return [Integer] The ID of the state.
     def self.add_state(state)
-      states = @@states.not_nil!
-      id = states.index(state)
+      id = @@states.index(state)
       if id
 	id
       else
-	state.id = states.size
-	states << state
-	states.size - 1
+	state.id = @@states.size
+	@@states << state
+	@@states.size - 1
       end
     end
 
@@ -190,13 +193,13 @@ module CLTK
       # Check to make sure all non-terminals appear on the
       # left-hand side of some production.
       @@grammar.nonterms.each do |sym|
-	unless @@lh_sides.not_nil!.values.includes?(sym)
+	unless @@lh_sides.values.includes?(sym)
 	  raise Exception.new "Non-terminal #{sym} does not appear on the left-hand side of any production."
 	end
       end
       # Check the actions in each state.
       each_state do |state|
-	state.actions.not_nil!.each do |sym, actions|
+	state.actions.each do |sym, actions|
 	  if CFG.is_terminal?(sym)
 	    # Here we check actions for terminals.
 	    actions.each do |action|
@@ -243,7 +246,7 @@ module CLTK
 
       symbols.each do |sym|
 
-	actions = @@states.not_nil![cur_state.id.not_nil!].on?(sym)
+	actions = @@states[cur_state.id].on?(sym)
 	actions = actions.select { |a| a.is_a?(Shift) } if CFG.is_terminal?(sym)
 
 	if actions.empty?
@@ -254,7 +257,7 @@ module CLTK
 	# There can only be one Shift action for terminals and
 	# one GoTo action for non-terminals, so we know the
 	# first action is the only one in the list.
-	cur_state = @@states.not_nil![actions.first.id.not_nil!]
+	cur_state = @@states[actions.first.id]
       end
 
       path_exists && cur_state.id == dest.id
@@ -291,7 +294,7 @@ module CLTK
         end
 
         # Add the action to our proc list.
-        @@procs.not_nil![production.id] = {
+        @@procs[production.id] = {
           ## new ProdProc
           ProdProc.new(:splat, selections) do |%a, %env|
           %env.as({{@type}}::Environment).yield_with_self do
@@ -333,19 +336,19 @@ module CLTK
     # @return [void]
     def self.clean
       # We've told the developer about conflicts by now.
-      @@conflicts = nil
+      #@@conflicts = nil
 
       # Drop the grammar and the grammar'.
       #@@grammar       = nil
-      @@grammar_prime = nil
+      #@@grammar_prime = nil
 
       # Drop precedence and bookkeeping information.
-      @@curr_lhs  = nil
-      @@curr_prec = nil
+      # @@curr_lhs  = nil
+      # @@curr_prec = nil
 
-      @@prec_counts      = nil
+      # @@prec_counts      = nil
       #@@production_precs = nil
-      @@token_precs      = nil
+      # @@token_precs      = nil
 
       # Drop the items from each of the states.
       each_state { |state| state.clean }
@@ -382,153 +385,6 @@ module CLTK
       self.build_list_production(symbol, list_elements, separator)
     end
 
-    # This function will print a description of the parser to the
-    # provided IO object.
-    #
-    # @param [IO] io Input/Output object used for printing the parser's explanation.
-    #
-    # @return [void]
-    def self.explain(io : IO)
-      if @@grammar && !@@states.not_nil!.empty?
-	io.puts("###############")
-	io.puts("# Productions #")
-	io.puts("###############")
-	io.puts
-
-	max_id_length = @@grammar.productions_id.not_nil!.size.to_s.size
-
-	# Print the productions.
-	@@grammar.productions.not_nil!.each do |sym, productions|
-          productions = productions.as(Array(CLTK::CFG::Production))
-	  max_rhs_length = (productions).reduce(0) do |m, p|
-            if (len = p.to_s.not_nil!.size) > m
-              len
-            else
-              m
-            end
-          end
-
-	  productions.not_nil!.each do |production|
-	    p_string = production.to_s
-
-            #	      io.print("\tProduction #{sprintf("%#{max_id_length}d", production.id)}: #{p_string}")
-            prec = @@production_precs_prepare[production.id];
-	    if (prec.is_a?({Int32, String}))
-	      io.print(" " * (max_rhs_length - p_string.not_nil!.size))
-	      io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
-	    end
-
-	    io.puts
-	  end
-
-	  io.puts
-	end
-
-	io.puts("##########")
-	io.puts("# Tokens #")
-	io.puts("##########")
-	io.puts
-
-	max_token_len = @@grammar.terms.reduce(0) do |m, t|
-          if t.size > m
-            t.size
-          else m
-          end
-        end
-
-	@@grammar.terms.to_a.sort {|a,b| a.to_s <=> b.to_s }.each do |term|
-	  io.print("\t#{term}")
-
-	  if (prec = @@token_precs.not_nil![term])
-	    io.print(" " * (max_token_len - term.size))
-	    io.print(" : (#{sprintf("%-5s", prec.first)}, #{prec.last})")
-	  end
-
-	  io.puts
-	end
-
-	io.puts
-
-	io.puts("#####################")
-	io.puts("# Table Information #")
-	io.puts("#####################")
-	io.puts
-
-	io.puts("\tStart symbol: #{@@grammar.start_symbol}'")
-	io.puts
-
-	io.puts("\tTotal number of states: #{@@states.not_nil!.size}")
-	io.puts
-
-	io.puts("\tTotal conflicts (maybe wrong - flatten impl): #{@@conflicts.not_nil!.values.flatten.size}")
-	io.puts
-
-	@@conflicts.not_nil!.each do |state_id, conflicts|
-	  io.puts("\tState #{state_id} has #{@@conflicts.not_nil!.size} conflict(s)")
-	end
-        @@conflicts = @@conflicts.not_nil!
-	io.puts unless @@conflicts.not_nil!.empty?
-
-	# Print the parse table.
-	io.puts("###############")
-	io.puts("# Parse Table #")
-	io.puts("###############")
-	io.puts
-
-	each_state do |state|
-	  io.puts("State #{state.id}:")
-	  io.puts
-
-	  io.puts("\t# ITEMS #")
-	  max = state.items.not_nil!.reduce(0) do |max, item|
-	    if item.lhs.to_s.size > max
-              item.lhs.to_s.size
-            else
-              max
-            end
-	  end
-
-	  state.each do |item|
-	    io.puts("\t#{item.to_s(max)}")
-	  end
-
-	  io.puts
-	  io.puts("\t# ACTIONS #")
-
-	  state.actions.not_nil!.keys.sort {|a,b| a.to_s <=> b.to_s}.each do |sym|
-	    state.actions.not_nil![sym].each do |action|
-	      io.puts("\tOn #{sym} #{action}")
-	    end
-	  end
-
-	  io.puts
-	  io.puts("\t# CONFLICTS #")
-
-	  if @@conflicts.not_nil![state.id.not_nil!].size == 0
-	    io.puts("\tNone\n\n")
-	  else
-	    @@conflicts.not_nil![state.id.not_nil!].each do |conflict|
-	      type, sym = conflict
-
-	      io.print("\t#{if type == :SR; "Shift/Reduce"; else "Reduce/Reduce"; end} conflict")
-
-	      io.puts(" on #{sym}")
-	    end
-
-	    io.puts
-	  end
-	end
-
-	# Close any IO objects that aren't $stdout.
-	if io.is_a?(IO)
-          if io != STDOUT
-            #io.close
-          end
-        end
-      else
-	#raise ParserConstructionException.new "Parser.explain called outside of finalize."
-      end
-    end
     # This method will finalize the parser causing the construction
     # of states and their actions, and the resolution of conflicts
     # using lookahead and precedence information.
@@ -560,7 +416,7 @@ module CLTK
       @@symbols = @@grammar.symbols.to_a + ["ERROR"]
       # Add our starting state to the state list.
       @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
-      start_production    = @@grammar.production(@@start_symbol.as(String), @@grammar.start_symbol.as(String))[:production]
+      start_production    = @@grammar.production(@@start_symbol, @@grammar.start_symbol)[:production]
       start_state         = State.new(@@symbols, [start_production.to_item])
       start_state.close(@@grammar.productions_sym)
       self.add_state(start_state)
@@ -568,7 +424,7 @@ module CLTK
       # Translate the precedence of productions from tokens to
       # (associativity, precedence) pairs.
       @@production_precs = @@production_precs_prepare.map do |id, prec|
-        @@token_precs.not_nil![prec]?
+        @@token_precs[prec]?
       end
       # Build the rest of the transition table.
       each_state do |state|
@@ -609,7 +465,7 @@ module CLTK
 	      state.on("EOS", Accept.new)
 	    else
 	      state.add_reduction(
-                @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[item.id]
+                @@grammar.productions_id[item.id]
               )
 	    end
 	  end
@@ -618,7 +474,7 @@ module CLTK
 
       # Build the production.id -> production.lhs map.
       @@grammar.productions_id.each do |id, production|
-        @@lh_sides[id.as(Int32)] = production.as(CLTK::CFG::Production).not_nil!.lhs
+        @@lh_sides[id] = production.lhs
       end
 
       # Prune the parsing table for unnecessary reduce actions.
@@ -662,8 +518,8 @@ module CLTK
     # @return [void]
     def self.each_state
       current_state = 0
-      while current_state < @@states.not_nil!.size
-	yield @@states.not_nil!.at(current_state)
+      while current_state < @@states.size
+	yield @@states.at(current_state)
 	current_state += 1
       end
     end
@@ -683,31 +539,26 @@ module CLTK
     #
     # @return [CFG]
     def self.grammar_prime
-      unless @@grammar_prime
-	@@grammar_prime = CFG.new
 
-	each_state do |state|
-	  state.each do |item|
-	    lhs = "#{state.id}_#{item.next_symbol}".to_s
+      each_state do |state|
+	state.each do |item|
+	  lhs = "#{state.id}_#{item.next_symbol}".to_s
 
-	    next unless CFG.is_nonterminal?(item.next_symbol) &&
-                        !@@grammar_prime.not_nil!.productions_sym.as(Hash(String, Array(CLTK::CFG::Production)))
-                          .keys.includes?(lhs)
+	  next unless CFG.is_nonterminal?(item.next_symbol) &&
+                      !@@grammar_prime.productions_sym.keys.includes?(lhs)
 
-	    @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production)))
-              .not_nil![item.next_symbol.not_nil!].each do |production|
-	      rhs = ""
+	  @@grammar.productions_sym[item.next_symbol].each do |production|
+	    rhs = ""
 
-	      cstate = state
+	    cstate = state
 
-	      production.rhs.each do |symbol|
-		rhs += "#{cstate.id}_#{symbol} "
+	    production.rhs.each do |symbol|
+	      rhs += "#{cstate.id}_#{symbol} "
 
-		cstate = @@states.not_nil![cstate.on?(symbol).first.id.not_nil!]
-	      end
-
-	      @@grammar_prime.not_nil!.production(lhs, rhs)
+	      cstate = @@states[cstate.on?(symbol).first.id]
 	    end
+
+	    @@grammar_prime.production(lhs, rhs)
 	  end
 	end
       end
@@ -723,7 +574,7 @@ module CLTK
     #
     # @return [void]
     def self.inform_conflict(state_id, type, sym)
-      @@conflicts.not_nil![state_id.not_nil!] << {type.to_s, sym}
+      @@conflicts[state_id] << {type.to_s, sym}
     end
 
     # This method is used to specify that the symbols in *symbols*
@@ -734,10 +585,10 @@ module CLTK
     #
     # @return [void]
     def self.left(*symbols)
-      prec_level = @@prec_counts.not_nil![:left] += 1
+      prec_level = @@prec_counts[:left] += 1
 
       symbols.map do |sym|
-	@@token_precs.not_nil![sym.to_s] = {:left.to_s, prec_level}
+	@@token_precs[sym.to_s] = {:left.to_s, prec_level}
       end
     end
 
@@ -873,17 +724,17 @@ module CLTK
 
 	if do_lookahead
 	  # Find all of the reductions in this state.
-	  reductions = state0.actions.not_nil!.values.flatten.uniq.select { |a| a.is_a?(Reduce) }
+	  reductions = state0.actions.values.flatten.uniq.select { |a| a.is_a?(Reduce) }
           # reduction is ok ..
 	  reductions.each do |reduction|
-            raction_id = reduction.as(Action).id.not_nil!
+            raction_id = reduction.as(Action).id
 	    production = @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[raction_id]
 	    lookahead = Array(String).new
 
 	    # Build the lookahead set.
 	    each_state do |state1|
 	      if self.check_reachability(state1, state0, production.rhs)
-		lookahead |= self.grammar_prime.not_nil!.follow_set("#{state1.id}_#{production.lhs}".to_s)
+		lookahead |= self.grammar_prime.follow_set("#{state1.id}_#{production.lhs}".to_s)
 	      end
 	    end
 
@@ -898,10 +749,10 @@ module CLTK
 
 	    if terms.includes?("ERROR")
 	      pruning_candidates.each do |sym|
-		state0.actions.not_nil![sym].delete(reduction) if state0.conflict_on?(sym)
+		state0.actions[sym].delete(reduction) if state0.conflict_on?(sym)
 	      end
 	    else
-	      pruning_candidates.each { |sym| state0.actions.not_nil![sym].delete(reduction) }
+	      pruning_candidates.each { |sym| state0.actions[sym].delete(reduction) }
 	    end
 	  end
 	end
@@ -911,7 +762,7 @@ module CLTK
 	########################################
 
 	if do_precedence
-	  state0.actions.not_nil!.each do |symbol, actions|
+	  state0.actions.each do |symbol, actions|
 
 	    # We are only interested in pruning actions
 	    # for terminal symbols.
@@ -923,7 +774,7 @@ module CLTK
 	    next unless actions && actions.size > 1
 	     resolve_ok = actions.reduce(true) do |m, a|
 	       if a.is_a?(Reduce)
-		 @@production_precs[a.id.not_nil!] && m
+		 @@production_precs[a.id] && m
 	       else
 		 m
 	       end
@@ -931,16 +782,17 @@ module CLTK
                m  || a.is_a?(Shift)
              end
 
-	    if @@token_precs.not_nil!.has_key?(symbol) && @@token_precs.not_nil![symbol] && resolve_ok
+	    if @@token_precs.has_key?(symbol) && @@token_precs[symbol] && resolve_ok
 	      max_prec = 0
-	      selected_action = nil
+
+	      selected_action = actions.first
 	      # Grab the associativity and precedence
 	      # for the input token.
-	      tassoc, tprec = @@token_precs.not_nil![symbol]
+	      tassoc, tprec = @@token_precs[symbol]
 
 	      actions.each do |a|
 		assoc, prec = (
-                  a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs[a.id.not_nil!]
+                  a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs[a.id]
                 ).as({String, Int32})
 
 		# If two actions have the same precedence we
@@ -950,14 +802,12 @@ module CLTK
 		if prec > max_prec  || (prec == max_prec && tassoc == (a.is_a?(Shift) ? :right : :left))
 		  max_prec        = prec
 		  selected_action = a
-
 		elsif prec == max_prec && assoc == :nonassoc
 		  raise Exception.new "Non-associative token found during conflict resolution."
-
 		end
 	      end
 
-	      state0.actions.not_nil![symbol] = [selected_action.not_nil!.as(Action)]
+	      state0.actions[symbol] = [selected_action]
 	    end
 	  end
 	end
@@ -972,10 +822,10 @@ module CLTK
     #
     # @return [void]
     def self.right(*symbols)
-      prec_level = @@prec_counts.not_nil![:right] += 1
+      prec_level = @@prec_counts[:right] += 1
 
       symbols.map do |sym|
-	@@token_precs.not_nil![sym.to_s] = {:right.to_s, prec_level}
+	@@token_precs[sym.to_s] = {:right.to_s, prec_level}
       end
     end
 
@@ -998,7 +848,7 @@ module CLTK
     # @return [void]
     def self.token_hook(sym, &proc: Proc(Environment, Nil))
       if CFG.is_terminal?(sym)
-	@@token_hooks.not_nil![sym.to_s] << proc
+	@@token_hooks[sym.to_s] << proc
       else
 	raise "Method token_hook expects `sym` to be non-terminal."
       end

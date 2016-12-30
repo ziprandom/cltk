@@ -16,7 +16,7 @@ module CLTK
       # @return [Array<Object>]
       getter :errors
 
-      @positions: Array(CLTK::StreamPosition)?
+      @positions = Array(CLTK::StreamPosition).new
 
       # Instantiate a new Environment object.
       def initialize
@@ -42,9 +42,7 @@ module CLTK
       #
       # @return [StreamPosition] Position of symbol at index n.
       def pos(n)
-        if @positions
-          @positions.not_nil![n].as(StreamPosition)
-        end
+        @positions[n].as(StreamPosition)
       end
 
       # Reset any variables that need to be re-initialized between

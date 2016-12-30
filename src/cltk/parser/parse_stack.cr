@@ -12,8 +12,9 @@ module CLTK
     # @return [Array<Integer>] Array of states used when performing {Reduce} actions.
     getter :state_stack
 
-    @cbuffer : Array(Int32)?
-                 @output_stack : Array(CLTK::Type)
+    @cbuffer = Array(Int32).new
+    @output_stack = Array(CLTK::Type).new
+
     # Instantiate a new ParserStack object.
     #
     # @param [Integer]                id           ID for this parse stack.  Used by GLR algorithm.
@@ -23,16 +24,9 @@ module CLTK
     # @param [Array<Array<Integer>>]  connections  Integer pairs representing edges in the parse tree.
     # @param [Array<Symbol>]          labels       Labels for nodes in the parse tree.
     # @param [Array<StreamPosition>]  positions    Position data for symbols that have been shifted.
-    def initialize(@id : Int32, ostack = [] of Type, sstack = [0] of Int32, nstack = [] of Int32,
-                                                                                           connections = [] of {Int32, Int32}, labels = [] of String, positions = [] of StreamPosition)
+    def initialize(@id : Int32, @output_stack = [] of Type, @state_stack = [0] of Int32, @node_stack = [] of Int32,
+                   @connections = [] of {Int32, Int32}, @labels = [] of String, @positions = [] of StreamPosition)
 
-      @node_stack   = nstack
-      @output_stack = ostack
-      @state_stack  = sstack
-
-      @connections  = connections
-      @labels       = labels
-      @positions    = positions
     end
 
     # Branch this stack, effectively creating a new copy of its
@@ -64,7 +58,7 @@ module CLTK
     #
     # @return [void]
     def push(state, o, node0, position)
-      @state_stack << state.not_nil!
+      @state_stack << state
       if o.is_a? Array
         a = ([] of Type).as(Type)
         o.each { |e| (a.as(Array(Type))).push(e.as(Type)) }
@@ -81,10 +75,10 @@ module CLTK
     else
       node0.to_s
     end.as(String)
-    @positions	<< position.not_nil!
+    @positions << position.not_nil!
 
     if CFG.is_nonterminal?(node0)
-      @cbuffer.not_nil!.each do |node1|
+      @cbuffer.each do |node1|
 	@connections << {@labels.size - 1, node1}
       end
     end

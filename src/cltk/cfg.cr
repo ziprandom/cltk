@@ -17,22 +17,22 @@ module CLTK
     alias ProductionBufferType   = NamedTuple( production: Production, selections: Array(Int32) )
     alias ProductionCallbackType = Proc(Symbol, Symbol, Production, Array(Int32), Nil)
 
-    @callback            : ProductionCallbackType           =  ProductionCallbackType.new {}
-    @start_symbol        : String?                          =  nil
+    @callback            = ProductionCallbackType.new {}
+    @start_symbol        = ""
     @curr_lhs            : String?                          =  nil
-    @lexer               : Lexers::EBNF                     =  Lexers::EBNF.new
-    @production_buffer   : Array(ProductionBufferType)      = [] of ProductionBufferType
-    @terms               : Set(String)                      = Set(String).new(["EOS"])
-    @nonterms            : Set(String)                      = Set(String).new
-    @firsts              : Hash(String, Array(String))      = {} of String => Array(String)
-    @follows             : Hash(String, Array(String))      = {} of String => Array(String)
-    @production_counter  : Int32                            = -1
-    @productions_id      : Hash(Int32, Production)          = {} of Int32  => Production
-    @productions_sym     : Hash(String, Array(Production) ) = Hash( String, Array(Production) ).new do |h, k|
-                                  h[k] = [] of Production
-                                end
-    property :curr_lhs
+    @lexer               = Lexers::EBNF.new
+    @production_buffer   = Array(ProductionBufferType).new
+    @terms               = Set(String).new(["EOS"])
+    @nonterms            = Set(String).new
+    @firsts              = Hash(String, Array(String)).new
+    @follows             = Hash(String, Array(String)).new
+    @production_counter  = -1
+    @productions_id      = Hash(Int32, Production).new
+    @productions_sym     = Hash( String, Array(Production) ).new do |h, k|
+      h[k] = [] of Production
+    end
 
+    property :curr_lhs
     getter :start_symbol
     getter :productions_sym
     getter :productions_id
@@ -80,7 +80,7 @@ module CLTK
 
       # Set this as the start symbol if there isn't one already
       # defined.
-      @start_symbol ||= lhs
+      @start_symbol = @start_symbol.empty? ? lhs : @start_symbol
       # Remove EBNF tokens and replace them with new productions.
       symbol_count = 0
       tokens.each_with_index do |token, i|
@@ -222,9 +222,9 @@ module CLTK
 	    build_elements_productions = true
 	    "#{name}_list_elements"
 	  end
-	elsif list_elements.is_a?(String)
+	else
 	  list_elements
-	end.not_nil!
+	end
 
       list_element_selected_string = list_element_string.split.map { |s| ".#{s}" }.join(' ')
 
