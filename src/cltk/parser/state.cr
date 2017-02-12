@@ -137,9 +137,9 @@ module CLTK
       # @param [Action] action Action for symbol.
       #
       # @return [void]
-      def on(symbol, action)
+      def on(symbol, action : Action)
         if @actions.has_key?(symbol.to_s)
-          @actions[symbol.to_s] = @actions[symbol.to_s].as(Array(Action)) << action.as(Action)
+          @actions[symbol.to_s] = @actions[symbol.to_s] << action
         else
           raise Exception.new "Attempting to set action for token (#{symbol}) not seen in grammar definition."
         end
@@ -152,7 +152,7 @@ module CLTK
       #
       # @return [Array<Action>] Actions that should be taken.
       def on?(symbol)
-        @actions[symbol].dup
+        @actions[symbol].map { |a| a.dup }
       end
     end
 

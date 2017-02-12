@@ -42,7 +42,7 @@ module CLTK
       @production_counter += 1
     end
 
-    def production(symbol : Symbol | String, expression : String = nil, &block)
+    def production(symbol : Symbol | String, expression : String? = nil, &block)
       with_curr_lhs(symbol) do
         if expression
           self.clause(expression)
@@ -53,7 +53,7 @@ module CLTK
       end
     end
 
-    def production(symbol : Symbol | String, expression : String = nil)
+    def production(symbol : Symbol | String, expression : String? = nil)
       with_curr_lhs(symbol) do
         clause(expression)
       end
