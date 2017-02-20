@@ -1,45 +1,6 @@
-struct NamedTuple
-  def -(other : U) forall U
-    minus_implmentation(other)
-  end
-
-  private def minus_implmentation(other : U) forall U
-    {% begin %}
-    NamedTuple.new(
-      {% for key in (T.keys + U.keys).uniq %}
-          {% if !U.keys.includes?(key) %}
-            {{key}}: self[:{{key}}],
-          {% end %}
-      {% end %}
-    )
-    {% end %}
-  end
-
-  def merge(other : NamedTuple | Nil)
-    if other.is_a? NamedTuple
-      merge_implementation(other)
-    else
-      self
-    end
-  end
-
-  private def merge_implementation(other : U) forall U
-    {% begin %}
-    NamedTuple.new(
-      {% for key in (T.keys + U.keys).uniq %}
-        {% if U.keys.includes?(key) %}
-            {{key}}: other[:{{key}}],
-        {% else %}
-            {{key}}: self[:{{key}}],
-        {% end %}
-      {% end %}
-    )
-    {% end %}
-  end
-end
+require "./named_tuple_extensions"
 
 abstract class CLTK::ASTNode
-
   def initialize(**options)
     if options.size > 0
       raise "superfluos options provided : #{options}"
@@ -117,9 +78,8 @@ abstract class CLTK::ASTNode
 
   macro as_children(values)
     def children
-      { {% for key, index in values%}
-                        {{key}}: @values[:{{key}}]
-          {%if index < values.size - 1%},{%end%}
+      { {% for key, index in values %}
+                        {{key.id}}: @values[:{{key.id}}]{% if index < values.size - 1 %},{% end %}
         {% end %} }
     end
   end

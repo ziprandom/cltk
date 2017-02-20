@@ -1,14 +1,26 @@
 require "spec"
 require "../xlexer"
-require "../xparser"
+require "../xast"
+require "../../../src/cltk/macros"
+require "../../../src/cltk/parser/type"
+require "../../../src/cltk/parser/parser"
+
+insert_output_of() do
+  require "../xparser"
+  require "../../../src/cltk/parser/crystalize"
+  EXP_LANG::Parser.crystalize()
+end
+
+lexer = EXP_LANG::Lexer
+parser = EXP_LANG::Parser
 
 it "EXP_LANG::Parser::Comments" do
-  lexer = EXP_LANG::Lexer
-  parser = EXP_LANG::Parser
+
   string = "1 + 2 # simple addition \n" \
            "# one long comment spanning \n" \
            "# several lines \n"
   tokens = lexer.lex(string)
+
   it "parses a programm ignoring commented lines" do
     res = parser.parse(tokens, {accept: :first}).as(XProgram).expressions.as(Array).first
     res.class.should eq Add
@@ -17,11 +29,10 @@ it "EXP_LANG::Parser::Comments" do
     rleft.value.should eq 1.to_f
     rright.value.should eq 2.to_f
   end
+
 end
 
 describe "EXP_LANG::Parser::VariableAssignment" do
-  lexer = EXP_LANG::Lexer
-  parser = EXP_LANG::Parser
   string = "b = 123 + 3"
   tokens = lexer.lex(string)
   res = parser.parse(tokens, {accept: :first}).as(XProgram).expressions.as(Array).first
@@ -55,8 +66,6 @@ describe "EXP_LANG::Parser::VariableAssignment" do
     }
 
     srcs.each do |src, s|
-      lexer = EXP_LANG::Lexer
-      parser = EXP_LANG::Parser
       tokens = lexer.lex(src)
       res = parser.parse(tokens, {accept: :first}).as(XProgram).expressions.as(Array).first
       res.class.should eq VarAssign
@@ -65,8 +74,6 @@ describe "EXP_LANG::Parser::VariableAssignment" do
   end
 end
 describe "EXP_LANG::Parser::FunDef" do
-  lexer = EXP_LANG::Lexer
-  parser = EXP_LANG::Parser
   string = "def stuff(a,b,c) \n" \
            "10+2\n" \
            "3-2 \n" \
@@ -188,8 +195,6 @@ describe "EXP_LANG::Language" do
     program, result = tuple
 
     it "should parse >> #{program} << and evaluate to #{result}" do
-      lexer = EXP_LANG::Lexer
-      parser = EXP_LANG::Parser
       tokens = lexer.lex(program)
       res = parser.parse(tokens, {accept: :first}).as(Expression)
       res.eval_scope(scope).to_s.should eq result

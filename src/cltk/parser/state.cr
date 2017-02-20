@@ -15,6 +15,7 @@ module CLTK
       @id = -1
       @actions: Hash(String, Array(CLTK::Parser::Action))
 
+      def initialize(@id : Int32, @actions : Hash(String, Array(CLTK::Parser::Action)), @items : Array(CFG::Item)); end
       # Instantiate a new State object.
       #
       # @param [Array<Symbol>]     tokens  Tokens that represent this state

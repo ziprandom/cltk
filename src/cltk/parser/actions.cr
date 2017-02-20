@@ -16,7 +16,8 @@ module CLTK
     struct Accept < Action
       # @return [String] String representation of this action.
       @id = 0
-      def initialize()
+
+      def initialize
       end
 
       def to_s
@@ -36,6 +37,7 @@ module CLTK
     # The Reduce class indicates to the parser that it should reduce the
     # input stack by the rule specified by Reduce.id.
     struct Reduce < Action
+      getter :production
 
       # @param [Production]  production  Production to reduce by
       def initialize(production : CLTK::CFG::Production)
@@ -58,6 +60,5 @@ module CLTK
         "Shift to State #{self.id}"
       end
     end
-
   end
 end

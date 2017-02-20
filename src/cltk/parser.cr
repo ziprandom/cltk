@@ -17,10 +17,12 @@ require "./parser/exceptions/handled_error_exception"
 require "./parser/exceptions/not_in_language_exception"
 require "./parser/exceptions/useless_parser_exception"
 
+require "./parser/type"
 require "./parser/environment"
 require "./parser/explain"
 require "./parser/parse_stack"
 require "./parser/state"
+require "./parser/crystalize"
 require "./parser/prod_proc"
 require "./parser/actions"
 require "./parser/parser"
@@ -31,8 +33,6 @@ require "./parser/parser"
 
 # The CLTK root module
 module CLTK
-
-  alias Type = ASTNode | Token | String | Symbol | Int32 | Float32 | Float64 | Bool | Nil | Array(Type) | Hash(String, Type)
 
   # The Parser class may be sub-classed to produce new parsers.  These
   # parsers have a lot of features, and are described in the main
@@ -61,9 +61,10 @@ module CLTK
     #
     # @return [void]
     macro inherited
+
       @@symbols       = Array(String).new
       @@start_symbol  = ""
-      @@env           = Environment.new
+      @@env           = Environment
       @@grammar_prime = CLTK::CFG.new
 
       @@curr_lhs  = nil
@@ -129,12 +130,12 @@ module CLTK
         @env = {{@type}}::Environment.new
       end
 
-      def self.parser
-        unless @@symbols
-          raise CLTK::UselessParserException.new
-        end
-        Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
-      end
+#      def self.parser
+#        unless @@symbols
+#          raise CLTK::UselessParserException.new
+#        end
+#        Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
+#      end
 
     end
 
@@ -149,11 +150,11 @@ module CLTK
     def self.add_state(state)
       id = @@states.index(state)
       if id
-	id
+        id
       else
-	state.id = @@states.size
-	@@states << state
-	@@states.size - 1
+        state.id = @@states.size
+        @@states << state
+        @@states.size - 1
       end
     end
 
@@ -296,27 +297,33 @@ module CLTK
         # Add the action to our proc list.
         @@procs[production.id] = {
           ## new ProdProc
-          ProdProc.new(:splat, selections) do |%a, %env|
-          %env.as({{@type}}::Environment).yield_with_self do
-            {%for arg, index in action.args%}
-                {{arg}} = %a.as(Array(CLTK::Type))[{{index}}]
-            {%end%}
-              # reassign the first block argument to
-              # the whole arguments array if arg_type
-              # evaluates to :array
-              {%if action.args.size > 0%}
-                if (arg_type || @@default_arg_type) == :array
-                  {{action.args.first}} = %a.as(Array)
-                end
-              {%end %}
+          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) do |%lhsymbols, %env, %arg_type|
+            %env.as({{@type}}::Environment).yield_with_self do
+              {% if !action.args.empty?%}
+                {% if action.args.size == 1%}
+                  {% if arg_type == :array %}
+                    {{action.args.first}} = %lhsymbols.as(Array)
+                  {% else %}
+                    {{action.args.splat}} = %lhsymbols.as(Array(CLTK::Type))[0]
+                  {% end %}
+                {% else %}
+                    {{action.args.splat}} = %lhsymbols.as(Array(CLTK::Type))[0...{{action.args.size}}]
+                {% end %}
+                # reassign the first block argument to
+                # the whole arguments array if arg_type
+                # evaluates to :array
+                {% if arg_type.is_a?(NilLiteral) %}
+                  {{action.args.first}} = %lhsymbols.as(Array) if %arg_type == :array
+                {% end %}
+              {% end %}
+
               result = begin
-                         {{action.body}}
-                       end
-              if result.is_a? Array
-                result.map { |r| r.as(CLTK::Type)}
-              else
-                result.as(CLTK::Type)
+                {{action.body}}
               end
+
+              result.is_a?(Array) ?
+                result.map { |r| r.as(CLTK::Type)} :
+                result.as(CLTK::Type)
             end
           end,
           production.rhs.size

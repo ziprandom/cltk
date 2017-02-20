@@ -10,15 +10,16 @@ module CLTK
       getter :selections
 
       def initialize(
-            arg_type = :splat,
-            selections = [] of Int32,
-                               &@block : Proc(Array(CLTK::Type), Environment, CLTK::Type))
-        @arg_type   = arg_type
+                     arg_type = :splat,
+                     selections = [] of Int32,
+                     &@block : Proc(Array(CLTK::Type), Environment, Symbol, Type))
+        @arg_type = arg_type
         @selections = selections
       end
+
       def call(args : Array(Type), env : Environment)
-        @block.call(args, env)
+        @block.call(args, env, @arg_type)
       end
+    end
   end
-end
 end
