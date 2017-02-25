@@ -9,10 +9,15 @@ def run(program, dump = false)
     contractor.add(
     Kazoo::Parser.parse(
     Kazoo::Lexer.lex(program))).tap {|ir| ir.dump if dump == true }
-  )).to_f64
+  )).to_f32
 end
 
 describe "CLTK::Kazoo" do
+  it "parses, translates and evaluates very simple statement" do
+    result = run("13;")
+    result.should eq 13
+  end
+
   it "parses, translates and evaluates simple statement" do
     result = run("13 + 12;")
     result.should eq 25

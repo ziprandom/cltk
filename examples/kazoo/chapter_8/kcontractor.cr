@@ -3,17 +3,26 @@ require "./llvm_binding_extensions"
 require "./kast"
 
 module Kazoo
-  ZERO = LLVM.double(0.0)
 
   class Contractor
     include CLTK::Visitor(LLVM::Builder)
 
     getter :main_module
     @fpm : LLVM::FunctionPassManager
+    @ctx : LLVM::Context
+    @main_module : LLVM::Module
+    @builder : LLVM::Builder
 
-    def initialize(@builder = LLVM::Builder.new)
+    def zero
+      @ctx.float.const_double(0.0)
+    end
+
+    def initialize()
       LLVM.init_x86
-      @main_module = LLVM::Module.new("Kazoo JIT");
+      @ctx = LLVM::Context.new
+      @main_module = @ctx.new_module("Kazoo JIT")
+      @builder = @ctx.new_builder
+
       @st = {} of String => LLVM::Value
       @env = @builder
       # Execution Engine
@@ -29,7 +38,7 @@ module Kazoo
     end
 
     def execute(func, args = [] of LLVM::GenericValue)
-      @engine.run_function(func)
+       @engine.run_function(func, @ctx)
     end
 
     def optimize(func : LLVM::Function)
@@ -61,7 +70,7 @@ module Kazoo
     	if @st.has_key?(node.name)
     	  @st[node.name]
     	else
-    	  @st[node.name] = alloca LLVM::Double, node.name
+    	  @st[node.name] = alloca @ctx.float, node.name
     	end
       store(right, loc)
       right
@@ -102,7 +111,7 @@ module Kazoo
                end
              rescue
                # add function, if not
-	       @main_module.functions.add(node.name, Array.new(node.arg_names.size, LLVM::Double), LLVM::Double)
+	       @main_module.functions.add(node.name, Array.new(node.arg_names.size, @ctx.float), @ctx.float)
              end
       # Name each of the function paramaters.
       func.tap do
@@ -119,7 +128,7 @@ module Kazoo
       # Translate the function"s prototype.
       func = visit node.proto.as(Prototype)
       func.params.to_a.each do |param|
-	@st[param.name] = alloca LLVM::Double, param.name
+	@st[param.name] = alloca @ctx.float, param.name
 	store param, @st[param.name]
       end
       # Create a new basic block to insert into, allocate space for
@@ -158,7 +167,7 @@ module Kazoo
 
       loop_cond_bb = func.basic_blocks.append("loop_cond")
 
-      loc = alloca LLVM::Double, node.var
+      loc = alloca @ctx.float, node.var
       store (visit node.init), loc
 
       old_var = @st[node.var]? ? @st[node.var] : loc
@@ -167,7 +176,7 @@ module Kazoo
       br loop_cond_bb
       position_at_end(loop_cond_bb)
       branch_body = visit(node.cond)
-      end_cond = fcmp LLVM::RealPredicate::ONE, branch_body , ZERO, "loopcond"
+      end_cond = fcmp LLVM::RealPredicate::ONE, branch_body , zero, "loopcond"
 
       loop_bb1 = nil
       loop_bb0 = func.basic_blocks.append("loop") do |builder|
@@ -196,12 +205,12 @@ module Kazoo
 
       @st[node.var] = old_var
 
-      ZERO
+      zero
     end
 
     on If do |node|
       # IF
-      cond_val = fcmp LLVM::RealPredicate::UGT, (visit node.cond), ZERO, "ifcond"
+      cond_val = fcmp LLVM::RealPredicate::UGT, (visit node.cond), zero, "ifcond"
       table = LLVM::PhiTable.new
 
       start_bb = insert_block
@@ -228,7 +237,7 @@ module Kazoo
       merge_bb = func.basic_blocks.append("merge")
 
       position_at_end(merge_bb)
-      phi_inst = phi LLVM::Double, table, "iftmp"
+      phi_inst = phi @ctx.float, table, "iftmp"
 
       position_at_end(start_bb)
       cond cond_val, then_bb, else_bb
@@ -251,25 +260,25 @@ module Kazoo
       when Sub then fsub(left, right, "subtmp")
       when Mul then fmul(left, right, "multmp")
       when Div then fdiv(left, right, "divtmp")
-      when LT  then ui2fp(fcmp(LLVM::RealPredicate::ULT, left, right, "cmptmp"), LLVM::Double, "lttmp")
-      when GT  then ui2fp(fcmp(LLVM::RealPredicate::UGT, left, right, "cmptmp"), LLVM::Double, "gttmp")
-      when Eql then ui2fp(fcmp(LLVM::RealPredicate::UEQ, left, right, "cmptmp"), LLVM::Double, "eqtmp")
+      when LT  then ui2fp(fcmp(LLVM::RealPredicate::ULT, left, right, "cmptmp"), @ctx.float, "lttmp")
+      when GT  then ui2fp(fcmp(LLVM::RealPredicate::UGT, left, right, "cmptmp"), @ctx.float, "gttmp")
+      when Eql then ui2fp(fcmp(LLVM::RealPredicate::UEQ, left, right, "cmptmp"), @ctx.float, "eqtmp")
       when Or
-	left  = fcmp LLVM::RealPredicate::UNE,  left, ZERO, "lefttmp"
-	right = fcmp LLVM::RealPredicate::UNE, right, ZERO, "righttmp"
+	left  = fcmp LLVM::RealPredicate::UNE,  left, zero, "lefttmp"
+	right = fcmp LLVM::RealPredicate::UNE, right, zero, "righttmp"
 
-	ui2fp (@env.or left, right, "ortmp"), LLVM::Double, "orltmp"
+	ui2fp (@env.or left, right, "ortmp"), @ctx.float, "orltmp"
       when And
-	left  = fcmp LLVM::RealPredicate::UNE,  left, ZERO, "lefttmp"
-	right = fcmp LLVM::RealPredicate::UNE, right, ZERO, "rightmp"
+	left  = fcmp LLVM::RealPredicate::UNE,  left, zero, "lefttmp"
+	right = fcmp LLVM::RealPredicate::UNE, right, zero, "rightmp"
 
-	ui2fp (@env.and left, right, "andtmp"), LLVM::Double, "andtmp"
+	ui2fp (@env.and left, right, "andtmp"), @ctx.float, "andtmp"
       else right
       end
     end
 
     on ANumber do |node|
-      LLVM.double(node.value)
+      @ctx.float.const_double(node.value)
     end
   end
 end
