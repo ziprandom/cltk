@@ -297,23 +297,23 @@ module CLTK
         # Add the action to our proc list.
         @@procs[production.id] = {
           ## new ProdProc
-          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) do |%lhsymbols, %env, %arg_type|
-            %env.as({{@type}}::Environment).yield_with_self do
+          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) do |lhsymbols, env, arg_type|
+            env.as({{@type}}::Environment).yield_with_self do
               {% if !action.args.empty?%}
                 {% if action.args.size == 1%}
                   {% if arg_type == :array %}
-                    {{action.args.first}} = %lhsymbols.as(Array)
+                    {{action.args.first}} = lhsymbols.as(Array)
                   {% else %}
-                    {{action.args.splat}} = %lhsymbols.as(Array(CLTK::Type))[0]
+                    {{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0]
                   {% end %}
                 {% else %}
-                    {{action.args.splat}} = %lhsymbols.as(Array(CLTK::Type))[0...{{action.args.size}}]
+                    {{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0...{{action.args.size}}]
                 {% end %}
                 # reassign the first block argument to
                 # the whole arguments array if arg_type
                 # evaluates to :array
                 {% if arg_type.is_a?(NilLiteral) %}
-                  {{action.args.first}} = %lhsymbols.as(Array) if %arg_type == :array
+                  {{action.args.first}} = lhsymbols.as(Array) if arg_type == :array
                 {% end %}
               {% end %}
 
