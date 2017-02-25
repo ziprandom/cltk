@@ -60,9 +60,7 @@ module CLTK
     def push(state, o, node0, position)
       @state_stack << state
       if o.is_a? Array
-        a = ([] of Type).as(Type)
-        o.each { |e| (a.as(Array(Type))).push(e.as(Type)) }
-        @output_stack = @output_stack + [a]
+        @output_stack = @output_stack + [o.map{ |e| e.as(Type) }.as(Type)]
       elsif o.is_a? Type
         @output_stack << o
       else
