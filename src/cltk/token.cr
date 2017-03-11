@@ -8,6 +8,7 @@ require "./streamposition"
 module CLTK
   # The Token class is used to represent the output of a RLTK::Lexer and the
   # input of a RLTK::Parser.
+  alias TokenValue = Array(String) | Float64 | Int32 | String | Nil;
   struct Token
     # @return [Symbol]
     getter :type
@@ -25,7 +26,7 @@ module CLTK
     # @param [StreamPosition, nil]	position	The position of the token in a stream.
     def initialize(
           @type : String|Symbol,
-          @value : Array(String) | Float64 | Int32 | String | Nil = nil,
+          @value : TokenValue = nil,
           @position : StreamPosition? = nil)
     end
 

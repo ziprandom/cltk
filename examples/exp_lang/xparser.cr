@@ -27,24 +27,24 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:e) do
 
-    clause(:function_call)        { |a| a }
+    clause(:function_call)
 
-    clause(:fun_def)              { |e| e }
-    clause(:varassign)            { |e| e }
-    clause(:binary_expressions)   { |binary| binary }
+    clause(:fun_def)
+    clause(:varassign)
+    clause(:binary_expressions)
 
     # composed
-    clause(:hash)                 { |hash| hash }
-    clause(:array)                { |array| array }
+    clause(:hash)
+    clause(:array)
 
     # in ( )
     clause("LPAREN e RPAREN")     { |_, e, _| e }
 
     # most basic
-    clause(:identifier)           { |var| var}
-    clause(:string)               { |string| string }
-    clause(:number)               { |n| n}
-    clause(:NIL)	            { KNil.new }
+    clause(:identifier)
+    clause(:string)
+    clause(:number)
+    clause(:NIL)	          { KNil.new }
     clause(:TRUE)                 { KTrue.new }
     clause(:FALSE)                { KFalse.new }
     nil
@@ -111,13 +111,13 @@ class EXP_LANG::Parser < CLTK::Parser
   end
 
   production(:sep) do
-    clause(:SEMI) { |n| n }
-    clause(:CR) { |n| n }
+    clause(:SEMI)
+    clause(:CR)
     nil
   end
 
   production(:comma) do
-    clause("CR* COMMA CR*") {|cr, _, _| cr }
+    clause("CR* COMMA CR*")
   end
 
   production(:fun_def) do

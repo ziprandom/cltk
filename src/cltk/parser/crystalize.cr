@@ -36,21 +36,6 @@ class CrystalizeVisitor
     }
   end
 
-  #  def self.to_class(name, parser : CLTK::Parser.class)
-#    %{
-#      class #{name} < CLTK::Parser
-#        def initialize; end
-#
-#        @symbols = #{visit parser.symbols}
-#        @env = #{visit parser.env}
-#        @lh_sides = #{visit parser.lh_sides}
-#        @states = #{visit parser.states}
-#        @procs = #{visit parser.procs}
-#        @token_hooks = #{visit parser.token_hooks, "String, Array(Proc(Environment, Nil))"}
-#      end
-#    }
-#  end
-
   def self.visit(parser : CLTK::Parser)
     %{CLTK::Parser.new(
         #{visit parser.symbols},

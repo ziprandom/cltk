@@ -1,4 +1,13 @@
 module CLTK
+
+  def self.is_terminal?(sym)
+    sym && (s = sym.to_s) == s.upcase
+  end
+
+  def self.is_nonterminal?(sym)
+    sym && sym.to_s == sym.to_s.downcase
+  end
+
   class Parser
     # The ParseStack class is used by a Parser to keep track of state
     # during parsing.
@@ -25,7 +34,7 @@ module CLTK
     # @param [Array<Symbol>]          labels       Labels for nodes in the parse tree.
     # @param [Array<StreamPosition>]  positions    Position data for symbols that have been shifted.
     def initialize(@id : Int32, @output_stack = [] of Type, @state_stack = [0] of Int32, @node_stack = [] of Int32,
-                   @connections = [] of {Int32, Int32}, @labels = [] of String, @positions = [] of StreamPosition)
+                                                                                                             @connections = [] of {Int32, Int32}, @labels = [] of String, @positions = [] of StreamPosition)
 
     end
 
@@ -68,14 +77,14 @@ module CLTK
       end
 
       @node_stack	<< @labels.size
-      @labels		<< if CFG.is_terminal?(node0) && o
+      @labels		<< if CLTK.is_terminal?(node0) && o
       node0.to_s + "(#{o})"
     else
       node0.to_s
     end.as(String)
     @positions << position.not_nil!
 
-    if CFG.is_nonterminal?(node0)
+    if CLTK.is_nonterminal?(node0)
       @cbuffer.each do |node1|
 	@connections << {@labels.size - 1, node1}
       end
@@ -120,7 +129,7 @@ module CLTK
     @labels.each_with_index do |label, i|
       tree += "\tnode#{i} [label=\"#{label}\""
 
-      if CFG.is_terminal?(label)
+      if CLTK.is_terminal?(label)
 	tree += " shape=box"
       end
 
@@ -135,6 +144,7 @@ module CLTK
 
     tree += "}"
   end
+
 end
 
 end

@@ -14,6 +14,8 @@ require "tempfile"
 # Ruby Language Toolkit
 require "../../src/cltk/lexer"
 require "../../src/cltk/parser"
+require "../../src/cltk/parser/parse"
+require "../../src/cltk/macros"
 require "../../src/cltk/lexers/calculator"
 require "../../src/cltk/parsers/prefix_calc"
 require "../../src/cltk/parsers/infix_calc"
@@ -42,15 +44,23 @@ class UnderscoreLexer < CLTK::Lexer
   rule(/\w/) { |t| {:A_TOKEN, t}.as(BlockReturn)}
 end
 
-class APlusBParser < CLTK::Parser
-  production(:a, "A+ B") do |a, b|
-    if a.is_a? Array
-      a.size
+insert_output_of("aplusbparser") do
+  require "../../src/cltk/parser"
+  require "../../src/cltk/parser/tupelize"
+
+  class ParserGenerator < CLTK::Parser
+    production(:a, "A+ B") do |a, b|
+      if a.is_a? Array
+        a.size
+      end
     end
+
+    finalize
   end
 
-  finalize
+  ParserGenerator.tupelize(name: :APlusBParser)
 end
+
 
 class AQuestionBParser < CLTK::Parser
   production(:a, "A? B") { |a, b| a }
@@ -375,12 +385,12 @@ describe "CLTK::Parser" do
     # APlusBParser #
     ################
 
-    expect_raises(CLTK::NotInLanguage) { APlusBParser.parse(ABLexer.lex("b")) }
+    expect_raises(CLTK::NotInLanguage) { CLTK.parse_with_parser(APlusBParser, ABLexer.lex("b")) }
 
-    (APlusBParser.parse(ABLexer.lex("ab"))).should eq 1
-    (APlusBParser.parse(ABLexer.lex("aab"))).should eq 2
-    (APlusBParser.parse(ABLexer.lex("aaab"))).should eq 3
-    (APlusBParser.parse(ABLexer.lex("aaaab"))).should eq 4
+    (CLTK.parse_with_parser(APlusBParser, ABLexer.lex("ab"))).should eq 1
+    (CLTK.parse_with_parser(APlusBParser, ABLexer.lex("aab"))).should eq 2
+    (CLTK.parse_with_parser(APlusBParser, ABLexer.lex("aaab"))).should eq 3
+    (CLTK.parse_with_parser(APlusBParser, ABLexer.lex("aaaab"))).should eq 4
 
     ####################
     # AQuestionBParser #

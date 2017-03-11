@@ -79,13 +79,13 @@ abstract class CLTK::ASTNode
   macro as_children(values)
     def children
       { {% for key, index in values %}
-                        {{key.id}}: @values[:{{key.id}}]{% if index < values.size - 1 %},{% end %}
+                        {{key.id}}: values[:{{key.id}}]{% if index < values.size - 1 %},{% end %}
         {% end %} }
     end
   end
 
-  def [](key)
-    @values[key]
-  end
+#  def [](key)
+#    values[key]
+#  end
 
 end

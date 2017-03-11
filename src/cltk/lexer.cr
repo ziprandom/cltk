@@ -70,7 +70,6 @@ module CLTK
     end
 
     @@match_type	= :longest
-    @@start_state	= :default
 
     @@rules : Hash(Symbol, Array(Rule) ) = {} of Symbol => Array(Rule)
 
@@ -81,6 +80,7 @@ module CLTK
     macro inherited
       @env : {{@type.id}}::Environment
       @@env = {{@type.id}}::Environment
+      @@start_state	= :default
 
       ####################
       # Instance Methods #
@@ -218,7 +218,7 @@ module CLTK
     #
     # @return [void]
 
-    alias BlockReturn = { Symbol, Nil } | {String, String} | { Nil, Nil } | { Symbol, Int32 } | {Symbol, Float64} | { Symbol, String } | { Symbol, Array(String) }
+    alias BlockReturn = Tuple(Symbol|String|Nil, TokenValue)
 
     macro rule(pattern, state = :default, flags = [] of Symbol, &action: _ -> _)
       {{pattern}}.tap do |pattern|
@@ -226,22 +226,22 @@ module CLTK
           (pattern.is_a?(String)) ? Regex.new(pattern) : pattern,
           {{state}},
           {{flags}}
-        ) do |%match, %txt, %env|
+        ) do |match, txt, env|
             {% if action  %}
-              {% if action.args.first %}
-                {{action.args.first.id}} = %txt
+              {% if action.args.first && action.args.first.id != "txt" %}
+                {{action.args.first.id}} = txt
               {% end %}
-            %env.match = %match
-            %res = yield_with(%env.as({{@type}}::Environment)) do
+            env.match = match
+            res = yield_with(env.as({{@type}}::Environment)) do
               {{action.body}}
             end
 
-            if %res.is_a? Void
+            if res.is_a? Void
               {nil, nil}
-            elsif %res.is_a? Tuple
-              %res
+            elsif res.is_a? Tuple
+              res
             else
-              Tuple.new(%res, nil)
+              Tuple.new(res, nil)
             end
             {% else %}
               {nil, nil}

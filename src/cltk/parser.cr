@@ -39,6 +39,7 @@ module CLTK
   # documentation.
   abstract class Parser
 
+
     include Explain
     # @return [Environment] Environment used by the instantiated parser.
     getter :env
@@ -97,11 +98,11 @@ module CLTK
 	       when :nelp
 	         case which
 	         when :single
-	           ProdProc.new { |el| [el[0]].map { |x| x.as(CLTK::Type) } }
+	           ProdProc.new { |el| [el.as(Array)[0]].map { |x| x.as(CLTK::Type) } }
 	         when :multiple
 	           ProdProc.new(:splat, sels) do |syms|
-                     syms  = syms.as(Array)
-                     first = syms.shift.as(Array)
+                     syms  = syms.as(Array(CLTK::Type))
+                     first = syms.shift.as(Array(CLTK::Type))
                      rest  = syms.size > 1 ? syms : syms.first
                      first << rest
 	           end
@@ -290,14 +291,20 @@ module CLTK
                                    raise "NO GRAMMAR DEFINED"
                                  end
         expected_arity = (selections.empty? ? production.rhs.size : selections.size)
-        if arg_type == :splat && {{action.args.size}} != expected_arity
-  	  raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got {{action.args.size}}. Action arity must match the number of terminals and non-terminals in the clause."
+        action_arity = {% if action.is_a? Proc %}
+                         {{ action.args.size}}
+                       {% else %}
+                         1
+                       {% end %}
+
+        if arg_type == :splat && action_arity != expected_arity
+  	  raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action_arity}. Action arity must match the number of terminals and non-terminals in the clause."
         end
 
         # Add the action to our proc list.
         @@procs[production.id] = {
           ## new ProdProc
-          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) do |lhsymbols, env, arg_type|
+          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) {% if action %} do |lhsymbols, env, arg_type|
             env.as({{@type}}::Environment).yield_with_self do
               {% if !action.args.empty?%}
                 {% if action.args.size == 1%}
@@ -325,7 +332,7 @@ module CLTK
                 result.map { |r| r.as(CLTK::Type)} :
                 result.as(CLTK::Type)
             end
-          end,
+          end{% end %},
           production.rhs.size
         }
         # If no precedence is specified use the precedence of the
@@ -652,7 +659,8 @@ module CLTK
     #
     # @return [Object, Array<Object>]  Result or results of parsing the given tokens.
     def self.parse(tokens, opts = nil)
-      parser.parse(tokens, opts)
+
+      #      parser.parse(tokens, opts)
     end
 
     # Adds a new production to the parser with a left-hand value of
@@ -688,9 +696,9 @@ module CLTK
         @@default_arg_type = {{arg_type}}
       end
       {%if expression%}
-        clause({{expression}}, {{precedence}}, {{arg_type}}) do |{{*action.args}}|
+        clause({{expression}}, {{precedence}}, {{arg_type}}) {% if action %} do |{{*action.args}}|
           {{action.body}}
-        end
+        end {% end %}
       {%else%}
           {{action.body}}
       {%end%}

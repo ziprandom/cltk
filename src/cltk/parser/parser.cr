@@ -93,7 +93,7 @@ module CLTK
                   # Add the current token to the array
                   # that corresponds to the output value
                   # for the ERROR token.
-                  stack.output_stack.last.as(Array) << token
+                  stack.output_stack.last.as(Array(CLTK::Type)) << token.value.as(CLTK::Type)
                 moving_on << stack
                 next
               end
@@ -118,7 +118,7 @@ module CLTK
                       stack.pop
 	            else
 	              # Enter the found error state.
-	              stack.push(actions.first.id, [token], :ERROR.to_s, token.position)
+	              stack.push(actions.first.id, [token.value], :ERROR.to_s, token.position)
 	              break
 	            end
 	          end
@@ -253,7 +253,7 @@ module CLTK
 	  v.puts("\n\n")
         {% end %}
 
-	  processing = moving_on
+	processing = moving_on
 	moving_on  = [] of ParseStack
 
 	# If we don't have any active stacks at this point the
