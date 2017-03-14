@@ -5,7 +5,6 @@ require "../../src/cltk/parser/environment"
 require "../../src/cltk/macros"
 require "spec"
 
-parser = nil
 insert_output_of() do
   require "../../src/cltk/parser"
   require "../../src/cltk/parser/tupelize"
@@ -20,15 +19,15 @@ insert_output_of() do
       clause("e DIV e") { |e0, op, e1 | e0.as(Int32) / e1.as(Int32) }
     end
     finalize
+    tupelize
   end
-  MiniParser.tupelize(name: :parser)
 end
 
 
 #describe "parsing with parser data struct" do
   it "works" do
     tokens = CLTK::Lexers::Calculator.lex("1 + 2 * 3")
-    actual = CLTK.parse_with_parser(parser, tokens, {accept: :all})
+    actual = MiniParser.parse(tokens, {accept: :all})
     actual.should eq [9, 7]
   end
 #end

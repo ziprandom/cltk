@@ -1,5 +1,37 @@
 module CLTK
   class Parser
+    # make these class attributes accessible from outside
+    # (for the Visitor to work on them)
+    class_getter :symbols, :states, :procs, :lh_sides, :token_hooks, :env
+
+    def self.tupelize(name : Symbol)
+      tupelize(name.to_s)
+    end
+
+    def self.tupelize(name : String = {{@type.stringify}})
+      puts %{
+        module #{name}
+          class Environment < CLTK::Parser::Environment; end
+          Parser = #{TupelizeVisitor.to_tuple(self)}
+
+          def self.new
+            unless Parser[:symbols].any?
+              raise CLTK::UselessParserException.new
+            end
+            CLTK::CLTKParser(self).new
+          end
+
+          def self.parse(tokens, options = NamedTuple.new)
+            CLTK::CLTKParser(self).new.parse(tokens, options)
+          end
+        end
+      }
+    end
+  end
+end
+
+module CLTK
+  class Parser
     struct ProdProc
       property :crystalized_block
       @crystalized_block : String? = nil
@@ -66,24 +98,15 @@ class TupelizeVisitor
   end
 
   def self.visit_states(states)
-    if states.size < 0
-      return "Tuple.new"
-    end
-      "Tuple.new(" +
-      states.map { |state| visit_state(state) }.join(", ") +
-      ")"
+    %{ Tuple.new(#{states.map { |state| visit_state(state) }.join(", ")}) }
   end
 
   def self.visit_lh_sides(lh_sides)
-    "{" +
-      lh_sides.values.map { |v| ":\"#{v}\"" }.join(", ") +
-      "}"
+    %{ Tuple.new(#{lh_sides.values.map { |v| ":\"#{v}\"" }.join(", ")}) }
   end
 
   def self.visit_symbols(symbols)
-    "{ " +
-      symbols.map { |symbol| ":#{symbol}" }.join(", ") +
-      " }"
+    %{ Tuple.new(#{symbols.map { |symbol| ":#{symbol}" }.join(", ")}) }
   end
 
   def self.visit(action : CLTK::Parser::Accept)
@@ -107,7 +130,11 @@ class TupelizeVisitor
   end
 
   def self.visit(production : CLTK::CFG::Production)
-    rhs = production.rhs.map { |s| visit s}
+    rhs = if production.rhs.size > 0
+            production.rhs.map { |s| visit s}
+          else
+            "Array(String).new"
+          end
     %{ NamedTuple.new(id: #{visit production.id}, lhs: :#{production.lhs}, rhs: #{rhs}) }
   end
 
@@ -119,7 +146,7 @@ class TupelizeVisitor
 
   def self.visit(node : CLTK::Parser::ProdProc)
     procpart = node.crystalized_block ?
-                 "proc: #{node.crystalized_block}" : ""
+                 "proc: #{node.crystalized_block}" : "proc: nil"
     %{
       NamedTuple.new(
         arg_type: #{visit node.arg_type},
@@ -182,19 +209,4 @@ macro class_getter(*attributes)
       @@{{attribute.id}}
     end
   {% end %}
-end
-
-module CLTK
-  class Parser
-    # make these class attributes accessible from outside
-    # (for the Visitor to work on them)
-    class_getter :symbols, :states, :procs, :lh_sides, :token_hooks, :env
-
-    def self.tupelize(name : Symbol = :parser_tuple)
-      puts %{
-        #{TupelizeVisitor.define_types(self)}
-        #{name.to_s} = #{TupelizeVisitor.to_tuple(self)}
-      }
-    end
-  end
 end

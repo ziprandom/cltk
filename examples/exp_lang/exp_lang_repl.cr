@@ -1,8 +1,16 @@
 require "readline"
 require "./xlexer"
-require "./xparser"
 require "./xast"
 require "./xscope"
+require "../../src/cltk/macros"
+require "../../src/cltk/parser/type"
+require "../../src/cltk/parser/parse"
+
+insert_output_of() do
+  require "../../src/cltk/parser/tupelize"
+  require "./xparser"
+  EXP_LANG::Parser.tupelize
+end
 
 lexer  = EXP_LANG::Lexer
 parser = EXP_LANG::Parser

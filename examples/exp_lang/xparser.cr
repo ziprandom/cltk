@@ -20,7 +20,6 @@ class EXP_LANG::Parser < CLTK::Parser
     clause("expressions sep*") do |e|
       XProgram.new(expressions: e)
     end
-    nil
   end
 
   build_list_production(:expressions, :e, :sep)
@@ -84,12 +83,12 @@ class EXP_LANG::Parser < CLTK::Parser
   build_list_production(:hash_pairs, :hash_pair, :comma)
 
   production(:binary_expressions) do
-    clause("e OR e")          { |e0, _, e2| KOr.new(left: e0, right: e2)  }
-    clause("e AND e")         { |e0, _, e2| KAnd.new(left: e0, right: e2) }
-    clause("e PLUS e")	{ |e0, _, e1| Add.new(left: e0, right: e1)  }
-    clause("e SUB e")	        { |e0, _, e1| Sub.new(left: e0, right: e1)  }
-    clause("e MUL e")	        { |e0, _, e1| Mul.new(left: e0, right: e1)  }
-    clause("e DIV e")	        { |e0, _, e1| Div.new(left: e0, right: e1)  }
+    clause("e OR e")    { |e0, _, e2| KOr.new(left: e0,  right: e2) }
+    clause("e AND e")   { |e0, _, e2| KAnd.new(left: e0, right: e2) }
+    clause("e PLUS e")  { |e0, _, e1| Add.new(left: e0,  right: e1) }
+    clause("e SUB e")	{ |e0, _, e1| Sub.new(left: e0,  right: e1) }
+    clause("e MUL e")	{ |e0, _, e1| Mul.new(left: e0,  right: e1) }
+    clause("e DIV e")	{ |e0, _, e1| Div.new(left: e0,  right: e1) }
   end
 
   production(:identifier) do
@@ -113,7 +112,6 @@ class EXP_LANG::Parser < CLTK::Parser
   production(:sep) do
     clause(:SEMI)
     clause(:CR)
-    nil
   end
 
   production(:comma) do

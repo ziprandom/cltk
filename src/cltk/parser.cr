@@ -22,7 +22,6 @@ require "./parser/environment"
 require "./parser/explain"
 require "./parser/parse_stack"
 require "./parser/state"
-require "./parser/crystalize"
 require "./parser/prod_proc"
 require "./parser/actions"
 require "./parser/parser"
@@ -62,7 +61,6 @@ module CLTK
     #
     # @return [void]
     macro inherited
-
       @@symbols       = Array(String).new
       @@start_symbol  = ""
       @@env           = Environment
@@ -87,13 +85,13 @@ module CLTK
 	       when :optional
 	         case which
 	         when :empty then ProdProc.new { nil }
-	         else             ProdProc.new { |o| o[0] }
+	         else             ProdProc.new { |o| o.as(Array)[0] }
 	         end
 
 	       when :elp
 	         case which
 	         when :empty then ProdProc.new { [] of CLTK::Type}
-	         else             ProdProc.new { |prime| prime[0] }
+	         else             ProdProc.new { |prime| prime.as(Array)[0] }
 	         end
 	       when :nelp
 	         case which
@@ -117,26 +115,20 @@ module CLTK
 	       end
 	@@procs[p.id] = { proc, p.rhs.size }
 	@@production_precs_prepare[p.id] = p.last_terminal
+
         nil
       end
 
       # Instantiates a new parser and creates an environment to be
       # used for subsequent calls.
-      @env : {{@type}}::Environment
+      @env : Environment
 
       def initialize
         unless @@symbols.any?
           raise CLTK::UselessParserException.new
         end
-        @env = {{@type}}::Environment.new
+        @env = Environment.new
       end
-
-#      def self.parser
-#        unless @@symbols
-#          raise CLTK::UselessParserException.new
-#        end
-#        Parser.new(@@symbols, @@lh_sides, @@states, @@procs, @@token_hooks, {{@type}}::Environment)
-#      end
 
     end
 
@@ -305,7 +297,7 @@ module CLTK
         @@procs[production.id] = {
           ## new ProdProc
           ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) {% if action %} do |lhsymbols, env, arg_type|
-            env.as({{@type}}::Environment).yield_with_self do
+            env.as(Environment).yield_with_self do
               {% if !action.args.empty?%}
                 {% if action.args.size == 1%}
                   {% if arg_type == :array %}

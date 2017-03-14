@@ -6,7 +6,6 @@ require "./state"
 require "./actions"
 require "./exceptions/*"
 require "./prod_proc"
-require "./crystalize"
 require "./parse_stack"
 require "./environment"
 
@@ -110,18 +109,18 @@ module CLTK
 	          v.puts
                 {% end %}
 
-	          # Try and find a valid error state.
-	          while stack.state_stack.any?
-	            if (actions = @@states[stack.state].on?(:ERROR.to_s)).empty?
-	              # This state doesn't have an
-	              # error production. Moving on.
-                      stack.pop
-	            else
-	              # Enter the found error state.
-	              stack.push(actions.first.id, [token.value], :ERROR.to_s, token.position)
-	              break
-	            end
+	        # Try and find a valid error state.
+	        while stack.state_stack.any?
+	          if (actions = @@states[stack.state].on?(:ERROR.to_s)).empty?
+	            # This state doesn't have an
+	            # error production. Moving on.
+                    stack.pop
+	          else
+	            # Enter the found error state.
+	            stack.push(actions.first.id, [token.value], :ERROR.to_s, token.position)
+	            break
 	          end
+	        end
 	        if stack.state_stack.any?
 	          # We found a valid error state.
 	          error_mode = reduction_guard = true
