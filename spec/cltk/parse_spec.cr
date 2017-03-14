@@ -22,14 +22,14 @@ require "../../src/cltk/lexers/*"
 # Classes and Modules #
 #######################
 
-class ABLexer < CLTK::Lexer
+class FixABLexer < CLTK::Lexer
   rule(/a/) { {:A, 1} }
   rule(/b/) { {:B, 2} }
 
   rule(/\s/)
 end
 
-class AlphaLexer < CLTK::Lexer
+class FixAlphaLexer < CLTK::Lexer
   rule(/a|A/) { |t| {:A, t}.as(BlockReturn)}
   rule(/b|B/) { |t| {:B, t}.as(BlockReturn)}
   rule(/c|C/) { |t| {:C, t}.as(BlockReturn)}
@@ -40,7 +40,7 @@ class AlphaLexer < CLTK::Lexer
   rule(/\s/)
 end
 
-class UnderscoreLexer < CLTK::Lexer
+class FixUnderscoreLexer < CLTK::Lexer
   rule(/\w/) { |t| {:A_TOKEN, t}.as(BlockReturn)}
 end
 
@@ -371,7 +371,7 @@ end
 class DummyError1 < Exception; end
 class DummyError2 < Exception; end
 
-class ELLexer < CLTK::Lexer
+class FixELLexer < CLTK::Lexer
   rule(/\n/) { :NEWLINE }
   rule(/;/)  { :SEMI    }
 
@@ -426,7 +426,7 @@ describe "CLTK::Parser" do
   # cloned when we split the parse stack.  This was posted as Issue #17 on
   # Github.
   it "test_ambiguous_parse_stack" do
-    FixAmbiguousParseStackParser.parse(ABLexer.lex("ab")).as(Array).size.should eq 1
+    FixAmbiguousParseStackParser.parse(FixABLexer.lex("ab")).as(Array).size.should eq 1
   end
 
   it "test_array_args" do
@@ -451,30 +451,30 @@ describe "CLTK::Parser" do
     # APlusBParser #
     ################
 
-    expect_raises(CLTK::NotInLanguage) { FixAPlusBParser.parse(ABLexer.lex("b")) }
+    expect_raises(CLTK::NotInLanguage) { FixAPlusBParser.parse(FixABLexer.lex("b")) }
 
-    (FixAPlusBParser.parse(ABLexer.lex("ab"))).should eq 1
-    (FixAPlusBParser.parse(ABLexer.lex("aab"))).should eq 2
-    (FixAPlusBParser.parse(ABLexer.lex("aaab"))).should eq 3
-    (FixAPlusBParser.parse(ABLexer.lex("aaaab"))).should eq 4
+    (FixAPlusBParser.parse(FixABLexer.lex("ab"))).should eq 1
+    (FixAPlusBParser.parse(FixABLexer.lex("aab"))).should eq 2
+    (FixAPlusBParser.parse(FixABLexer.lex("aaab"))).should eq 3
+    (FixAPlusBParser.parse(FixABLexer.lex("aaaab"))).should eq 4
 
     ####################
     # AQuestionBParser #
     ####################
 
-    expect_raises(CLTK::NotInLanguage) { FixAQuestionBParser.parse(ABLexer.lex("aab")) }
-    FixAQuestionBParser.parse(ABLexer.lex("b")).should be_nil
-    FixAQuestionBParser.parse(ABLexer.lex("ab")).should_not be_nil
+    expect_raises(CLTK::NotInLanguage) { FixAQuestionBParser.parse(FixABLexer.lex("aab")) }
+    FixAQuestionBParser.parse(FixABLexer.lex("b")).should be_nil
+    FixAQuestionBParser.parse(FixABLexer.lex("ab")).should_not be_nil
 
     ################
     # AStarBParser #
     ################
 
-    FixAStarBParser.parse(ABLexer.lex("b")).as(Int32).should eq 0
-    FixAStarBParser.parse(ABLexer.lex("ab")).as(Int32).should eq 1
-    FixAStarBParser.parse(ABLexer.lex("aab")).as(Int32).should eq 2
-    FixAStarBParser.parse(ABLexer.lex("aaab")).as(Int32).should eq 3
-    FixAStarBParser.parse(ABLexer.lex("aaaab")).as(Int32).should eq 4
+    FixAStarBParser.parse(FixABLexer.lex("b")).as(Int32).should eq 0
+    FixAStarBParser.parse(FixABLexer.lex("ab")).as(Int32).should eq 1
+    FixAStarBParser.parse(FixABLexer.lex("aab")).as(Int32).should eq 2
+    FixAStarBParser.parse(FixABLexer.lex("aaab")).as(Int32).should eq 3
+    FixAStarBParser.parse(FixABLexer.lex("aaaab")).as(Int32).should eq 4
   end
 
   it "test_empty_list" do
@@ -483,7 +483,7 @@ describe "CLTK::Parser" do
     ####################
 
     expected = [] of CLTK::Type
-    actual   = FixEmptyListParser0.parse(AlphaLexer.lex(""))
+    actual   = FixEmptyListParser0.parse(FixAlphaLexer.lex(""))
     actual.should eq(expected)
 
     ####################
@@ -491,7 +491,7 @@ describe "CLTK::Parser" do
     ####################
 
     expected = ["a", "b", ["c", "d"]]
-    actual   = FixEmptyListParser1.parse(AlphaLexer.lex("a, b, c d"))
+    actual   = FixEmptyListParser1.parse(FixAlphaLexer.lex("a, b, c d"))
     actual.should eq(expected)
   end
 
@@ -502,29 +502,29 @@ describe "CLTK::Parser" do
     ####################
 
     expected = [nil, "a"]
-    actual   = FixGreedTestParser0.parse(AlphaLexer.lex("a"))
+    actual   = FixGreedTestParser0.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
 
     expected = ["a", "a"]
-    actual   = FixGreedTestParser0.parse(AlphaLexer.lex("a a"))
+    actual   = FixGreedTestParser0.parse(FixAlphaLexer.lex("a a"))
     actual.should eq expected
 
     ####################
     # GreedTestParser1 #
     ####################
     expected = [nil, nil]
-    actual   = FixGreedTestParser1.parse(AlphaLexer.lex(""))
+    actual   = FixGreedTestParser1.parse(FixAlphaLexer.lex(""))
     actual.should eq expected
 
     expected = ["a", nil]
     expected = [nil, "a"]
-    actual   = FixGreedTestParser1.parse(AlphaLexer.lex("a"))
+    actual   = FixGreedTestParser1.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
 
 
 
     expected = ["a", "a"]
-    actual   = FixGreedTestParser1.parse(AlphaLexer.lex("a a"))
+    actual   = FixGreedTestParser1.parse(FixAlphaLexer.lex("a a"))
     actual.should eq expected
 
 
@@ -533,18 +533,18 @@ describe "CLTK::Parser" do
     ####################
 
     expected = [[] of CLTK::Type, "a"]
-    actual   = FixGreedTestParser2.parse(AlphaLexer.lex("a"))
+    actual   = FixGreedTestParser2.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
 
 
     expected = [["a"], "a"]
-    actual   = FixGreedTestParser2.parse(AlphaLexer.lex("a a"))
+    actual   = FixGreedTestParser2.parse(FixAlphaLexer.lex("a a"))
     actual.should eq expected
 
 
 
     expected = [["a", "a"], "a"]
-    actual   = FixGreedTestParser2.parse(AlphaLexer.lex("a a a"))
+    actual   = FixGreedTestParser2.parse(FixAlphaLexer.lex("a a a"))
     actual.should eq expected
 
 
@@ -553,30 +553,30 @@ describe "CLTK::Parser" do
     ####################
 
     expected = [["a"], "a"]
-    actual   = FixGreedTestParser3.parse(AlphaLexer.lex("a a"))
+    actual   = FixGreedTestParser3.parse(FixAlphaLexer.lex("a a"))
     actual.should eq expected
 
     expected = [["a", "a"], "a"]
-    actual   = FixGreedTestParser3.parse(AlphaLexer.lex("a a a"))
+    actual   = FixGreedTestParser3.parse(FixAlphaLexer.lex("a a a"))
     actual.should eq expected
 
   end
 
   it "test_ebnf_selector_interplay" do
     expected = ["a", ["b", "b", "b"], "a"]
-    actual   = FixEBNFSelectorParser.parse(AlphaLexer.lex("abbba"))
+    actual   = FixEBNFSelectorParser.parse(FixAlphaLexer.lex("abbba"))
     actual.should eq expected
 
     expected = ["a", [] of CLTK::Type, "a"]
-    actual   = FixEBNFSelectorParser.parse(AlphaLexer.lex("aa"))
+    actual   = FixEBNFSelectorParser.parse(FixAlphaLexer.lex("aa"))
     actual.should eq expected
 
     expected = ["b", "b"]
-    actual   = FixEBNFSelectorParser.parse(AlphaLexer.lex("bb"))
+    actual   = FixEBNFSelectorParser.parse(FixAlphaLexer.lex("bb"))
     actual.should eq expected
 
     expected = ["b", "b"]
-    actual   = FixEBNFSelectorParser.parse(AlphaLexer.lex("bcccccb"))
+    actual   = FixEBNFSelectorParser.parse(FixAlphaLexer.lex("bcccccb"))
     actual.should eq expected
 
   end
@@ -609,11 +609,11 @@ describe "CLTK::Parser" do
     test_string += "third line;\n"
     test_string += "fourth line\n"
 
-    expect_raises(CLTK::HandledError) { FixErrorLine.parse(ELLexer.lex(test_string)) }
+    expect_raises(CLTK::HandledError) { FixErrorLine.parse(FixELLexer.lex(test_string)) }
 
     # Test to see if we can continue parsing after errors are encounterd.
     begin
-      FixErrorLine.parse(ELLexer.lex(test_string))
+      FixErrorLine.parse(FixELLexer.lex(test_string))
     rescue ex : CLTK::HandledError
       ex.errors.should eq [2,4]
     end
@@ -658,70 +658,70 @@ describe "CLTK::Parser" do
     #######################
 
     expected = ["a"]
-    actual   = FixNonEmptyListParser10.parse(AlphaLexer.lex("a"))
+    actual   = FixNonEmptyListParser10.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
 
     expected = ["a", "a"]
-    actual   = FixNonEmptyListParser10.parse(AlphaLexer.lex("a, a"))
+    actual   = FixNonEmptyListParser10.parse(FixAlphaLexer.lex("a, a"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(AlphaLexer.lex(""))   }
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(AlphaLexer.lex(","))  }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(FixAlphaLexer.lex(""))   }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(FixAlphaLexer.lex(","))  }
 
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(AlphaLexer.lex("aa")) }
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(AlphaLexer.lex("a,")) }
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(AlphaLexer.lex(",a")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(FixAlphaLexer.lex("aa")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(FixAlphaLexer.lex("a,")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser10.parse(FixAlphaLexer.lex(",a")) }
 
     #######################
     # NonEmptyListParser1 #
     #######################
     expected = ["a"]
-    actual   = FixNonEmptyListParser1.parse(AlphaLexer.lex("a"))
+    actual   = FixNonEmptyListParser1.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
     expected = ["b"]
-    actual   = FixNonEmptyListParser1.parse(AlphaLexer.lex("b"))
+    actual   = FixNonEmptyListParser1.parse(FixAlphaLexer.lex("b"))
     actual.should eq expected
 
     expected = ["a", "b", "a", "b"]
-    actual   = FixNonEmptyListParser1.parse(AlphaLexer.lex("a, b, a, b"))
+    actual   = FixNonEmptyListParser1.parse(FixAlphaLexer.lex("a, b, a, b"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser1.parse(AlphaLexer.lex("a b")) }
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser1.parse(AlphaLexer.lex("a, ")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser1.parse(FixAlphaLexer.lex("a b")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser1.parse(FixAlphaLexer.lex("a, ")) }
 
     #######################
     # NonEmptyListParser2 #
     #######################
 
     expected = ["a"]
-    actual   = FixNonEmptyListParser2.parse(AlphaLexer.lex("a"))
+    actual   = FixNonEmptyListParser2.parse(FixAlphaLexer.lex("a"))
     actual.should eq expected
 
     expected = ["b"]
-    actual   = FixNonEmptyListParser2.parse(AlphaLexer.lex("b"))
+    actual   = FixNonEmptyListParser2.parse(FixAlphaLexer.lex("b"))
     actual.should eq expected
 
     expected = [["c", "d"]]
-    actual   = FixNonEmptyListParser2.parse(AlphaLexer.lex("c d"))
+    actual   = FixNonEmptyListParser2.parse(FixAlphaLexer.lex("c d"))
     actual.should eq expected
 
     expected = [["c", "d"], ["c", "d"]]
-    actual   = FixNonEmptyListParser2.parse(AlphaLexer.lex("c d, c d"))
+    actual   = FixNonEmptyListParser2.parse(FixAlphaLexer.lex("c d, c d"))
     actual.should eq expected
 
     expected = ["a", "b", ["c", "d"]]
-    actual   = FixNonEmptyListParser2.parse(AlphaLexer.lex("a, b, c d"))
+    actual   = FixNonEmptyListParser2.parse(FixAlphaLexer.lex("a, b, c d"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser2.parse(AlphaLexer.lex("c")) }
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser2.parse(AlphaLexer.lex("d")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser2.parse(FixAlphaLexer.lex("c")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser2.parse(FixAlphaLexer.lex("d")) }
 
     #######################
     # NonEmptyListParser3 #
     #######################
 
     expected = [["a"], ["a", "a"], ["a", "a", "a"]]
-    actual   = FixNonEmptyListParser3.parse(AlphaLexer.lex("a, aa, aaa"))
+    actual   = FixNonEmptyListParser3.parse(FixAlphaLexer.lex("a, aa, aaa"))
     actual.should eq expected
 
     #######################
@@ -729,7 +729,7 @@ describe "CLTK::Parser" do
     #######################
 
     expected = ["a", "a", "a"]
-    actual   = FixNonEmptyListParser4.parse(AlphaLexer.lex("a a a"))
+    actual   = FixNonEmptyListParser4.parse(FixAlphaLexer.lex("a a a"))
     actual.should eq expected
 
     #######################
@@ -737,10 +737,10 @@ describe "CLTK::Parser" do
     #######################
 
     expected = ["a", "a", "a"]
-    actual   = FixNonEmptyListParser5.parse(AlphaLexer.lex("a b a b c a"))
+    actual   = FixNonEmptyListParser5.parse(FixAlphaLexer.lex("a b a b c a"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser5.parse(AlphaLexer.lex("a b b a")) }
+    expect_raises(CLTK::NotInLanguage) { FixNonEmptyListParser5.parse(FixAlphaLexer.lex("a b b a")) }
   end
 
   it "test_postfix_calc" do
@@ -770,7 +770,7 @@ describe "CLTK::Parser" do
   end
 
   it "test_selection_parser" do
-    actual   = FixSelectionParser.parse(ABLexer.lex("aaabbb"))
+    actual   = FixSelectionParser.parse(FixABLexer.lex("aaabbb"))
     expected = 6
 
     actual.should eq expected
@@ -779,15 +779,15 @@ describe "CLTK::Parser" do
   pending "test_token_hooks" do
     parser = FixTokenHookParser.new
 
-    parser.parse(AlphaLexer.lex("a a a a"))
+    parser.parse(FixAlphaLexer.lex("a a a a"))
     parser.env.counter.should eq 4
 
-    parser.parse(AlphaLexer.lex("b b b b"))
+    parser.parse(FixAlphaLexer.lex("b b b b"))
     parser.env.counter.should eq 12
   end
 
   it "test_underscore_tokens" do
-    actual   = FixUnderscoreParser.parse(UnderscoreLexer.lex("abc")).as(Array).join
+    actual   = FixUnderscoreParser.parse(FixUnderscoreLexer.lex("abc")).as(Array).join
     expected = "abc"
 
     actual.should eq expected
