@@ -9,7 +9,9 @@ This is a port of the [Ruby Language Toolkit](https://github.com/chriswailes/RLT
 * AST node baseclass
 * Class for representing context free grammars
 
-In addition, CLTK includes several ready-made lexers and parsers. To see what works have a look at the specs or run them with:
+In addition, CLTK includes several ready-made lexers and parsers. As well as a Serialization Mechanism that translates an finalized parser back into crystal syntax to compile it without having to be finalized again at startup. (see [exp_lang_repl](examples/exp_lang/exp_lang_repl.cr) for a usage example).
+
+To see what works have a look at the specs or run them with:
 
 ```crystal
 $ crystal spec
