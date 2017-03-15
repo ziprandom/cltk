@@ -46,7 +46,7 @@ module CLTK
         {% else %}
         instance.initialize(*{{args}}) {% if block %}{{block}}{% end %}
         {% end %}
-        instance.crystalized_block = {% if block %}"Proc(CLTK::Type, Environment, Symbol, CLTK::Type).new {{block}}" {% else %}nil{% end %}
+        instance.crystalized_block = {% if block %}%{ Proc(CLTK::Type, Environment, Symbol, CLTK::Type).new {{block}} } {% else %}nil{% end %}
         instance
       end
     end
