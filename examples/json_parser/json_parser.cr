@@ -1,6 +1,7 @@
 # coding: utf-8
 require "../../src/cltk/lexer"
 require "../../src/cltk/ast"
+require "../../src/cltk/parser/type"
 require "../../src/cltk/parser"
 require "../kazoo/chapter_8/visitor"
 

@@ -13,6 +13,7 @@ require "tempfile"
 
 # Ruby Language Toolkit
 require "../../src/cltk/lexer"
+require "../../src/cltk/parser/type"
 require "../../src/cltk/parser"
 require "../../src/cltk/lexers/calculator"
 require "../../src/cltk/parsers/prefix_calc"

@@ -4,6 +4,7 @@
 # Description:	This file defines a simple parser for the EXP_LANG language.
 
 # RLTK Files
+require "../../src/cltk/parser/type"
 require "../../src/cltk/parser"
 require "./xast"
 

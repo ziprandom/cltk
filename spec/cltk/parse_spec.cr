@@ -45,6 +45,7 @@ class FixUnderscoreLexer < CLTK::Lexer
 end
 
 insert_output_of("precompiled parsers") do
+  require "../../src/cltk/parser/type"
   require "../../src/cltk/parser"
   require "../../src/cltk/parser/tupelize"
   require "../../src/cltk/parsers/prefix_calc"

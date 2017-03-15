@@ -17,7 +17,6 @@ require "./parser/exceptions/handled_error_exception"
 require "./parser/exceptions/not_in_language_exception"
 require "./parser/exceptions/useless_parser_exception"
 
-require "./parser/type"
 require "./parser/environment"
 require "./parser/explain"
 require "./parser/parse_stack"

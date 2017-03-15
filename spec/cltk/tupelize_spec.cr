@@ -6,6 +6,7 @@ require "../../src/cltk/macros"
 require "spec"
 
 insert_output_of() do
+  require "../../src/cltk/parser/type"
   require "../../src/cltk/parser"
   require "../../src/cltk/parser/tupelize"
 
