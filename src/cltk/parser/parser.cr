@@ -117,7 +117,7 @@ module CLTK
                     stack.pop
 	          else
 	            # Enter the found error state.
-	            stack.push(actions.first.id, [token.value], :ERROR.to_s, token.position)
+	            stack.push(actions.first.id, [token.value.as(CLTK::Type)], :ERROR.to_s, token.position)
 	            break
 	          end
 	        end
