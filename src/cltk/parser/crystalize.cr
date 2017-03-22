@@ -23,6 +23,8 @@ end
 
 class CrystalizeVisitor
 
+  @@productions = Array(CLTK::CFG::Production).new
+
   def self.to_class(klass)
     %{
       class #{klass} < CLTK::Parser
@@ -32,6 +34,7 @@ class CrystalizeVisitor
         @@states = #{visit klass.states}
         @@procs = #{visit klass.procs}
         @@token_hooks = #{visit klass.token_hooks, "String, Array(Proc(Environment, Nil))"}
+        @@productions = #{visit_productions @@productions }
       end
     }
   end
@@ -46,7 +49,20 @@ class CrystalizeVisitor
         #{visit parser.env}
       )}
   end
-
+  def self.visit_productions(productions)
+    if productions.empty?
+      return "[] of CFG::Production"
+    else
+      productions_crystalized = productions.map do |production|
+        %{CLTK::CFG::Production.new(
+          #{visit production.id},
+          #{visit production.lhs},
+          #{visit production.rhs}
+        )}
+      end.join(", ")
+      "[#{productions_crystalized}]"
+    end
+  end
   def self.visit(state : CLTK::Parser::State)
     %{CLTK::Parser::State.new(
         #{visit(state.id)},
@@ -60,7 +76,7 @@ class CrystalizeVisitor
   end
 
   def self.visit(action : CLTK::Parser::Reduce)
-    %{CLTK::Parser::Reduce.new(#{visit action.production}).as(CLTK::Parser::Action)}
+    %{CLTK::Parser::Reduce.new(@@productions[#{visit action.production}]).as(CLTK::Parser::Action)}
   end
 
   def self.visit(action : CLTK::Parser::GoTo)
@@ -81,11 +97,13 @@ class CrystalizeVisitor
   end
 
   def self.visit(production : CLTK::CFG::Production)
-    %{CLTK::CFG::Production.new(
-        #{visit production.id},
-        #{visit production.lhs},
-        #{visit production.rhs},
-      )}
+    index = @@productions.index(production)
+    if index
+      "#{index}"
+    else
+      @@productions << production
+      "#{@@productions.size()-1}"
+    end
   end
 
   def self.visit(node : {CLTK::Parser::ProdProc, Int32})
@@ -141,7 +159,7 @@ class CrystalizeVisitor
       "#{node.class.to_s}.new"
     else
       "{" +
-        node.map do |key, value|
+        node.select{|_, v| v.size > 0}.map do |key, value|
         "#{visit(key)} => #{visit(value)}"
       end.join(",\n") +
         "\n}"

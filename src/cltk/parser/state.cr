@@ -98,11 +98,14 @@ module CLTK
       #
       # @return [:SR, :RR, nil]
       def conflict_on?(sym)
+        actions = @actions[sym]?
+
+        return nil unless actions
 
         reductions	= 0
         shifts		= 0
 
-        @actions[sym].each do |action|
+        actions.each do |action|
           if action.is_a?(Reduce)
 	    reductions += 1
 
@@ -153,7 +156,12 @@ module CLTK
       #
       # @return [Array<Action>] Actions that should be taken.
       def on?(symbol)
-        @actions[symbol].map { |a| a.dup }
+        actions = @actions[symbol]?
+        if actions
+          actions.map { |a| a.dup }
+        else
+          [] of Action
+        end
       end
     end
 
