@@ -2,6 +2,8 @@ require "benchmark"
 require "json"
 require "../../src/cltk/macros"
 require "../../src/cltk/parser/parse"
+require "../../src/cltk/parser/type"
+require "../../src/cltk/parser/parser"
 require "./json_parser"
 
 insert_output_of do
@@ -10,7 +12,7 @@ insert_output_of do
   JSON_PARSE::Parser.tupelize :JSON_PARSER_PRECOMPILED
 end
 
-JSON_TEXT = File.read("./mtg_json.json")
+JSON_TEXT = File.read("./example.json")
 
 Benchmark.ips do |x|
   x.report("Stdlib JSON") { JSON.parse(JSON_TEXT)  }

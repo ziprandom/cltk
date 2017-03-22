@@ -5,7 +5,7 @@ require "../../../src/cltk/macros"
 require "../../../src/cltk/parser/type"
 require "../../../src/cltk/parser/parse"
 
-insert_output_of() do
+insert_output_of("xparser tupelized") do
   require "../../../src/cltk/parser/tupelize"
   require "../xparser"
   EXP_LANG::Parser.tupelize
