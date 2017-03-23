@@ -1,6 +1,6 @@
 macro def_parse(params_as_const = true)
 
-  def self.parse(tokens: Array, opts : NamedTuple? = nil)
+  def self.parse(tokens : Array, opts : NamedTuple? = nil)
     {% if params_as_const %}
       _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
     {% else %}
