@@ -16,30 +16,30 @@ def parse_json(json_text)
     puts "Not In Language"
   rescue e
     puts "an error occured"
-  end.as(JSON_PARSE::JsonExpression)
+  end.as(JsonExpression)
 end
 
 describe("json_lexer") do
 
   it "parses a number" do
-    result = parse_json("23").as(JSON_PARSE::JsonNumber)
+    result = parse_json("23").as(JsonNumber)
     JSON_PARSE::JsonOutputer.new(result).print.should eq("23")
   end
 
   it "parses a negative float number" do
-    result = parse_json("-23.3").as(JSON_PARSE::JsonNumber)
+    result = parse_json("-23.3").as(JsonNumber)
     result.number.should eq(-23.3)
   end
 
   it "parses a bool" do
-    result = parse_json("false").as(JSON_PARSE::JsonBool)
+    result = parse_json("false").as(JsonBool)
     result.bool.should eq(false)
-    result = parse_json("true").as(JSON_PARSE::JsonBool)
+    result = parse_json("true").as(JsonBool)
     result.bool.should eq(true)
   end
 
   it "parses a null" do
-    result = parse_json("null").as(JSON_PARSE::JsonNull)
+    result = parse_json("null").as(JsonNull)
   end
 
   it "parses a string" do

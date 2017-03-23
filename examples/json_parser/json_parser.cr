@@ -4,82 +4,12 @@ require "../../src/cltk/ast"
 require "../../src/cltk/parser/type"
 require "../../src/cltk/parser"
 require "../kazoo/chapter_8/visitor"
+require "./json_ast"
+require "./json_lexer"
 
 module JSON_PARSE
 
-  # The Lexer
-
-  class Lexer < CLTK::Lexer
-    # Skip whitespace.
-    rule(/\n/)
-    rule(/\s/)
-
-    rule(/:/)	  { :COLON   }
-    rule(/\[/)	  { :LBRACK  }
-    rule(/\]/)	  { :RBRACK  }
-    rule(/\{/)	  { :LCBRACK }
-    rule(/\}/)	  { :RCBRACK }
-    rule(/,/)	  { :COMMA   }
-
-    rule(/true/)  { {:BOOL, 0} }
-    rule(/false/) { {:BOOL, 1} }
-    rule(/null/)  { {:NULL, nil} }
-
-    # String with included quoted strings
-    rule(/"(?:[^"\\]|\\.)*"/) { |t| {:STRING, t[1...-1]}}
-
-    # Numeric rules.
-    rule(/\-?\d+/)            { |t| {:INTEGER, t.to_i} }
-    rule(/\-?\d+\.\d+/)	      { |t| {:FLOAT, t.to_f} }
-  end
-
-  # The AST Nodes
-
-  abstract class JsonExpression < CLTK::ASTNode;  end
-
-  class JsonBool < JsonExpression
-    values({
-             bool: Bool
-           })
-  end
-
-  class JsonNull < JsonExpression; end
-
-  abstract class JsonNumber < JsonExpression
-  end
-
-  class JsonInteger < JsonNumber
-    values({
-             number: Int32
-           })
-  end
-
-  class JsonFloat < JsonNumber
-    values({
-             number: Float64
-           })
-  end
-
-  class JsonString < JsonExpression
-    values({
-             string: String
-           })
-  end
-
-  class JsonObject < JsonExpression
-    values({
-             hash: Hash(String, JsonExpression),
-           })
-  end
-
-  class JsonArray < JsonExpression
-    values({
-               elements: Array(JsonExpression),
-             })
-  end
-
   # The Parser
-
   class Parser < CLTK::Parser
 
     production(:json) do
