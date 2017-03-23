@@ -20,10 +20,11 @@ require "./parser/exceptions/useless_parser_exception"
 require "./parser/environment"
 require "./parser/explain"
 require "./parser/parse_stack"
+require "./parser/parse_macro"
 require "./parser/state"
 require "./parser/prod_proc"
 require "./parser/actions"
-require "./parser/parser"
+#require "./parser/parser"
 
 #######################
 # Classes and Modules #
@@ -37,6 +38,7 @@ module CLTK
   # documentation.
   abstract class Parser
 
+    def_parse(false)
 
     include Explain
     # @return [Environment] Environment used by the instantiated parser.

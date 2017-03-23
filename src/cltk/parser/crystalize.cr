@@ -25,6 +25,22 @@ class CrystalizeVisitor
 
   @@productions = Array(CLTK::CFG::Production).new
 
+  def self.to_module(klass, name)
+    %{
+      module #{name}
+        class Environment < CLTK::Parser::Environment; end
+        include CLTK::ParserConcern
+        SYMBOLS = #{visit klass.symbols}
+        ENV = #{visit klass.env}
+        LH_SIDES = #{visit klass.lh_sides}
+        STATES = #{visit klass.states}
+        PROCS = #{visit klass.procs.values}
+        TOKEN_HOOKS = #{visit klass.token_hooks, "String, Array(Proc(Environment, Nil))"}
+        PRODUCTIONS = #{visit_productions @@productions }
+      end
+    }
+  end
+
   def self.to_class(klass)
     %{
       class #{klass} < CLTK::Parser
@@ -76,7 +92,7 @@ class CrystalizeVisitor
   end
 
   def self.visit(action : CLTK::Parser::Reduce)
-    %{CLTK::Parser::Reduce.new(@@productions[#{visit action.production}]).as(CLTK::Parser::Action)}
+    %{CLTK::Parser::Reduce.new(PRODUCTIONS[#{visit action.production}]).as(CLTK::Parser::Action)}
   end
 
   def self.visit(action : CLTK::Parser::GoTo)
@@ -181,8 +197,9 @@ module CLTK
     # (for the Visitor to work on them)
     class_getter :symbols, :states, :procs, :lh_sides, :token_hooks, :env
 
-    def self.crystalize()
-      puts CrystalizeVisitor.to_class(self);
+    def self.crystalize(name : (Symbol|String) = self.name)
+      puts CrystalizeVisitor.to_module(self, name.to_s);
     end
+
   end
 end

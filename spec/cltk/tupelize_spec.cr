@@ -26,10 +26,10 @@ end
 
 
 #describe "parsing with parser data struct" do
-  it "works" do
-    tokens = CLTK::Lexers::Calculator.lex("1 + 2 * 3")
-    actual = MiniParser.parse(tokens, {accept: :all})
-    actual.should eq [9, 7]
-  end
+it "works" do
+  tokens = CLTK::Lexers::Calculator.lex("1 + 2 * 3")
+  actual = MiniParser.parse(tokens, {accept: :all})
+  actual.should eq [9, 7]
+end
 #end
 #

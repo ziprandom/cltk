@@ -8,9 +8,6 @@
 ############
 require "spec"
 
-# Standard Library
-require "tempfile"
-
 # Ruby Language Toolkit
 require "../../src/cltk/lexer"
 require "../../src/cltk/parser/type"

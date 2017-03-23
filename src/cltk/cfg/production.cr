@@ -29,7 +29,9 @@ module CLTK
       #
       # @return [Boolean]
       def ==(other)
-	self.lhs == other.lhs && self.rhs == other.rhs
+	self.id == other.id &&
+          self.lhs == other.lhs &&
+          self.rhs == other.rhs
       end
 
       # @return [Production]  A new copy of this production.
