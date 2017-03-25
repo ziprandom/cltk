@@ -1,5 +1,11 @@
+{% if env("VERBOSE") %}
+  require "colorize"
+{% end %}
 macro def_parse(params_as_const = true)
-
+  COLORS = [
+    :red, :green, :yellow, :blue, :magenta, :cyan, :light_gray, :dark_gray,
+    :light_red, :light_green, :light_yellow, :light_blue, :light_magenta, :light_cyan
+  ]
   def self.parse(tokens : Array, opts : NamedTuple? = nil)
     {% if params_as_const %}
       _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
@@ -54,12 +60,16 @@ macro def_parse(params_as_const = true)
              else
                ""
              end
-	v.puts("Current token: #{token.type}#{st}")
+	v.print("Current token: ")
+        v.print("#{token.type}#{st}\n".colorize.mode(:underline).mode(:bold))
       {% end %}
 
         # Iterate over the stacks until each one is done.
         while (processing.any?)
           stack = processing.shift
+          {% if env("VERBOSE") %}
+            color = COLORS[stack.id % COLORS.size]
+          {% end %}
           # Execute any token hooks in this stack's environment.
           token_hooks.fetch(
             token.type.to_s, [] of Proc(Environment, Nil)
@@ -75,7 +85,7 @@ macro def_parse(params_as_const = true)
                 st = if token.value
                        "(" + token.value.to_s.as(String) + ")"
                      end
-	        v.puts("Discarding token: #{token.type}#{st}") if v
+	        v.puts("Discarding token: #{token.type}#{st}")
               {% end %}
                 # Add the current token to the array
                 # that corresponds to the output value
@@ -90,10 +100,10 @@ macro def_parse(params_as_const = true)
             if accepted.empty? && moving_on.empty? && processing.empty?
               {% if env("VERBOSE") %}
 	        v.puts
-	        v.puts("Current stack:")
-	        v.puts("\tID: #{stack.id}")
-	        v.puts("\tState stack:\t#{stack.state_stack.inspect}")
-	        v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
+	        v.puts("Current stack:".colorize(color))
+	        v.puts("\tID: #{stack.id}".colorize(color))
+	        v.puts("\tState stack:\t#{stack.state_stack.inspect}".colorize(color))
+	        v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}".colorize(color))
 	        v.puts
               {% end %}
 
@@ -116,20 +126,20 @@ macro def_parse(params_as_const = true)
 	        moving_on << stack
 
                 {% if env("VERBOSE") %}
-	          v.puts("Invalid input encountered.  Entering error handling mode.")
-	          v.puts("Discarding token: #{token.type}(#{token.value})")
+	          v.puts("Invalid input encountered.  Entering error handling mode.".colorize(color))
+	          v.puts("Discarding token: #{token.type}(#{token.value})".colorize(color))
                 {% end %}
 	      else
 		# No valid error states could be
 		# found.  Time to print a message
 		# and leave.
                 {% if env("VERBOSE") %}
-                  v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
+                  v.puts("No more actions for stack #{stack.id}.  Dropping stack.".colorize(color))
                 {% end %}
 	      end
 	    else
               {% if env("VERBOSE") %}
-	        v.puts("No more actions for stack #{stack.id}.  Dropping stack.") if v
+	        v.puts("No more actions for stack #{stack.id}.  Dropping stack.".colorize(color))
               {% end %}
 	    end
 
@@ -141,15 +151,18 @@ macro def_parse(params_as_const = true)
 	  pairs = ([{stack, actions.pop}] + actions.map {|action| {stack.branch(stack_id += 1), action} })
 	  pairs.each do |pair|
             stack, action = pair
+            {% if env("VERBOSE") %}
+              color = COLORS[stack.id % COLORS.size]
+            {% end %}
 
             {% if env("VERBOSE") %}
 	      v.puts
-	      v.puts("Current stack:")
-	      v.puts("\tID: #{stack.id}")
-	      v.puts("\tState stack:\t#{stack.state_stack.inspect}")
-	      v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}")
+	      v.puts("Current stack:".colorize(color))
+	      v.puts("\tID: #{stack.id}".colorize(color))
+	      v.puts("\tState stack:\t#{stack.state_stack.inspect}".colorize(color))
+	      v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}".colorize(color))
 	      v.puts
-	      v.puts("Action taken: #{action.to_s}")
+	      v.puts("Action taken: #{action.to_s}".colorize(color))
 	    {% end %}
 
 	      if action.is_a?(CLTK::Parser::Accept)
@@ -157,7 +170,7 @@ macro def_parse(params_as_const = true)
 		  accepted << stack
 	        else
                   {% if env("VERBOSE") %}
-		    v.puts("Accepting input.")
+		    v.puts("Accepting input.".colorize.mode(:underline))
                   {% end %}
                     if opts[:parse_tree]
 		      opts[:parse_tree].as(IO).puts(stack.tree)
@@ -193,7 +206,7 @@ macro def_parse(params_as_const = true)
 		         end
 	        if (goto = states[stack.state].on?(lh_sides[action.id]).first)
                   {% if env("VERBOSE") %}
-		    v.puts("Going to state #{goto.id}.\n")
+		    v.puts("Going to state #{goto.id}.\n".colorize(color))
                   {% end %}
 		    pos0 = nil
 		  if args.empty?

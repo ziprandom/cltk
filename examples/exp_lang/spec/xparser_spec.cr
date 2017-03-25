@@ -3,12 +3,12 @@ require "../xlexer"
 require "../xast"
 require "../../../src/cltk/macros"
 require "../../../src/cltk/parser/type"
-require "../../../src/cltk/parser/parse"
+require "../../../src/cltk/parser/parser_concern"
 
 insert_output_of("xparser tupelized") do
-  require "../../../src/cltk/parser/tupelize"
+  require "../../../src/cltk/parser/crystalize"
   require "../xparser"
-  EXP_LANG::Parser.tupelize
+  EXP_LANG::Parser.crystalize
 end
 
 lexer = EXP_LANG::Lexer
