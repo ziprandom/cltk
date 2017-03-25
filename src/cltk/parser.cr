@@ -23,6 +23,7 @@ require "./parser/parse_stack"
 require "./parser/parse_macro"
 require "./parser/state"
 require "./parser/prod_proc"
+{% if env("VERBOSE") == "procs" %}require "./parser/prod_proc_debug"{% end %}
 require "./parser/actions"
 #require "./parser/parser"
 
@@ -301,7 +302,7 @@ module CLTK
             env.as(Environment).yield_with_self do
               {% if !action.args.empty?%}
                 {% if action.args.size == 1%}
-                  {% if arg_type == :array %}
+                  {% if arg_type == :array%}
                     {{action.args.first}} = lhsymbols.as(Array)
                   {% else %}
                     {{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0]

@@ -169,6 +169,11 @@ macro def_parse(params_as_const = true)
 	      v.puts("\tOutput Stack:\t[#{stack_string}]".colorize(color))
 	      v.puts
 	      v.puts("Action taken: #{action.to_s}".colorize(color))
+              {% if env("VERBOSE") == "procs" %}
+                if action.is_a?(CLTK::Parser::Reduce)
+                  v.puts(procs[action.id][0].crystalized_block.try &.colorize(color))
+                end
+              {% end %}
 	    {% end %}
 
 	      if action.is_a?(CLTK::Parser::Accept)
