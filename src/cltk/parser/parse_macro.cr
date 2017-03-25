@@ -103,7 +103,7 @@ macro def_parse(params_as_const = true)
 	        v.puts("Current stack:".colorize(color))
 	        v.puts("\tID: #{stack.id}".colorize(color))
 	        v.puts("\tState stack:\t#{stack.state_stack.inspect}".colorize(color))
-	        v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}".colorize(color))
+	        v.puts("\tOutput Stack:\t#{stack.output_stack.map(&.inspect).join(", ")}".colorize(color))
 	        v.puts
               {% end %}
 
@@ -158,9 +158,14 @@ macro def_parse(params_as_const = true)
             {% if env("VERBOSE") %}
 	      v.puts
 	      v.puts("Current stack:".colorize(color))
-	      v.puts("\tID: #{stack.id}".colorize(color))
+	      v.puts("\tID:\t\t#{stack.id}".colorize(color))
 	      v.puts("\tState stack:\t#{stack.state_stack.inspect}".colorize(color))
-	      v.puts("\tOutput Stack:\t#{stack.output_stack.inspect}".colorize(color))
+              stack_string = stack.output_stack.map do |e|
+                e.is_a?(Array) ?
+                  "[" + e.map(&.inspect).join(", ") + "]" :
+                  e.inspect
+              end.join(", ")
+	      v.puts("\tOutput Stack:\t[#{stack_string}]".colorize(color))
 	      v.puts
 	      v.puts("Action taken: #{action.to_s}".colorize(color))
 	    {% end %}

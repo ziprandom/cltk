@@ -99,6 +99,17 @@ describe CLTK::ASTNode do
                             })
     end
 
+    it "has a nice, readable string representation" do
+      js1 = JsonString.new(text: "text1")
+      js2 = JsonString.new(text: "text2")
+      jsarray = JsonArray.new(elements: [js1, js2])
+      js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
+      js_a.inspect.should eq(
+                         %{SuperSpecialJsonString(text: "this is a text", special: true, child: JsonArray(elements: [JsonString(text: "text1"), JsonString(text: "text2")]))}
+                       )
+    end
+
+
     it "works with a class in the hierarchy thats not defining its own values" do
       s1 = ChildOfSpecialisedJsonString.new(text: "a text for JsonString", childish: false)
       s1.values.should eq({text: "a text for JsonString", childish: false})

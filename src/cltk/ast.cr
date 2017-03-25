@@ -11,6 +11,28 @@ abstract class CLTK::ASTNode
     self
   end
 
+  def inspect
+    "#{self.class.name}(" +
+      if vs = values
+        vs.map do |k, v|
+          value = if v.is_a?(Array)
+                    "[" +
+                      v.map{ |vv| vv.inspect.as(String) }.join(", ") +
+                      "]"
+                  elsif v.is_a?(Hash)
+                    "{" +
+                      v.map{ |kk, vv| "#{kk.inspect}: #{vv.inspect}".as(String) }.join(", ") +
+                      "}"
+                  else
+                    v.inspect
+                  end
+          "#{k}: #{value}"
+        end.join(", ")
+      else
+        ""
+      end + ")"
+  end
+
   macro inherited
     def values
       {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
@@ -36,7 +58,7 @@ abstract class CLTK::ASTNode
           own_values
         end
       {% else %}
-        o
+        own_values
       {% end %}
     end
 
