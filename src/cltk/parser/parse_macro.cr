@@ -1,11 +1,12 @@
 {% if env("VERBOSE") %}
   require "colorize"
-{% end %}
-macro def_parse(params_as_const = true)
   COLORS = [
     :red, :green, :yellow, :blue, :magenta, :cyan, :light_gray, :dark_gray,
     :light_red, :light_green, :light_yellow, :light_blue, :light_magenta, :light_cyan
   ]
+{% end %}
+
+macro def_parse(params_as_const = true)
   def self.parse(tokens : Array, opts : NamedTuple? = nil)
     {% if params_as_const %}
       _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
