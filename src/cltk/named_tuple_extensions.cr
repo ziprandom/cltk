@@ -7,9 +7,9 @@ struct NamedTuple
     {% begin %}
     NamedTuple.new(
       {% for key in (T.keys + U.keys).uniq %}
-          {% if !U.keys.includes?(key) %}
-            {{key}}: self[:{{key}}],
-          {% end %}
+        {% if !U.keys.includes?(key) %}
+          {{key}}: self[:{{key}}],
+        {% end %}
       {% end %}
     )
     {% end %}
