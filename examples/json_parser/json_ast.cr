@@ -11,8 +11,7 @@ end
 
 class JsonNull < JsonExpression; end
 
-abstract class JsonNumber < JsonExpression
-         end
+abstract class JsonNumber < JsonExpression; end
 
 class JsonInteger < JsonNumber
   values({

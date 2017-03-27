@@ -96,9 +96,11 @@ abstract class CLTK::ASTNode
 
   end
 
-
   macro inherited
-    def_clone
+
+    {%if !@type.abstract? %}
+      def_clone
+    {% end %}
 
     def values
       {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
