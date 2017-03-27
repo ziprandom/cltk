@@ -44,6 +44,10 @@ module CLTK
       end
     end
 
+    def clone
+      self
+    end
+
     # @return [String] String representing the tokens *type* and *value*.
     def to_s
       if value
