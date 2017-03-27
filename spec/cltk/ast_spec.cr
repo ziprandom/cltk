@@ -81,6 +81,42 @@ describe CLTK::ASTNode do
     end
   end
 
+  describe "clone" do
+    js1 = JsonString.new(text: "text1")
+    js2 = JsonString.new(text: "text2")
+    jsarray = JsonArray.new(elements: [js1, js2])
+    js = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
+    js_b = js.clone
+    js_b.should eq js
+    js_b.child.should eq js.child
+    js_b.child.as(JsonArray).elements << JsonString.new(text: "text3")
+    js_b.should_not eq js
+  end
+
+  describe "to_json" do
+    json = <<-JSON
+    {
+      "text": "this is a text",
+      "special": true,
+      "child": {
+        "elements": [
+          {
+            "text": "text1"
+          },
+          {
+            "text": "text2"
+          }
+        ]
+      }
+    }
+    JSON
+    js1 = JsonString.new(text: "text1")
+    js2 = JsonString.new(text: "text2")
+    jsarray = JsonArray.new(elements: [js1, js2])
+    js = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
+    js.to_pretty_json.should eq json
+  end
+
   describe "values" do
     it "returns a NamedTuple representing the values of the Object" do
       js1 = JsonString.new(text: "text1")

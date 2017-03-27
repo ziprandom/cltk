@@ -45,7 +45,7 @@ module CLTK
     #
     # @return [ParseStack]
     def branch(new_id)
-      ParseStack.new(new_id, @output_stack.dup, @state_stack.dup,
+      ParseStack.new(new_id, @output_stack.clone, @state_stack.dup,
 		     @node_stack.dup, @connections.dup, @labels.dup, @positions.dup)
     end
 

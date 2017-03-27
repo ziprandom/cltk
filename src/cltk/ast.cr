@@ -1,6 +1,7 @@
 require "./named_tuple_extensions"
-
+require "json"
 abstract class CLTK::ASTNode
+
   def initialize(**options)
     if options.size > 0
       raise "superfluos options provided : #{options}"
@@ -33,14 +34,12 @@ abstract class CLTK::ASTNode
       end + ")"
   end
 
-  macro inherited
-    def values
-      {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
-        super
-      {% else %}
-        nil
-      {% end %}
-    end
+  def to_json
+    values.to_json
+  end
+
+  def to_json(json : ::JSON::Builder)
+    values.to_json(json)
   end
 
   macro values(values)
@@ -66,13 +65,12 @@ abstract class CLTK::ASTNode
       self.values.values == other.values.values
     end
 
-    @{{@type.name.downcase.gsub(/:/, "")}}_values : {{values}}
-
     {% for key, index in values %}
 
       def {{key}}
         @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}]
       end
+
       def {{key}}=(value : {{values[key]}})
         @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for tkey, index in values.keys%}
           {% if tkey == key %}{{tkey}}: value{% else %}{{tkey}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{tkey}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},{%end%}{% end %}
@@ -98,6 +96,20 @@ abstract class CLTK::ASTNode
 
   end
 
+
+  macro inherited
+    def_clone
+
+    def values
+      {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
+        super
+      {% else %}
+        nil
+      {% end %}
+    end
+
+  end
+
   macro as_children(values)
     def children
       { {% for key, index in values %}
@@ -105,9 +117,5 @@ abstract class CLTK::ASTNode
         {% end %} }
     end
   end
-
-#  def [](key)
-#    values[key]
-#  end
 
 end
