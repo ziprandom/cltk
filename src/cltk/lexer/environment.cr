@@ -87,7 +87,7 @@ module CLTK
       #
       # @return [void]
       def clear_flags
-        @flags = Array.new
+        @flags = Array(Symbol).new
         nil
       end
     end

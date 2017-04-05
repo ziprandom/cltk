@@ -1,5 +1,5 @@
 module CLTK
-  class Lexer
+  class LexerOld
     # The Rule class is used simply for data encapsulation.
     struct Rule
       # @return [Proc] Token producting action to be taken when this rule is matched.

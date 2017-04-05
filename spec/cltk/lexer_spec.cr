@@ -1,4 +1,5 @@
 require "spec"
+require "../spec_helper"
 require "../../src/cltk/lexer"
 require "../../src/cltk/lexers/ebnf"
 require "../../src/cltk/lexers/calculator"
@@ -64,12 +65,7 @@ end
 
 class MatchDataLexer < CLTK::Lexer
   rule(/a(b*)(c+)/) do |txt|
-    {:FOO,
-     [
-       match[1]? || "",
-       match[2]? || ""
-     ]
-    }
+    {:FOO, [match[1]?, match[2]?].join(", ") }
   end
 end
 
@@ -115,7 +111,6 @@ describe "CLTK::Lexer" do
     ]
 
     actual = ENVLexer.lex("aaa")
-
     expected.should eq actual
 
     lexer = ENVLexer.new
@@ -132,7 +127,6 @@ describe "CLTK::Lexer" do
     expected.should eq lexer.lex("aaa")
 
   end
-
 
   it "test_first_match" do
     expected = [
@@ -176,7 +170,7 @@ describe "CLTK::Lexer" do
     ]
 
     actual = FlagLexer.lex("abcabc")
-    expected.should eq actual
+    actual.should eq expected
   end
 
   it "test_lex" do
@@ -196,10 +190,10 @@ describe "CLTK::Lexer" do
   end
 
   it "test_match_data" do
-    expected = [CLTK::Token.new(:FOO, ["", "ccc"]), CLTK::Token.new(:EOS)]
+    expected = [CLTK::Token.new(:FOO, ", ccc"), CLTK::Token.new(:EOS)]
     actual   = MatchDataLexer.lex("accc")
 
-    expected.should eq actual
+    actual.should eq expected
   end
 
   it "test_state" do

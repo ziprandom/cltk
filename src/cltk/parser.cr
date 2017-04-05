@@ -23,6 +23,7 @@ require "./parser/parse_stack"
 require "./parser/parse_macro"
 require "./parser/state"
 require "./parser/prod_proc"
+require "./parser/type"
 {% if env("VERBOSE") == "procs" %}require "./parser/prod_proc_debug"{% end %}
 require "./parser/actions"
 #require "./parser/parser"

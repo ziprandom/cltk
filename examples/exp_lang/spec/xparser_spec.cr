@@ -1,4 +1,5 @@
 require "spec"
+
 require "../xlexer"
 require "../xast"
 require "../../../src/cltk/macros"
@@ -6,6 +7,9 @@ require "../../../src/cltk/parser/type"
 require "../../../src/cltk/parser/parser_concern"
 
 insert_output_of("xparser tupelized") do
+  module CLTK
+    alias TokenValue = (String|Int32|Float64)?
+  end
   require "../../../src/cltk/parser/crystalize"
   require "../xparser"
   EXP_LANG::Parser.crystalize

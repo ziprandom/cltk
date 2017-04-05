@@ -1,4 +1,7 @@
 # coding: utf-8
+module CLTK
+  alias TokenValue = (String|Int32|Float64)?
+end
 require "../../src/cltk/lexer"
 require "../../src/cltk/ast"
 require "../../src/cltk/parser/type"

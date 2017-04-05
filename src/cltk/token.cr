@@ -8,7 +8,9 @@ require "./streamposition"
 module CLTK
   # The Token class is used to represent the output of a RLTK::Lexer and the
   # input of a RLTK::Parser.
-  alias TokenValue = Array(String) | Float64 | Int32 | String | Nil;
+  {% if !@type.has_constant?("TokenValue") %}
+    alias TokenValue = String?
+  {% end %}
   struct Token
     # @return [Symbol]
     getter :type

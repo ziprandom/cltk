@@ -7,13 +7,14 @@
 # Requires #
 ############
 require "spec"
+require "../spec_helper"
 
-# Ruby Language Toolkit
-require "../../src/cltk/lexer"
-require "../../src/cltk/parser/type"
 require "../../src/cltk/parser/environment"
 require "../../src/cltk/parser/parser_concern"
 require "../../src/cltk/macros"
+require "../../src/cltk/lexers/*"
+require "../../src/cltk/lexer"
+require "../../src/cltk/lexer"
 require "../../src/cltk/lexers/*"
 
 #######################
@@ -43,8 +44,11 @@ class FixUnderscoreLexer < CLTK::Lexer
 end
 
 insert_output_of("precompiled parsers") do
-  require "../../src/cltk/parser/type"
+  module CLTK
+    alias TokenValue = (String|Int32)?
+  end
   require "../../src/cltk/parser"
+  # require "../../src/cltk/parser/type"
   require "../../src/cltk/parser/crystalize"
   require "../../src/cltk/parsers/prefix_calc"
   require "../../src/cltk/parsers/infix_calc"
@@ -259,7 +263,6 @@ insert_output_of("precompiled parsers") do
   end
 
   class FixErrorLine < CLTK::Parser
-
     production(:s, "line*") { |l| l }
 
     production(:line) do
@@ -372,7 +375,7 @@ class DummyError2 < Exception; end
 
 class FixELLexer < CLTK::Lexer
   rule(/\n/) { :NEWLINE }
-  rule(/;/)  { :SEMI    }
+  rule(/\;/)  { :SEMI    }
 
   rule(/\s/)
 

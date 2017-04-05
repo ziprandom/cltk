@@ -7,10 +7,13 @@
 # Requires #
 ############
 require "spec"
+# redefine CLTK Types for Broader Values
+# (accept Int32 returns in Lexer and
+#  ParserCallbacks
+require "../spec_helper"
 
 # Ruby Language Toolkit
 require "../../src/cltk/lexer"
-require "../../src/cltk/parser/type"
 require "../../src/cltk/parser"
 require "../../src/cltk/lexers/calculator"
 require "../../src/cltk/parsers/prefix_calc"
@@ -21,6 +24,16 @@ require "../../src/cltk/parsers/postfix_calc"
 # Classes and Modules #
 #######################
 
+macro string_to_sym_map(string)
+  h = Hash(String, Symbol).new
+  {% for sym in string.split("")%}
+  h[{{sym}}] = :{{sym}}
+  {% end %}
+  h
+end
+
+string_to_symbol_map = string_to_sym_map("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 class ABLexer < CLTK::Lexer
   rule(/a/) { {:A, 1} }
   rule(/b/) { {:B, 2} }
@@ -29,7 +42,7 @@ class ABLexer < CLTK::Lexer
 end
 
 class AlphaLexer < CLTK::Lexer
-  rule(/[A-Za-z]/) { |t| {t.upcase, t}.as(BlockReturn)}
+  rule(/[A-Za-z]/) { |t| {string_to_symbol_map[t.upcase], t}}
 
   rule(/,/) { :COMMA }
 
@@ -37,7 +50,7 @@ class AlphaLexer < CLTK::Lexer
 end
 
 class UnderscoreLexer < CLTK::Lexer
-  rule(/\w/) { |t| {:A_TOKEN, t}.as(BlockReturn)}
+  rule(/\w/) { |t| {:A_TOKEN, t}}
 end
 
 class APlusBParser < CLTK::Parser
@@ -210,7 +223,7 @@ class ErrorCalc < CLTK::Parser
   right :PLS, :SUB, :MUL, :DIV, :NUM
 
   production(:e) do
-    clause("NUM") {|n| n}
+    clause("NUM") {|n| n.as(Int32) }
 
     clause("e PLS e") { |e0, op, e1| e0.as(Int32) + e1.as(Int32) }
     clause("e SUB e") { |e0, op, e1| e0.as(Int32) - e1.as(Int32) }
@@ -230,11 +243,11 @@ end
 
 class ELLexer < CLTK::Lexer
   rule(/\n/) { :NEWLINE }
-  rule(/;/)  { :SEMI    }
+  rule(/\;/)  { :SEMI    }
 
   rule(/\s/)
 
-  rule(/[A-Za-z]+/) { |t| {:WORD, t}.as(BlockReturn)}
+  rule(/[A-Za-z]+/) { |t| {:WORD, t}}
 end
 
 class ErrorLine < CLTK::Parser
@@ -285,7 +298,7 @@ class RotatingCalc < CLTK::Parser
   end
 
   production(:e) do
-    clause("NUM") {|n| n}
+    clause("NUM") {|n| n.as(Int32)}
 
     clause("PLS e e") { | op, e1, e2| get_op(:+).call(e1.as(Int32), e2.as(Int32)) }
     clause("SUB e e") { | op, e1, e2| get_op(:-).call(e1.as(Int32), e2.as(Int32)) }

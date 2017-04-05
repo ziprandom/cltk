@@ -5,7 +5,7 @@
 # Description:	This file defines a simple parser for the Kazoo language.
 
 # RLTK Files
-require "../../../src/cltk/parser/type"
+require "./ktype"
 require "../../../src/cltk/parser"
 
 # Tutorial Files
