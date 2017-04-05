@@ -3,7 +3,6 @@
 # ParserCallbacks) (we check if it's already
 # been set, say for example by the parser_spec.cr
 # if all tests run together
-
 module CLTK
   alias TokenValue = (String|Int32)?
 end
