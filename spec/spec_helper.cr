@@ -4,7 +4,6 @@
 # been set, say for example by the parser_spec.cr
 # if all tests run together
 
-require "../src/cltk/ast"
 module CLTK
   alias TokenValue = (String|Int32)?
 end
