@@ -5,7 +5,6 @@ require "string_scanner"
 require "./token"
 require "./streamposition"
 require "./lexer/environment"
-#require "./lexer/rule"
 
 def yield_with(env)
   with env yield
