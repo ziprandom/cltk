@@ -11,7 +11,7 @@ module CLTK
   class Parser
     # The ParseStack class is used by a Parser to keep track of state
     # during parsing.
-    struct ParseStack
+    class ParseStack
     # @return [Integer] ID of this parse stack.
     getter :id
 

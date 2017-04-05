@@ -36,7 +36,7 @@ module CLTK
 
       # @return [Production]  A new copy of this production.
       def copy
-	Production.new(@id, @lhs, @rhs.clone)
+	{{@type.id}}.new(@id, @lhs, @rhs.clone)
       end
 
       # @return [Symbol]  The last terminal in the right-hand side of the production.

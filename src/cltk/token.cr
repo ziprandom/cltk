@@ -11,7 +11,7 @@ module CLTK
   {% if !@type.has_constant?("TokenValue") %}
     alias TokenValue = String?
   {% end %}
-  struct Token
+  class Token
     # @return [Symbol]
     getter :type
 

@@ -2,7 +2,7 @@ module CLTK
   class Parser
     # The State class is used to represent sets of items and actions to be
     # used during parsing.
-    struct State
+    class State
       # @return [Integer] State's ID.
       property :id
 
