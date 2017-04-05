@@ -6,16 +6,7 @@
 ############
 # Requires #
 ############
-require "spec"
 require "../spec_helper"
-
-require "../../src/cltk/parser/environment"
-require "../../src/cltk/parser/parser_concern"
-require "../../src/cltk/macros"
-require "../../src/cltk/lexers/*"
-require "../../src/cltk/lexer"
-require "../../src/cltk/lexer"
-require "../../src/cltk/lexers/*"
 
 #######################
 # Classes and Modules #

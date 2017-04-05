@@ -1,8 +1,4 @@
-require "spec"
 require "../spec_helper"
-require "../../src/cltk/lexer"
-require "../../src/cltk/lexers/ebnf"
-require "../../src/cltk/lexers/calculator"
 
 class ENVLexer < CLTK::Lexer
 

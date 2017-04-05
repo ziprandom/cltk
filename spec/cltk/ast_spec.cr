@@ -1,5 +1,5 @@
-require "../../src/cltk/ast"
-require "spec"
+require "../spec_helper"
+
 class JsonExpression < CLTK::ASTNode; end
 class JsonNull < JsonExpression; end
 

@@ -6,19 +6,12 @@
 ############
 # Requires #
 ############
-require "spec"
 # redefine CLTK Types for Broader Values
 # (accept Int32 returns in Lexer and
 #  ParserCallbacks
 require "../spec_helper"
 
 # Ruby Language Toolkit
-require "../../src/cltk/lexer"
-require "../../src/cltk/parser"
-require "../../src/cltk/lexers/calculator"
-require "../../src/cltk/parsers/prefix_calc"
-require "../../src/cltk/parsers/infix_calc"
-require "../../src/cltk/parsers/postfix_calc"
 
 #######################
 # Classes and Modules #
