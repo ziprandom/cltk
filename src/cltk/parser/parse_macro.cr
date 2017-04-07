@@ -7,6 +7,7 @@
 {% end %}
 
 macro def_parse(params_as_const = true)
+
   def self.parse(tokens : Array, opts : NamedTuple? = nil)
     {% if params_as_const %}
       _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
@@ -91,7 +92,7 @@ macro def_parse(params_as_const = true)
                 # Add the current token to the array
                 # that corresponds to the output value
                 # for the ERROR token.
-                stack.output_stack.last.as(Array(CLTK::Type)) << token.value.as(CLTK::Type)
+                stack.output_stack.last.as(Array) << token.value
               moving_on << stack
               next
             end
@@ -176,28 +177,11 @@ macro def_parse(params_as_const = true)
               {% end %}
 	    {% end %}
 
-	      if action.is_a?(CLTK::Parser::Accept)
-	        if opts[:accept] == :all
-		  accepted << stack
-	        else
-                  {% if env("VERBOSE") %}
-		    v.puts("Accepting input.".colorize.mode(:underline))
-                  {% end %}
-                    if opts[:parse_tree]
-		      opts[:parse_tree].as(IO).puts(stack.tree)
-                    end
+	    if action.is_a?(CLTK::Parser::Accept)
+	      accepted << stack
+              break unless opts[:accept] == :all
 
-		  if opts[:env].he
- 		    error = CLTK::HandledError.new(
-                      opts[:env].errors, stack.result
-                    )
-                    raise error
-		  else
-		    return stack.result
-		  end
-	        end
-
-	      elsif action.is_a?(CLTK::Parser::Reduce)
+	    elsif action.is_a?(CLTK::Parser::Reduce)
 	        # Get the production associated with this reduction.
 	        production_proc, pop_size = procs[action.id]
 	        if !production_proc
@@ -208,13 +192,12 @@ macro def_parse(params_as_const = true)
 
  	        if !production_proc.selections.empty?
                   args = production_proc.selections.map do |selection|
-                    args[selection].as(CLTK::Type)
+                    args[selection].as(CLTK::Parser::StackType)
                   end
                 end
 
-	        result = begin
-                           production_proc.call(args, opts[:env])
-		         end
+                result = {action.id, args.as(Array(CLTK::Parser::StackType)), positions}
+
 	        if (goto = states[stack.state].on?(lh_sides[action.id]).first)
                   {% if env("VERBOSE") %}
 		    v.puts("Going to state #{goto.id}.\n".colorize(color))
@@ -234,8 +217,7 @@ macro def_parse(params_as_const = true)
 		    pos1 = opts[:env].pos(-1).as(CLTK::StreamPosition)
 		    pos0.length = (pos1.stream_offset + pos1.length) - pos0.stream_offset
 		  end
-                  result = nil if result.is_a? Void
-		  stack.push(goto.id, result, lh_sides[action.id], pos0)
+		  stack.push(goto.id, result.as(CLTK::Parser::StackType), lh_sides[action.id], pos0)
 	        else
 		  raise CLTK::InternalParserException.new "No GoTo action found in state #{stack.state} " +
 					                  "after reducing by production #{action.id}"
@@ -259,6 +241,7 @@ macro def_parse(params_as_const = true)
 	      end
 	  end
 	end
+      break if accepted.size > 0
 
       {% if env("VERBOSE") %}
 	v.puts("\n\n")
@@ -267,6 +250,7 @@ macro def_parse(params_as_const = true)
       processing = moving_on
       moving_on  = [] of CLTK::Parser::ParseStack
 
+      break if opts[:accept] == :first && accepted.size > 0
       # If we don't have any active stacks at this point the
       # string isn't in the language.
       if opts[:accept] == :first && processing.size == 0
@@ -274,9 +258,7 @@ macro def_parse(params_as_const = true)
           v.close unless v == STDOUT
         {% end%}
 	  raise CLTK::NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
-
       end
-
       reduction_guard = false
     end
 
@@ -287,18 +269,26 @@ macro def_parse(params_as_const = true)
       v.close unless v == STDOUT
     {% end %}
 
-      if opts[:parse_tree]?
-           accepted.each do |stack|
-	     opts[:parse_tree].as(IO).puts(stack.tree)
-           end
-      end
+    if opts[:parse_tree]?
+         accepted.each do |stack|
+           opts[:parse_tree].as(IO).puts(stack.tree)
+         end
+    end
 
-    results = accepted.map { |stack| stack.result.as(CLTK::Type) }
+    results = accepted.map do |stack|
+      stack.resolve(opts[:env], procs).as(CLTK::Type)
+    end
+
+    results = if opts[:accept] == :all
+                results
+              else
+                results.first
+              end.as CLTK::Type
 
     if (opts[:env]).he
-      raise CLTK::HandledError.new(opts[:env].as(Environment).errors, results.as(CLTK::Type))
-    else
-      return results
+      raise CLTK::HandledError.new(opts[:env].as(Environment).errors, results)
     end
+
+    return results
   end
 end

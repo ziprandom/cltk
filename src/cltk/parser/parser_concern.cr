@@ -7,6 +7,7 @@ require "./actions"
 require "./exceptions/*"
 require "./prod_proc"
 {% if env("VERBOSE") == "procs" %}require "./prod_proc_debug"{% end %}
+require "./type"
 require "./parse_stack"
 require "./parse_macro"
 require "./environment"

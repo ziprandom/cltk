@@ -15,8 +15,8 @@ module CLTK
     #
     # @param [Array<Object>]	errors Errors added to the parsing environment by calls to {Parser::Environment#error}.
     # @param [Object]		result Object resulting from parsing Tokens before the error occurred.
-    @result : CLTK::Type
-    def initialize(@errors : Array(CLTK::Type), @result)
+
+    def initialize(@errors : Array(CLTK::Type), @result : CLTK::Type )
       @backtrace = [] of String
       super("HandledError")
     end

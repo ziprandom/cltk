@@ -48,7 +48,7 @@ module CLTK
 
       # @return [Item]  A new copy of this item.
       def copy
-        Item.new(@dot, @id, @lhs, @rhs.clone)
+        Item.new(@dot, @id, @lhs, @rhs)
       end
 
       # Returns the symbol located after the dot.
