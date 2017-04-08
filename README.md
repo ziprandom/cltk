@@ -9,7 +9,7 @@ This is a port of the [Ruby Language Toolkit](https://github.com/chriswailes/RLT
 * AST node baseclass
 * Class for representing context free grammars
 
-In addition, CLTK includes several ready-made lexers and parsers. As well as a [serialization mechanism](src/cltk/parser/crystalize.cr) that renders a finalized parser back into crystal syntax to compile it without having to be finalized again at startup (see [exp_lang_repl](examples/exp_lang/exp_lang_repl.cr) for a usage example).
+In addition, CLTK includes several ready-made lexers and parsers. As well as a [serialization mechanism](https://github.com/ziprandom/cltk/blob/master/src/cltk/parser/crystalize.cr#L24) that renders a finalized parser back into crystal syntax to compile it without having to be finalized again at startup (see [exp_lang_repl](examples/exp_lang/exp_lang_repl.cr) for a usage example).
 
 To see what works have a look at the specs or run them with:
 
@@ -29,7 +29,7 @@ See the example languages (and their specs):
 
 ## Documentation
 
-can be found in the [docs](docs) directory
+can be found in the [docs](https://ziprandom.github.io/cltk/) directory
 
 ## Contributing
 
