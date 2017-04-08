@@ -21,6 +21,16 @@ The Implementation has been strongly altered but the API is compatible to RLTK. 
 
 ## Usage
 
+To use the toolkit in your project add this to your application's `shard.yml`:
+
+```yaml
+dependencies:
+  cltk:
+    github: ziprandom/cltk
+```
+
+### Examples
+
 See the example languages (and their specs):
 * **interpreted language EXP_LANG** (`examples/exp_lang`)
 * **kazoo**  (`examples/kazoo/chapter 8`) with LLVM IR generation
