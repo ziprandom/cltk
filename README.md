@@ -27,6 +27,10 @@ See the example languages (and their specs):
 * **brainfuck** (`examples/brainfuck`)
 * **json_parser** (`examples/json_parser`) example of a linter / xml converter
 
+## Documentation
+
+can be found in the [docs](docs) directory
+
 ## Contributing
 
 1. Fork it ( https://github.com/ziprandom/cltk/fork )

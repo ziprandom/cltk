@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta id="repository-name" content="github.com/ziprandom/cltk">
+  <link href="../../../css/style.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="../../../js/doc.js"></script>
+  <title>CLTK::Lexers::Calculator::RuleType - github.com/ziprandom/cltk</title>
+</head>
+<body>
+
+<div id="types-list">
+  <div id="search-box">
+    <input type="search" id="search-input" placeholder="Search...">
+  </div>
+
+  <ul>
+    <li><a href="../../../index.html">README</a></li>
+  </ul>
+
+  <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/toplevel" data-name="top level namespace">
+      <a href="../../../toplevel.html">Top Level Namespace</a>
+      
+    </li>
+  
+  <li class="parent open current" data-id="github.com/ziprandom/cltk/CLTK" data-name="cltk">
+      <a href="../../../CLTK.html">CLTK</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/ASTNode" data-name="cltk::astnode">
+      <a href="../../../CLTK/ASTNode.html">ASTNode</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/CFG" data-name="cltk::cfg">
+      <a href="../../../CLTK/CFG.html">CFG</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/GrammarError" data-name="cltk::cfg::grammarerror">
+      <a href="../../../CLTK/CFG/GrammarError.html">GrammarError</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/Item" data-name="cltk::cfg::item">
+      <a href="../../../CLTK/CFG/Item.html">Item</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/Production" data-name="cltk::cfg::production">
+      <a href="../../../CLTK/CFG/Production.html">Production</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/ProductionBufferType" data-name="cltk::cfg::productionbuffertype">
+      <a href="../../../CLTK/CFG/ProductionBufferType.html">ProductionBufferType</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/ProductionCallbackType" data-name="cltk::cfg::productioncallbacktype">
+      <a href="../../../CLTK/CFG/ProductionCallbackType.html">ProductionCallbackType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexer" data-name="cltk::lexer">
+      <a href="../../../CLTK/Lexer.html">Lexer</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexer/BlockReturn" data-name="cltk::lexer::blockreturn">
+      <a href="../../../CLTK/Lexer/BlockReturn.html">BlockReturn</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexer/Environment" data-name="cltk::lexer::environment">
+      <a href="../../../CLTK/Lexer/Environment.html">Environment</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexer/Exceptions" data-name="cltk::lexer::exceptions">
+      <a href="../../../CLTK/Lexer/Exceptions.html">Exceptions</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexer/Exceptions/LexingError" data-name="cltk::lexer::exceptions::lexingerror">
+      <a href="../../../CLTK/Lexer/Exceptions/LexingError.html">LexingError</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent open current" data-id="github.com/ziprandom/cltk/CLTK/Lexers" data-name="cltk::lexers">
+      <a href="../../../CLTK/Lexers.html">Lexers</a>
+      
+        <ul>
+  
+  <li class="parent open current" data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator" data-name="cltk::lexers::calculator">
+      <a href="../../../CLTK/Lexers/Calculator.html">Calculator</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/Environment" data-name="cltk::lexers::calculator::environment">
+      <a href="../../../CLTK/Lexers/Calculator/Environment.html">Environment</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/FlagsType" data-name="cltk::lexers::calculator::flagstype">
+      <a href="../../../CLTK/Lexers/Calculator/FlagsType.html">FlagsType</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/ProcType" data-name="cltk::lexers::calculator::proctype">
+      <a href="../../../CLTK/Lexers/Calculator/ProcType.html">ProcType</a>
+      
+    </li>
+  
+  <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/RuleType" data-name="cltk::lexers::calculator::ruletype">
+      <a href="../../../CLTK/Lexers/Calculator/RuleType.html">RuleType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF" data-name="cltk::lexers::ebnf">
+      <a href="../../../CLTK/Lexers/EBNF.html">EBNF</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/Environment" data-name="cltk::lexers::ebnf::environment">
+      <a href="../../../CLTK/Lexers/EBNF/Environment.html">Environment</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/FlagsType" data-name="cltk::lexers::ebnf::flagstype">
+      <a href="../../../CLTK/Lexers/EBNF/FlagsType.html">FlagsType</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/ProcType" data-name="cltk::lexers::ebnf::proctype">
+      <a href="../../../CLTK/Lexers/EBNF/ProcType.html">ProcType</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/RuleType" data-name="cltk::lexers::ebnf::ruletype">
+      <a href="../../../CLTK/Lexers/EBNF/RuleType.html">RuleType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parser" data-name="cltk::parser">
+      <a href="../../../CLTK/Parser.html">Parser</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Action" data-name="cltk::parser::action">
+      <a href="../../../CLTK/Parser/Action.html">Action</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parser/Actions" data-name="cltk::parser::actions">
+      <a href="../../../CLTK/Parser/Actions.html">Actions</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Actions/Accept" data-name="cltk::parser::actions::accept">
+      <a href="../../../CLTK/Parser/Actions/Accept.html">Accept</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Actions/GoTo" data-name="cltk::parser::actions::goto">
+      <a href="../../../CLTK/Parser/Actions/GoTo.html">GoTo</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Actions/Reduce" data-name="cltk::parser::actions::reduce">
+      <a href="../../../CLTK/Parser/Actions/Reduce.html">Reduce</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Actions/Shift" data-name="cltk::parser::actions::shift">
+      <a href="../../../CLTK/Parser/Actions/Shift.html">Shift</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/CrystalizeVisitor" data-name="cltk::parser::crystalizevisitor">
+      <a href="../../../CLTK/Parser/CrystalizeVisitor.html">CrystalizeVisitor</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Environment" data-name="cltk::parser::environment">
+      <a href="../../../CLTK/Parser/Environment.html">Environment</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions" data-name="cltk::parser::exceptions">
+      <a href="../../../CLTK/Parser/Exceptions.html">Exceptions</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/BadToken" data-name="cltk::parser::exceptions::badtoken">
+      <a href="../../../CLTK/Parser/Exceptions/BadToken.html">BadToken</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/HandledError" data-name="cltk::parser::exceptions::handlederror">
+      <a href="../../../CLTK/Parser/Exceptions/HandledError.html">HandledError</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/InternalParserException" data-name="cltk::parser::exceptions::internalparserexception">
+      <a href="../../../CLTK/Parser/Exceptions/InternalParserException.html">InternalParserException</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/NotInLanguage" data-name="cltk::parser::exceptions::notinlanguage">
+      <a href="../../../CLTK/Parser/Exceptions/NotInLanguage.html">NotInLanguage</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/ParserConstructionException" data-name="cltk::parser::exceptions::parserconstructionexception">
+      <a href="../../../CLTK/Parser/Exceptions/ParserConstructionException.html">ParserConstructionException</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Exceptions/UselessParserException" data-name="cltk::parser::exceptions::uselessparserexception">
+      <a href="../../../CLTK/Parser/Exceptions/UselessParserException.html">UselessParserException</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Explain" data-name="cltk::parser::explain">
+      <a href="../../../CLTK/Parser/Explain.html">Explain</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Opts" data-name="cltk::parser::opts">
+      <a href="../../../CLTK/Parser/Opts.html">Opts</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/ParserConcern" data-name="cltk::parser::parserconcern">
+      <a href="../../../CLTK/Parser/ParserConcern.html">ParserConcern</a>
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parser/ParseStack" data-name="cltk::parser::parsestack">
+      <a href="../../../CLTK/Parser/ParseStack.html">ParseStack</a>
+      
+        <ul>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parser/ParseStack/OutputStackVisitor" data-name="cltk::parser::parsestack::outputstackvisitor">
+      <a href="../../../CLTK/Parser/ParseStack/OutputStackVisitor.html">OutputStackVisitor</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/ParseStack/OutputStackVisitor/ProcsType" data-name="cltk::parser::parsestack::outputstackvisitor::procstype">
+      <a href="../../../CLTK/Parser/ParseStack/OutputStackVisitor/ProcsType.html">ProcsType</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/ProdProc" data-name="cltk::parser::prodproc">
+      <a href="../../../CLTK/Parser/ProdProc.html">ProdProc</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StackType" data-name="cltk::parser::stacktype">
+      <a href="../../../CLTK/Parser/StackType.html">StackType</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
+      <a href="../../../CLTK/Parser/State.html">State</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Parsers" data-name="cltk::parsers">
+      <a href="../../../CLTK/Parsers.html">Parsers</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parsers/InfixCalc" data-name="cltk::parsers::infixcalc">
+      <a href="../../../CLTK/Parsers/InfixCalc.html">InfixCalc</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parsers/PostfixCalc" data-name="cltk::parsers::postfixcalc">
+      <a href="../../../CLTK/Parsers/PostfixCalc.html">PostfixCalc</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parsers/PrefixCalc" data-name="cltk::parsers::prefixcalc">
+      <a href="../../../CLTK/Parsers/PrefixCalc.html">PrefixCalc</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/StreamPosition" data-name="cltk::streamposition">
+      <a href="../../../CLTK/StreamPosition.html">StreamPosition</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Token" data-name="cltk::token">
+      <a href="../../../CLTK/Token.html">Token</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/TokenValue" data-name="cltk::tokenvalue">
+      <a href="../../../CLTK/TokenValue.html">TokenValue</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Type" data-name="cltk::type">
+      <a href="../../../CLTK/Type.html">Type</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/NamedTuple" data-name="namedtuple(**t)">
+      <a href="../../../NamedTuple.html">NamedTuple</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/Object" data-name="object">
+      <a href="../../../Object.html">Object</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/StringScanner" data-name="stringscanner">
+      <a href="../../../StringScanner.html">StringScanner</a>
+      
+    </li>
+  
+</ul>
+
+</div>
+
+<div id="main-content">
+<h1 class="type-name">
+
+  <span class="kind">alias</span> CLTK::Lexers::Calculator::RuleType
+
+</h1>
+
+
+
+
+
+  <h2>Overview</h2>
+
+  <p>The Calculator lexer is a simple lexer for use with several of the
+provided parsers.</p>
+
+
+
+  <h2>Alias Definition</h2>
+  <code>{Array(Symbol), String, <a href="../../../CLTK/Lexers/Calculator/Environment.html">CLTK::Lexers::Calculator::Environment</a> -> {Symbol?, String?}?}</code>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>Defined in:</h2>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/6c5a3fdadd738fb6396bfbd814c9e3c94fb497a5/src/cltk/lexers/calculator.cr#L20" target="_blank">cltk/lexers/calculator.cr</a>
+    
+    <br/>
+  
+
+
+
+
+
+
+
+
+
+
+
+<div class="methods-inherited">
+  
+</div>
+
+
+
+
+
+
+
+</div>
+
+</body>
+</html>
