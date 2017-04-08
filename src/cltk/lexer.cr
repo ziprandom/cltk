@@ -155,7 +155,7 @@ module CLTK
         return tokens << CLTK::Token.new(:EOS)
       end
 
-      def self.filter_for_flags(flags, rules : Hash(Regex, RuleType))
+      private def self.filter_for_flags(flags, rules : Hash(Regex, RuleType))
         rules.compact_map do |rx, flag_cb_tuple|
           if (flag_cb_tuple[0] - flags).any?
             nil
@@ -165,7 +165,7 @@ module CLTK
         end.reduce(Hash(Regex, ProcType).new) {|memo, h| memo.merge(h) }
       end
 
-      def self.all_rules(state, flags)
+      private def self.all_rules(state, flags)
         # Hash(Tuple(Symbol, FlagsType), ProcType)
         @@cached_rules_for_state_and_flags[{state, flags}] ||=
           begin
@@ -187,13 +187,13 @@ module CLTK
         @@cached_rules_for_state_and_flags[{state, flags}]
       end
 
-      def self.callbacks(state)
+      private def self.callbacks(state)
         @@cached_callbacks_for_state[state] ||=
           (@@callbacks[state]? || Hash(String, RuleType).new).merge(@@callbacks[:ALL])
         @@cached_callbacks_for_state[state]
       end
 
-      def self.regex(state, flags)
+      private def self.regex(state, flags)
         if @@regexps.has_key?({state, flags})
           @@regexps[{state, flags}]
         else
