@@ -10,9 +10,9 @@ def parse_json(json_text)
     )
   # initializations
   # lex, parse, interpret
-  rescue e: CLTK::LexingError
+  rescue e: CLTK::Lexer::Exceptions::LexingError
     puts "Lexing Error"
-  rescue e: CLTK::NotInLanguage
+  rescue e: CLTK::Parser::Exceptions::NotInLanguage
     puts "Not In Language"
   rescue e
     puts "an error occured"

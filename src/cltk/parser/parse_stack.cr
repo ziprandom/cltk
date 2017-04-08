@@ -56,14 +56,6 @@ module CLTK
       @output_stack = [] of CLTK::Parser::StackType
 
       # Instantiate a new ParserStack object.
-      #
-      # @param [Integer]                id           ID for this parse stack.  Used by GLR algorithm.
-      # @param [Array<Object>]          ostack       Output stack.  Holds results of {Reduce} and {Shift} actions.
-      # @param [Array<Integer>]         sstack       State stack.  Holds states that have been shifted due to {Shift} actions.
-      # @param [Array<Integer>]         nstack       Node stack.  Holds dot language IDs for nodes in the parse tree.
-      # @param [Array<Array<Integer>>]  connections  Integer pairs representing edges in the parse tree.
-      # @param [Array<Symbol>]          labels       Labels for nodes in the parse tree.
-      # @param [Array<StreamPosition>]  positions    Position data for symbols that have been shifted.
       def initialize(@id : Int32, @output_stack = [] of CLTK::Parser::StackType, @state_stack = [0] of Int32, @node_stack = [] of Int32, @connections = [] of {Int32, Int32}, @labels = [] of String, @positions = [] of StreamPosition)
 
       end
@@ -147,7 +139,7 @@ module CLTK
       if @output_stack.size == 1
         return @output_stack.last
       else
-        raise InternalParserException.new "The parsing stack should have 1 element on the output stack, not #{@output_stack.size}."
+        raise Parser::Exceptions::InternalParserException.new "The parsing stack should have 1 element on the output stack, not #{@output_stack.size}."
       end
     end
 

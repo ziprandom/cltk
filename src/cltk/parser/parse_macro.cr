@@ -25,7 +25,7 @@ macro def_parse(params_as_const = true)
     }.merge(opts)
   end
 
-  def self._parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = nil)
+  private def self._parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = nil)
     # Get the full options hash.
     opts = build_parse_opts(opts)
     {% if env("VERBOSE") %}
@@ -53,7 +53,7 @@ macro def_parse(params_as_const = true)
       # Check to make sure this token was seen in the
       # grammar definition.
       unless symbols.includes?(token.type.to_s)
-	raise CLTK::BadToken.new(token)
+	raise CLTK::Parser::Exceptions::BadToken.new(token)
       end
 
       {% if env("VERBOSE") %}
@@ -171,21 +171,21 @@ macro def_parse(params_as_const = true)
 	      v.puts
 	      v.puts("Action taken: #{action.to_s}".colorize(color))
               {% if env("VERBOSE") == "procs" %}
-                if action.is_a?(CLTK::Parser::Reduce)
+                if action.is_a?(CLTK::Parser::Actions::Reduce)
                   v.puts(procs[action.id][0].crystalized_block.try &.colorize(color))
                 end
               {% end %}
 	    {% end %}
 
-	    if action.is_a?(CLTK::Parser::Accept)
+	    if action.is_a?(CLTK::Parser::Actions::Accept)
 	      accepted << stack
               break unless opts[:accept] == :all
 
-	    elsif action.is_a?(CLTK::Parser::Reduce)
+	    elsif action.is_a?(CLTK::Parser::Actions::Reduce)
 	        # Get the production associated with this reduction.
 	        production_proc, pop_size = procs[action.id]
 	        if !production_proc
-		  raise CLTK::InternalParserException.new "No production #{action.id} found."
+		  raise CLTK::Parser::Exceptions::InternalParserException.new "No production #{action.id} found."
 	        end
 	        args, positions = stack.pop(pop_size)
 	        opts[:env].set_positions(positions)
@@ -219,7 +219,7 @@ macro def_parse(params_as_const = true)
 		  end
 		  stack.push(goto.id, result.as(CLTK::Parser::StackType), lh_sides[action.id], pos0)
 	        else
-		  raise CLTK::InternalParserException.new "No GoTo action found in state #{stack.state} " +
+		  raise CLTK::Parser::Exceptions::InternalParserException.new "No GoTo action found in state #{stack.state} " +
 					                  "after reducing by production #{action.id}"
 	        end
 
@@ -230,7 +230,7 @@ macro def_parse(params_as_const = true)
 	        # Exit error mode if necessary.
 	        error_mode = false if error_mode && !reduction_guard
 
-	      elsif action.is_a?(CLTK::Parser::Shift)
+	      elsif action.is_a?(CLTK::Parser::Actions::Shift)
 	        stack.push(action.id, token.value, token.type, token.position)
                 # This stack is ready for the next
 	        # token.
@@ -257,7 +257,7 @@ macro def_parse(params_as_const = true)
         {% if env("VERBOSE") %}
           v.close unless v == STDOUT
         {% end%}
-	  raise CLTK::NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
+	  raise CLTK::Parser::Exceptions::NotInLanguage.new(tokens[0...index], tokens[index], tokens[index+1..-1])
       end
       reduction_guard = false
     end
@@ -286,7 +286,7 @@ macro def_parse(params_as_const = true)
               end.as CLTK::Type
 
     if (opts[:env]).he
-      raise CLTK::HandledError.new(opts[:env].as(Environment).errors, results)
+      raise CLTK::Parser::Exceptions::HandledError.new(opts[:env].as(Environment).errors, results)
     end
 
     return results

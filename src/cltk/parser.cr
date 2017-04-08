@@ -38,10 +38,9 @@ module CLTK
   # parsers have a lot of features, and are described in the main
   # documentation.
   abstract class Parser
-
+    include Explain
     def_parse(false)
 
-    include Explain
     # @return [Environment] Environment used by the instantiated parser.
     getter :env
 
@@ -121,13 +120,13 @@ module CLTK
         nil
       end
 
-      # Instantiates a new parser and creates an environment to be
-      # used for subsequent calls.
       @env : Environment
 
+      # Instantiates a new parser and creates an environment to be
+      # used for subsequent calls.
       def initialize
         unless @@symbols.any?
-          raise CLTK::UselessParserException.new
+          raise CLTK::Parser::Exceptions::UselessParserException.new
         end
         @env = Environment.new
       end
@@ -185,7 +184,7 @@ module CLTK
     # ParserConstructionException is raised.
     #
     # @return [void]
-    def self.check_sanity
+    private def self.check_sanity
       # Check to make sure all non-terminals appear on the
       # left-hand side of some production.
       @@grammar.nonterms.each do |sym|
@@ -199,13 +198,13 @@ module CLTK
 	  if CFG.is_terminal?(sym)
 	    # Here we check actions for terminals.
 	    actions.each do |action|
-	      if action.is_a?(Accept)
+	      if action.is_a?(Actions::Accept)
 		if sym.to_s != "EOS"
-		  raise ParserConstructionException.new "Accept action found for terminal #{sym} in state #{state.id}."
+		  raise CLTK::Parser::Exceptions::ParserConstructionException.new "Accept action found for terminal #{sym} in state #{state.id}."
 		end
 
-	      elsif !(action.is_a?(GoTo) || action.is_a?(Reduce) || action.is_a?(Shift))
-		raise ParserConstructionException.new "Object of type #{action.class} found in actions for terminal " +
+	      elsif !(action.is_a?(Actions::GoTo) || action.is_a?(Actions::Reduce) || action.is_a?(Actions::Shift))
+		raise CLTK::Parser::Exceptions::ParserConstructionException.new "Object of type #{action.class} found in actions for terminal " +
 						      "#{sym} in state #{state.id}."
 
 	      end
@@ -217,10 +216,10 @@ module CLTK
 	  else
 	    # Here we check actions for non-terminals.
 	    if actions.size > 1
-	      raise ParserConstructionException.new "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+	      raise CLTK::Parser::Exceptions::ParserConstructionException.new "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
 
-	    elsif actions.size == 1 && !actions.first.is_a?(GoTo)
-	      raise ParserConstructionException.new "State #{state.id} has non-GoTo action for non-terminal #{sym}."
+	    elsif actions.size == 1 && !actions.first.is_a?(Actions::GoTo)
+	      raise CLTK::Parser::Exceptions::ParserConstructionException.new "State #{state.id} has non-GoTo action for non-terminal #{sym}."
 
 	    end
 	  end
@@ -236,14 +235,14 @@ module CLTK
     # @param [Array<Symbol>]  symbols  Grammar symbols.
     #
     # @return [Boolean] If the destination symbol is reachable from the start symbol after reading *symbols*.
-    def self.check_reachability(start, dest, symbols)
+    private def self.check_reachability(start, dest, symbols)
       path_exists = true
       cur_state   = start
 
       symbols.each do |sym|
 
 	actions = @@states[cur_state.id].on?(sym)
-	actions = actions.select { |a| a.is_a?(Shift) } if CFG.is_terminal?(sym)
+	actions = actions.select { |a| a.is_a?(Actions::Shift) } if CFG.is_terminal?(sym)
 
 	if actions.empty?
 	  path_exists = false
@@ -292,7 +291,7 @@ module CLTK
                        {% end %}
 
         if arg_type == :splat && action_arity != expected_arity
-  	  raise CLTK::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action_arity}. Action arity must match the number of terminals and non-terminals in the clause."
+  	  raise CLTK::Parser::Exceptions::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action_arity}. Action arity must match the number of terminals and non-terminals in the clause."
         end
 
         # Add the action to our proc list.
@@ -342,7 +341,7 @@ module CLTK
     # aren't needed when actually parsing input.
     #
     # @return [void]
-    def self.clean
+    private def self.clean
       # We've told the developer about conflicts by now.
       #@@conflicts = nil
 
@@ -393,6 +392,8 @@ module CLTK
       self.build_list_production(symbol, list_elements, separator)
     end
 
+    alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
+
     # This method will finalize the parser causing the construction
     # of states and their actions, and the resolution of conflicts
     # using lookahead and precedence information.
@@ -408,8 +409,6 @@ module CLTK
     # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
     #
     # @return [void]
-    alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
-
     def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
       if @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))).empty?
 	#raise ParserConstructionException,
@@ -463,14 +462,14 @@ module CLTK
 	  id = self.add_state(tstate)
 
 	  # Add Goto and Shift actions.
-	  state.on(symbol, CFG.is_nonterminal?(symbol) ? GoTo.new(id) : Shift.new(id))
+	  state.on(symbol, CFG.is_nonterminal?(symbol) ? Actions::GoTo.new(id) : Actions::Shift.new(id))
 	end
 
 	# Find the Accept and Reduce actions for this state.
 	state.each do |item|
 	  if item.at_end?
 	    if item.lhs == @@start_symbol
-	      state.on("EOS", Accept.new)
+	      state.on("EOS", Actions::Accept.new)
 	    else
 	      state.add_reduction(
                 @@grammar.productions_id[item.id]
@@ -489,7 +488,7 @@ module CLTK
       self.prune(opts[:lookahead]?, opts[:precedence]?)
 
       # Check the parser for inconsistencies.
-      self.check_sanity
+      check_sanity
 
       # Print the table if requested.
       exp = opts[:explain]?
@@ -498,7 +497,7 @@ module CLTK
               end
 
               # Remove any data that is no longer needed.
-              self.clean
+              clean
     end
 
     # Converts an object into an IO object as appropriate.
@@ -733,7 +732,7 @@ module CLTK
 
 	if do_lookahead
 	  # Find all of the reductions in this state.
-	  reductions = state0.actions.values.flatten.uniq.select { |a| a.is_a?(Reduce) }
+	  reductions = state0.actions.values.flatten.uniq.select { |a| a.is_a?(Actions::Reduce) }
           # reduction is ok ..
 	  reductions.each do |reduction|
             raction_id = reduction.as(Action).id
@@ -742,7 +741,7 @@ module CLTK
 
 	    # Build the lookahead set.
 	    each_state do |state1|
-	      if self.check_reachability(state1, state0, production.rhs)
+	      if check_reachability(state1, state0, production.rhs)
 		lookahead |= self.grammar_prime.follow_set("#{state1.id}_#{production.lhs}".to_s)
 	      end
 	    end
@@ -782,13 +781,13 @@ module CLTK
 	    # Reduce/Reduce conflict.
 	    next unless actions && actions.size > 1
 	     resolve_ok = actions.reduce(true) do |m, a|
-	       if a.is_a?(Reduce)
+	       if a.is_a?(Actions::Reduce)
 		 @@production_precs[a.id] && m
 	       else
 		 m
 	       end
 	     end && actions.reduce(false) do |m, a|
-               m  || a.is_a?(Shift)
+               m  || a.is_a?(Actions::Shift)
              end
 
 	    if @@token_precs.has_key?(symbol) && @@token_precs[symbol] && resolve_ok
@@ -801,14 +800,14 @@ module CLTK
 
 	      actions.each do |a|
 		assoc, prec = (
-                  a.is_a?(Shift) ? {tassoc, tprec} : @@production_precs[a.id]
+                  a.is_a?(Actions::Shift) ? {tassoc, tprec} : @@production_precs[a.id]
                 ).as({String, Int32})
 
 		# If two actions have the same precedence we
 		# will only replace the previous production if:
 		#  * The token is left associative and the current action is a Reduce
 		#  * The token is right associative and the current action is a Shift
-		if prec > max_prec  || (prec == max_prec && tassoc == (a.is_a?(Shift) ? :right : :left))
+		if prec > max_prec  || (prec == max_prec && tassoc == (a.is_a?(Actions::Shift) ? :right : :left))
 		  max_prec        = prec
 		  selected_action = a
 		elsif prec == max_prec && assoc == :nonassoc

@@ -1,5 +1,49 @@
 require "./named_tuple_extensions"
 require "json"
+
+# This class is a good start for all your abstract syntax tree node needs.
+#
+# declare an ASTNode by subclassing it
+#
+# ```
+# require "cltk/ast"
+#
+# abstract class MyLanguageValue < CLTK::ASTNode; end
+#
+# class MyLanguageVariable < CLTK::ASTNode
+#   values({name: String, value: MyLanguageValue})
+# end
+#
+# class MyLanguageString < MyLanguageValue
+#   values({text: String})
+# end
+#
+# class MyLanguageStringInterpolated < MyLanguageString
+#   values({variables: Array(MyLanguageVariable)})
+# end
+#
+# country_variable = MyLanguageVariable.new(
+#   name: "country", value: MyLanguageString.new(text: "argentina")
+# )
+#
+# # initialize takes all the values of class and it's ancestors
+# interpolated_string = MyLanguageStringInterpolated.new(
+#   text: "user is from \#\{country\}.", variables: [country_variable]
+# )
+#
+# puts interpolated_string.to_pretty_json
+# # {
+# #   "text": "user is from #{country}.",
+# #   "variables": [
+# #     {
+# #       "name": "country",
+# #       "value": {
+# #         "text": "argentina"
+# #       }
+# #     }
+# #   ]
+# # }
+# ```
 abstract class CLTK::ASTNode
 
   def initialize(**options)
@@ -42,6 +86,15 @@ abstract class CLTK::ASTNode
     values.to_json(json)
   end
 
+  def to_pretty_json
+    values.to_pretty_json
+  end
+
+  def to_pretty_json(json : ::JSON::Builder)
+    values.to_pretty_json(json)
+  end
+
+  # a macro to define the values this ASTNode should take. defines getters and setters as well as the right initialize method
   macro values(values)
     @{{@type.name.downcase.gsub(/:/, "")}}_values:  {{values}}
 
@@ -112,6 +165,7 @@ abstract class CLTK::ASTNode
 
   end
 
+  # this macro defines the given values as children by creating the accessor children
   macro as_children(values)
     def children
       { {% for key, index in values %}

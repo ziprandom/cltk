@@ -1,3 +1,3 @@
-module Cltk
-  VERSION = "0.0.2"
+module CLTK
+  VERSION = "0.0.9"
 end

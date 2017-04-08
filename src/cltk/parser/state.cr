@@ -48,7 +48,7 @@ module CLTK
       #
       # @return [void]
       def add_reduction(production)
-        action = Reduce.new(production)
+        action = Actions::Reduce.new(production)
 
         # Reduce actions are not allowed for the ERROR terminal.
         @actions.each do |k, v|
@@ -106,10 +106,10 @@ module CLTK
         shifts		= 0
 
         actions.each do |action|
-          if action.is_a?(Reduce)
+          if action.is_a?(Actions::Reduce)
 	    reductions += 1
 
-          elsif action.is_a?(Shift)
+          elsif action.is_a?(Actions::Shift)
 	    shifts += 1
 
           end

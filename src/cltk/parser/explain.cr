@@ -1,10 +1,6 @@
 module CLTK::Parser::Explain
   # This function will print a description of the parser to the
   # provided IO object.
-  #
-  # @param [IO] io Input/Output object used for printing the parser's explanation.
-  #
-  # @return [void]
   def self.explain(io : IO)
     if @@grammar && !@@states.empty?
       io.puts("###############")

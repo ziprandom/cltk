@@ -38,7 +38,7 @@ loop do
       puts "=> #{result} (#{result.class})"
     end
 
-  rescue e : CLTK::LexingError
+  rescue e : CLTK::Lexer::Exceptions::LexingError
   rescue e : CLTK::NotInLanguage
     puts "Line was not in language."
   rescue e : Exception

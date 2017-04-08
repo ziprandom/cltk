@@ -367,7 +367,7 @@ describe "CLTK::Parser" do
   end
 
 #  it "test_construction_error" do
-#    expect_raises(CLTK::ParserConstructionException) do
+#    expect_raises(CLTK::Parser::Exceptions::ParserConstructionException) do
 #      class MyClass < CLTK::Parser
 #  	finalize
 #      end
@@ -379,7 +379,7 @@ describe "CLTK::Parser" do
     # APlusBParser #
     ################
 
-    expect_raises(CLTK::NotInLanguage) { APlusBParser.parse(ABLexer.lex("b")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { APlusBParser.parse(ABLexer.lex("b")) }
 
     (APlusBParser.parse(ABLexer.lex("ab"))).should eq 1
     (APlusBParser.parse(ABLexer.lex("aab"))).should eq 2
@@ -390,7 +390,7 @@ describe "CLTK::Parser" do
     # AQuestionBParser #
     ####################
 
-    expect_raises(CLTK::NotInLanguage) { AQuestionBParser.parse(ABLexer.lex("aab")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { AQuestionBParser.parse(ABLexer.lex("aab")) }
     AQuestionBParser.parse(ABLexer.lex("b")).should be_nil
     AQuestionBParser.parse(ABLexer.lex("ab")).should_not be_nil
 
@@ -537,18 +537,18 @@ describe "CLTK::Parser" do
     test_string += "third line;\n"
     test_string += "fourth line\n"
 
-    expect_raises(CLTK::HandledError) { ErrorLine.parse(ELLexer.lex(test_string)) }
+    expect_raises(CLTK::Parser::Exceptions::HandledError) { ErrorLine.parse(ELLexer.lex(test_string)) }
 
     # Test to see if we can continue parsing after errors are encounterd.
     begin
       ErrorLine.parse(ELLexer.lex(test_string))
-    rescue ex : CLTK::HandledError
+    rescue ex : CLTK::Parser::Exceptions::HandledError
       ex.errors.should eq [2,4]
     end
 
     begin
       ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + 1"))
-    rescue ex : CLTK::HandledError
+    rescue ex : CLTK::Parser::Exceptions::HandledError
       ex.errors.first.as(Array).size.should eq 1
       ex.result.should eq 2
     end
@@ -557,7 +557,7 @@ describe "CLTK::Parser" do
     # encountered.
     begin
       ErrorCalc.parse(CLTK::Lexers::Calculator.lex("1 + + + + + + 1"))
-    rescue ex : CLTK::HandledError
+    rescue ex : CLTK::Parser::Exceptions::HandledError
       ex.errors.first.as(Array).size.should eq 5
       ex.result.should eq 2
     end
@@ -573,11 +573,11 @@ describe "CLTK::Parser" do
     actual = CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("(1 + 2) * 3"))
     actual.should eq 9
 
-    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *")) }
   end
 
   it "test_input" do
-    expect_raises(CLTK::BadToken) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::EBNF.lex("A B C")) }
+    expect_raises(CLTK::Parser::Exceptions::BadToken) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::EBNF.lex("A B C")) }
   end
 
   it "test_nonempty_list" do
@@ -593,12 +593,12 @@ describe "CLTK::Parser" do
     actual   = NonEmptyListParser10.parse(AlphaLexer.lex("a, a"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(""))   }
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(","))  }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(""))   }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(","))  }
 
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("aa")) }
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("a,")) }
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(",a")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("aa")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex("a,")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser10.parse(AlphaLexer.lex(",a")) }
 
     #######################
     # NonEmptyListParser1 #
@@ -614,8 +614,8 @@ describe "CLTK::Parser" do
     actual   = NonEmptyListParser1.parse(AlphaLexer.lex("a, b, a, b"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a b")) }
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a, ")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a b")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser1.parse(AlphaLexer.lex("a, ")) }
 
     #######################
     # NonEmptyListParser2 #
@@ -641,8 +641,8 @@ describe "CLTK::Parser" do
     actual   = NonEmptyListParser2.parse(AlphaLexer.lex("a, b, c d"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("c")) }
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("d")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("c")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser2.parse(AlphaLexer.lex("d")) }
 
     #######################
     # NonEmptyListParser3 #
@@ -668,7 +668,7 @@ describe "CLTK::Parser" do
     actual   = NonEmptyListParser5.parse(AlphaLexer.lex("a b a b c a"))
     actual.should eq expected
 
-    expect_raises(CLTK::NotInLanguage) { NonEmptyListParser5.parse(AlphaLexer.lex("a b b a")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { NonEmptyListParser5.parse(AlphaLexer.lex("a b b a")) }
   end
 
   it "test_postfix_calc" do
@@ -681,7 +681,7 @@ describe "CLTK::Parser" do
     actual = CLTK::Parsers::PostfixCalc.parse(CLTK::Lexers::Calculator.lex("1 2 + 3 *"))
     actual.should eq 9
 
-    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { CLTK::Parsers::InfixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3")) }
   end
 
   it "test_prefix_calc" do
@@ -694,7 +694,7 @@ describe "CLTK::Parser" do
     actual = CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("* + 1 2 3"))
     actual.should eq 9
 
-    expect_raises(CLTK::NotInLanguage) { CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3")) }
+    expect_raises(CLTK::Parser::Exceptions::NotInLanguage) { CLTK::Parsers::PrefixCalc.parse(CLTK::Lexers::Calculator.lex("1 + 2 * 3")) }
   end
 
   it "test_selection_parser" do
@@ -722,6 +722,6 @@ describe "CLTK::Parser" do
   end
 
   it "test_useless_parser_exception" do
-    expect_raises(CLTK::UselessParserException) { UselessParser.new }
+    expect_raises(CLTK::Parser::Exceptions::UselessParserException) { UselessParser.new }
   end
 end

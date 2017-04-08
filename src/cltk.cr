@@ -1,5 +1,5 @@
 require "./cltk/**"
 
-module Cltk
+module CLTK
   # TODO Put your code here
 end

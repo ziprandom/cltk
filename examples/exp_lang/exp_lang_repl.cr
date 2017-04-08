@@ -48,7 +48,7 @@ while true
     # output result of evaluation
     puts evaluated
 
-  rescue e: CLTK::LexingError
+  rescue e: CLTK::Lexer::Exceptions::LexingError
     show_lexing_error(e, input)
   rescue e: CLTK::NotInLanguage
     show_syntax_error(e,input)

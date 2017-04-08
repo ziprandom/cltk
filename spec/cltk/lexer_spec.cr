@@ -137,11 +137,11 @@ describe "CLTK::Lexer" do
 
   it "test_flags" do
 
-    expect_raises(CLTK::LexingError) do
+    expect_raises(CLTK::Lexer::Exceptions::LexingError) do
       FlagLexer.lex("b")
     end
 
-    expect_raises(CLTK::LexingError) do
+    expect_raises(CLTK::Lexer::Exceptions::LexingError) do
       FlagLexer.lex("ac")
     end
 
@@ -170,8 +170,8 @@ describe "CLTK::Lexer" do
   end
 
   it "test_lex" do
-    expect_raises(CLTK::LexingError) { ABFirst.lex("aaabbbCCC") }
-    expect_raises(CLTK::LexingError) { ABLongest.lex("aaabbbCCC") }
+    expect_raises(CLTK::Lexer::Exceptions::LexingError) { ABFirst.lex("aaabbbCCC") }
+    expect_raises(CLTK::Lexer::Exceptions::LexingError) { ABLongest.lex("aaabbbCCC") }
   end
 
   it "test_longest_match" do

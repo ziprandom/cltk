@@ -62,9 +62,9 @@ describe("brainfuck") do
       end.join
 
 
-    rescue e: CLTK::LexingError
+    rescue e: CLTK::Lexer::Exceptions::LexingError
       puts "Lexing Error"
-    rescue e: CLTK::NotInLanguage
+    rescue e: CLTK::Parser::Exceptions::NotInLanguage
       puts "Not In Language"
     rescue e
       puts e

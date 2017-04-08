@@ -10,8 +10,14 @@ class Object
 end
 
 module CLTK
+
+  # The CFG class is used to represent context-free grammars.  It is used by
+  # the CLTK::Parser class to represent the parser's grammar, but can also be
+  # used to manipulate arbitrary CFGs.
   class CFG
 
+    # An exception class that represents a problem with a context-free
+    # grammar's definition.
     class GrammarError < Exception; end
 
     alias ProductionBufferType   = NamedTuple( production: Production, selections: Array(Int32) )

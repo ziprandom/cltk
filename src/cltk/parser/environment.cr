@@ -1,6 +1,5 @@
 module CLTK
   class Parser
-    ################################
     # All actions passed to Parser.producation and Parser.clause are
     # evaluated inside an instance of the Environment class or its
     # subclass (which must have the same name).
