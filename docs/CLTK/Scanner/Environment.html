@@ -5,7 +5,7 @@
   <meta id="repository-name" content="github.com/ziprandom/cltk">
   <link href="../../css/style.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="../../js/doc.js"></script>
-  <title>CLTK::CFG::Item - github.com/ziprandom/cltk</title>
+  <title>CLTK::Scanner::Environment - github.com/ziprandom/cltk</title>
 </head>
 <body>
 
@@ -35,7 +35,7 @@
       
     </li>
   
-  <li class="parent open current" data-id="github.com/ziprandom/cltk/CLTK/CFG" data-name="cltk::cfg">
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/CFG" data-name="cltk::cfg">
       <a href="../../CLTK/CFG.html">CFG</a>
       
         <ul>
@@ -45,7 +45,7 @@
       
     </li>
   
-  <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/CFG/Item" data-name="cltk::cfg::item">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/CFG/Item" data-name="cltk::cfg::item">
       <a href="../../CLTK/CFG/Item.html">Item</a>
       
     </li>
@@ -350,12 +350,12 @@
       
     </li>
   
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Scanner" data-name="cltk::scanner">
+  <li class="parent open current" data-id="github.com/ziprandom/cltk/CLTK/Scanner" data-name="cltk::scanner">
       <a href="../../CLTK/Scanner.html">Scanner</a>
       
         <ul>
   
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Scanner/Environment" data-name="cltk::scanner::environment">
+  <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/Scanner/Environment" data-name="cltk::scanner::environment">
       <a href="../../CLTK/Scanner/Environment.html">Environment</a>
       
     </li>
@@ -427,19 +427,21 @@
 <div id="main-content">
 <h1 class="type-name">
 
-  <span class="kind">class</span> CLTK::CFG::Item
+  <span class="kind">class</span> CLTK::Scanner::Environment
 
 </h1>
 
 
-  <ul class="superclass-hierarchy"><li class="superclass"><a href="../../CLTK/CFG/Item.html">CLTK::CFG::Item</a></li><li class="superclass"><a href="../../CLTK/CFG/Production.html">CLTK::CFG::Production</a></li><li class="superclass">Reference</li><li class="superclass"><a href="../../Object.html">Object</a></li></ul>
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../../CLTK/Scanner/Environment.html">CLTK::Scanner::Environment</a></li><li class="superclass">Reference</li><li class="superclass"><a href="../../Object.html">Object</a></li></ul>
 
 
 
 
   <h2>Overview</h2>
 
-  <p>The Item class represents a CFG production with dot in it.</p>
+  <p>Used to keep track of the Lexing State. Used
+as context for token callback yields and
+gets returned by the lexer</p>
 
 
 
@@ -457,7 +459,7 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L5" target="_blank">cltk/cfg/item.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L95" target="_blank">cltk/scanner.cr</a>
     
     <br/>
   
@@ -466,69 +468,71 @@
 
 
 
-  <h2>Class Method Summary</h2>
-  <ul class="list-summary">
-    
-      <li class="entry-summary">
-        <a href="#new%28dot%3AInt32%2C%2Aargs%29-class-method" class="signature"><strong>.new</strong>(dot : Int32, *args)</a>
-        
-          <div class="summary"><p>Instantiates a new Item object with a dot located before the symbol at index <em>dot</em> of the right-hand side.</p></div>
-        
-      </li>
-    
-  </ul>
-
 
 
   <h2>Instance Method Summary</h2>
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#%3D%3D%28other%3AItem%29-instance-method" class="signature"><strong>#==</strong>(other : Item)</a>
+        <a href="#add_token%28token%3AToken%2Csize%3AInt32%29-instance-method" class="signature"><strong>#add_token</strong>(token : Token, size : Int32)</a>
         
-          <div class="summary"><p>Compares two items.</p></div>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#advance-instance-method" class="signature"><strong>#advance</strong></a>
-        
-          <div class="summary"><p>Moves the items dot forward by one if the end of the right-hand side hasn't already been reached.</p></div>
+          <div class="summary"><p>add a token at the current position doesn't advance the @offset index</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#at_end%3F-instance-method" class="signature"><strong>#at_end?</strong></a>
+        <a href="#advance_position%28count%3AInt32%29-instance-method" class="signature"><strong>#advance_position</strong>(count : Int32)</a>
         
-          <div class="summary"><p>Tests to see if the dot is at the end of the right-hand side.</p></div>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#copy-instance-method" class="signature"><strong>#copy</strong></a>
-        
-          <div class="summary"><p>@return [Item]  A new copy of this item.</p></div>
+          <div class="summary"><p>advance the offset by count</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#dot%3AInt32-instance-method" class="signature"><strong>#dot</strong> : Int32</a>
+        <a href="#map%28%26block%29-instance-method" class="signature"><strong>#map</strong>(&block)</a>
         
-          <div class="summary"><p>@return [Integer] Index of the next symbol in this item.</p></div>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#next_symbol-instance-method" class="signature"><strong>#next_symbol</strong></a>
-        
-          <div class="summary"><p>Returns the symbol located after the dot.</p></div>
+          <div class="summary"><p>yield the given block for each token and it's position and returns the results in an array</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#to_s%28padding%3D0%29-instance-method" class="signature"><strong>#to_s</strong>(padding = <span class="n">0</span>)</a>
+        <a href="#pop_state-instance-method" class="signature"><strong>#pop_state</strong></a>
         
-          <div class="summary"><p>Returns a string representation of this item.</p></div>
+          <div class="summary"><p>pop the last state from the stack</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#positions%3AArray%28%7Bposition%3AInt32%2Csize%3AInt32%7D%29-instance-method" class="signature"><strong>#positions</strong> : Array({position: Int32, size: Int32})</a>
+        
+          <div class="summary"><p>positions for lexed tokens</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#push_state%28state%3ASymbol%29-instance-method" class="signature"><strong>#push_state</strong>(state : Symbol)</a>
+        
+          <div class="summary"><p>push a new lexing state to the stack</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#state-instance-method" class="signature"><strong>#state</strong></a>
+        
+          <div class="summary"><p>get the currently active lexing state</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%7D%29-instance-method" class="signature"><strong>#tokens</strong> : Array({Symbol} | {Symbol, String})</a>
+        
+          <div class="summary"><p>the lexed tokens</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#tokens_with_positions-instance-method" class="signature"><strong>#tokens_with_positions</strong></a>
+        
+          <div class="summary"><p>returns an array of all lexed tokens and their positions</p></div>
         
       </li>
     
@@ -539,66 +543,6 @@
 
 
 <div class="methods-inherited">
-  
-    
-
-  <h3>Instance methods inherited from class <code><a href="../../CLTK/CFG/Production.html">CLTK::CFG::Production</a></code></h3>
-  
-  
-    <a href="../../CLTK/CFG/Production.html#%3D%3D%28other%29-instance-method" class="tooltip">
-      <span>==(other)</span>
-    ==</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#copy-instance-method" class="tooltip">
-      <span>copy</span>
-    copy</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#id%3AInt32-instance-method" class="tooltip">
-      <span>id : Int32</span>
-    id</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#last_terminal-instance-method" class="tooltip">
-      <span>last_terminal</span>
-    last_terminal</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#lhs%3AString-instance-method" class="tooltip">
-      <span>lhs : String</span>
-    lhs</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#rhs%3AArray%28String%29-instance-method" class="tooltip">
-      <span>rhs : Array(String)</span>
-    rhs</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#to_item-instance-method" class="tooltip">
-      <span>to_item</span>
-    to_item</a>, 
-    
-  
-    <a href="../../CLTK/CFG/Production.html#to_s%28padding%3D0%29-instance-method" class="tooltip">
-      <span>to_s(padding = <span class="n">0</span>)</span>
-    to_s</a>
-    
-  
-
-
-    
-
-  <h3>Class methods inherited from class <code><a href="../../CLTK/CFG/Production.html">CLTK::CFG::Production</a></code></h3>
-  
-  
-    <a href="../../CLTK/CFG/Production.html#new%28id%3AInt32%2Clhs%3AString%2Crhs%3AArray%28String%29%29-class-method" class="tooltip">
-      <span>new(id : Int32, lhs : String, rhs : Array(String))</span>
-    new</a>
-    
-  
-
-
   
     
 
@@ -626,174 +570,171 @@
 </div>
 
 
-  <h2>Class Method Detail</h2>
-  
-    <div class="entry-detail" id="new&#40;dot:Int32,*args&#41;-class-method">
-      <div class="signature">
-        
-        def self.<strong>new</strong>(dot : Int32, *args)
-
-        <a class="method-permalink" href="#new%28dot%3AInt32%2C%2Aargs%29-class-method">#</a>
-      </div>
-      
-        <div class="doc"><p>Instantiates a new Item object with a dot located before the
-symbol at index <em>dot</em> of the right-hand side.  The remaining
-arguments (<em>args</em>) should be as specified by
-{Production#initialize}.</p>
-
-<p>@param [Integer]        dot   Location of the dot in this Item.
-@param [Array&lt;Object>]  args  (see {Production#initialize})</p></div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L16" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-
 
 
   <h2>Instance Method Detail</h2>
   
-    <div class="entry-detail" id="&#61;&#61;&#40;other:Item&#41;-instance-method">
+    <div class="entry-detail" id="add_token&#40;token:Token,size:Int32&#41;-instance-method">
       <div class="signature">
         
-        def <strong>==</strong>(other : <a href="../../CLTK/CFG/Item.html">Item</a>)
+        def <strong>add_token</strong>(token : <a href="../../CLTK/Scanner/Token.html">Token</a>, size : Int32)
 
-        <a class="method-permalink" href="#%3D%3D%28other%3AItem%29-instance-method">#</a>
+        <a class="method-permalink" href="#add_token%28token%3AToken%2Csize%3AInt32%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Compares two items.</p>
-
-<p>@param [Item]  other  Another item to compare to.</p>
-
-<p>@return [Boolean]</p></div>
+        <div class="doc"><p>add a token at the current position
+doesn't advance the @offset index</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L28" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L124" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="advance-instance-method">
+    <div class="entry-detail" id="advance_position&#40;count:Int32&#41;-instance-method">
       <div class="signature">
         
-        def <strong>advance</strong>
+        def <strong>advance_position</strong>(count : Int32)
 
-        <a class="method-permalink" href="#advance-instance-method">#</a>
+        <a class="method-permalink" href="#advance_position%28count%3AInt32%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Moves the items dot forward by one if the end of the right-hand
-side hasn't already been reached.</p>
-
-<p>@return [Integer, nil]</p></div>
+        <div class="doc"><p>advance the offset by count</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L36" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L130" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="at_end?-instance-method">
+    <div class="entry-detail" id="map&#40;&amp;block&#41;-instance-method">
       <div class="signature">
         
-        def <strong>at_end?</strong>
+        def <strong>map</strong>(&block)
 
-        <a class="method-permalink" href="#at_end%3F-instance-method">#</a>
+        <a class="method-permalink" href="#map%28%26block%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Tests to see if the dot is at the end of the right-hand side.</p>
-
-<p>@return [Boolean]</p></div>
+        <div class="doc"><p>yield the given block for each token and it's
+position and returns the results in an array</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L45" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L136" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="copy-instance-method">
+    <div class="entry-detail" id="pop_state-instance-method">
       <div class="signature">
         
-        def <strong>copy</strong>
+        def <strong>pop_state</strong>
 
-        <a class="method-permalink" href="#copy-instance-method">#</a>
+        <a class="method-permalink" href="#pop_state-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Item]  A new copy of this item.</p></div>
+        <div class="doc"><p>pop the last state from the stack</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L50" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L109" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="dot:Int32-instance-method">
+    <div class="entry-detail" id="positions:Array&#40;&#123;position:Int32,size:Int32&#125;&#41;-instance-method">
       <div class="signature">
         
-        def <strong>dot</strong> : Int32
+        def <strong>positions</strong> : Array({position: Int32, size: Int32})
 
-        <a class="method-permalink" href="#dot%3AInt32-instance-method">#</a>
+        <a class="method-permalink" href="#positions%3AArray%28%7Bposition%3AInt32%2Csize%3AInt32%7D%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Integer] Index of the next symbol in this item.</p></div>
+        <div class="doc"><p>positions for lexed tokens</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L103" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="next_symbol-instance-method">
+    <div class="entry-detail" id="push_state&#40;state:Symbol&#41;-instance-method">
       <div class="signature">
         
-        def <strong>next_symbol</strong>
+        def <strong>push_state</strong>(state : Symbol)
 
-        <a class="method-permalink" href="#next_symbol-instance-method">#</a>
+        <a class="method-permalink" href="#push_state%28state%3ASymbol%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Returns the symbol located after the dot.</p>
-
-<p>@return [Symbol]  Symbol located after the dot (at the index indicated by the {#dot} attribute).</p></div>
+        <div class="doc"><p>push a new lexing state to the stack</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L57" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L107" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="to_s&#40;padding&#61;0&#41;-instance-method">
+    <div class="entry-detail" id="state-instance-method">
       <div class="signature">
         
-        def <strong>to_s</strong>(padding = <span class="n">0</span>)
+        def <strong>state</strong>
 
-        <a class="method-permalink" href="#to_s%28padding%3D0%29-instance-method">#</a>
+        <a class="method-permalink" href="#state-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Returns a string representation of this item.</p>
-
-<p>@param [Integer]  padding  The ammount of padding spaces to add to the beginning of the string.</p>
-
-<p>@return [String]</p></div>
+        <div class="doc"><p>get the currently active lexing state</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/cfg/item.cr#L70" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L105" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="tokens:Array&#40;&#123;Symbol&#125;|&#123;Symbol,String&#125;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>tokens</strong> : Array({Symbol} | {Symbol, String})
+
+        <a class="method-permalink" href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%7D%29-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>the lexed tokens</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L101" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="tokens_with_positions-instance-method">
+      <div class="signature">
+        
+        def <strong>tokens_with_positions</strong>
+
+        <a class="method-permalink" href="#tokens_with_positions-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>returns an array of all lexed
+tokens and their positions</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L118" target="_blank">View source</a>]
         
       </div>
     </div>

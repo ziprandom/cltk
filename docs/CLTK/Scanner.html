@@ -5,7 +5,7 @@
   <meta id="repository-name" content="github.com/ziprandom/cltk">
   <link href="../css/style.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="../js/doc.js"></script>
-  <title>CLTK::Lexers - github.com/ziprandom/cltk</title>
+  <title>CLTK::Scanner - github.com/ziprandom/cltk</title>
 </head>
 <body>
 
@@ -105,7 +105,7 @@
       
     </li>
   
-  <li class="parent current" data-id="github.com/ziprandom/cltk/CLTK/Lexers" data-name="cltk::lexers">
+  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers" data-name="cltk::lexers">
       <a href="../CLTK/Lexers.html">Lexers</a>
       
         <ul>
@@ -350,7 +350,7 @@
       
     </li>
   
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Scanner" data-name="cltk::scanner">
+  <li class="parent current" data-id="github.com/ziprandom/cltk/CLTK/Scanner" data-name="cltk::scanner">
       <a href="../CLTK/Scanner.html">Scanner</a>
       
         <ul>
@@ -427,18 +427,84 @@
 <div id="main-content">
 <h1 class="type-name">
 
-  <span class="kind">module</span> CLTK::Lexers
+  <span class="kind">abstract class</span> CLTK::Scanner
 
 </h1>
 
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../CLTK/Scanner.html">CLTK::Scanner</a></li><li class="superclass">Reference</li><li class="superclass"><a href="../Object.html">Object</a></li></ul>
 
 
 
 
   <h2>Overview</h2>
 
-  <p>The CLTK::Lexers module contains the lexers that are included as part of
-the CLTK project.</p>
+  <p>A Lexer Class based on <a href="https://github.com/ziprandom/crystal-dfa" target="_blank">crystal-dfa</a> the Crystal RegExp implementation
+of a Thompson NFA based DFA. Runs faster than (PCRE based) Regex implementations. Define a Lexer like:</p>
+
+<pre><code><span class="k">class</span> <span class="t">CalcLexer</span> <span class="o"><</span> <span class="t">Scanner</span>
+  <span class="c"># set a delimiter to strip the</span>
+  <span class="c"># string before lexing for increased</span>
+  <span class="c"># performance. defaults to &quot;\n&quot; which</span>
+  <span class="c"># is fine for this example.</span>
+
+  <span class="c"># self.pre_delimiter&#61;nil # no string splitting</span>
+  <span class="c"># before lexing</span>
+
+  <span class="c"># ignore space &amp; newline</span>
+  rule(<span class="s">/&#91;\n\s&#93;/</span>)
+
+  <span class="c"># operators are keywords, so we use</span>
+  <span class="c"># stringrules to have one single</span>
+  <span class="c"># dfa matching</span>
+  rule(<span class="s">&quot;&#43;&quot;</span>)                { {<span class="n">:PLS</span>} }
+  rule(<span class="s">&quot;-&quot;</span>)                { {<span class="n">:SUB</span>} }
+  rule(<span class="s">&quot;*&quot;</span>)                { {<span class="n">:MUL</span>} }
+  rule(<span class="s">&quot;/&quot;</span>)                { {<span class="n">:DIV</span>} }
+
+  <span class="c"># ints and floats need to be matched with</span>
+  <span class="c"># regular expressions &#40;doesn&#39;t use Regex but</span>
+  <span class="c"># DFA::RegExp&#41;</span>
+  rule(<span class="s">/\d&#43;\.\d&#43;/</span>)         { <span class="o">|</span>s<span class="o">|</span> {<span class="n">:FLOAT</span>, s} }
+  rule(<span class="s">/\d&#43;/</span>)              { <span class="o">|</span>s<span class="o">|</span> {<span class="n">:INT</span>,   s} }
+
+  <span class="c"># upon sighting of a &#39;#&#39; &#40;and optionally trailing &#39; &#39;&#41;</span>
+  <span class="c"># we go into :comment state and don&#39;t leave until we</span>
+  <span class="c"># find a &#39;\n&#39;</span>
+  rule(<span class="s">/#\s*/</span>)             {     push_state(<span class="n">:comment</span>) }
+  rule(<span class="s">/&#91;^\n&#93;&#43;/</span>, <span class="n">:comment</span>) { <span class="o">|</span>t<span class="o">|</span> {<span class="n">:COMMENT</span>, t}        }
+  rule(<span class="s">&quot;\n&quot;</span>, <span class="n">:comment</span>)     {     pop_state            }
+
+  <span class="c"># calculate the dfa&#39;s for the string-rules</span>
+  <span class="c"># will be called upon first &#96;lex&#96; call if</span>
+  <span class="c"># not invoked here</span>
+  finalize
+<span class="k">end</span>
+
+source <span class="o">=</span> <span class="s">&lt;&lt;-source
+#
+# a simple calculation
+#
+
+4 &#43; 4  # the first addition
+- 3.14 # a substraction
+* 3
+
+source</span>
+
+pp <span class="t">CalcLexer</span>.lex(source).tokens   <span class="c"># &#61;&gt; &#91;&#123;:COMMENT, &quot;a simple calculation&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:INT, &quot;4&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:PLS&#125;,</span>
+                                  <span class="c">#     &#123;:INT, &quot;4&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:COMMENT,</span>
+                                  <span class="c">#      &quot;the first addition&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:SUB&#125;,</span>
+                                  <span class="c">#     &#123;:FLOAT,</span>
+                                  <span class="c">#      &quot;3.14&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:COMMENT,</span>
+                                  <span class="c">#      &quot;a substraction&quot;&#125;,</span>
+                                  <span class="c">#     &#123;:MUL&#125;,</span>
+                                  <span class="c">#     &#123;:INT, &quot;3&quot;&#125;&#93;</span></code></pre>
 
 
 
@@ -456,12 +522,7 @@ the CLTK project.</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/lexers/ebnf.cr#L16" target="_blank">cltk/lexers/ebnf.cr</a>
-    
-    <br/>
-  
-    
-      <a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/lexers/calculator.cr#L16" target="_blank">cltk/lexers/calculator.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L72" target="_blank">cltk/scanner.cr</a>
     
     <br/>
   
@@ -470,20 +531,199 @@ the CLTK project.</p>
 
 
 
+  <h2>Class Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#finalize-class-method" class="signature"><strong>.finalize</strong></a>
+        
+          <div class="summary"><p>finalize the Lexer by creating dfas for the provided string rules for fast keyword matching</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#lex%28string%3AString%29%3AEnvironment-class-method" class="signature"><strong>.lex</strong>(string : String) : Environment</a>
+        
+          <div class="summary"><p>lexes a string by continously matching the dfas against the string, yielding the callbacks with an instance of Environment</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#pre_delimiter%3AString%3F-class-method" class="signature"><strong>.pre_delimiter</strong> : String?</a>
+        
+          <div class="summary"><p>In order to speed up lexing, the string might be split and fed to the dfas in smaller chunks.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#pre_delimiter%3D%28pre_delimiter%3AString%3F%29-class-method" class="signature"><strong>.pre_delimiter=</strong>(pre_delimiter : String?)</a>
+        
+          <div class="summary"><p>In order to speed up lexing, the string might be split and fed to the dfas in smaller chunks.</p></div>
+        
+      </li>
+    
+  </ul>
 
 
 
+
+
+  <h2>Macro Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#rule%28expression%2Cstate%3D%3Adefault%29-macro" class="signature"><strong>rule</strong>(expression, state = :default)</a>
+        
+          <div class="summary"><p>Defines a lexing rule.</p></div>
+        
+      </li>
+    
+  </ul>
 
 
 
 <div class="methods-inherited">
   
+    
+
+
+    
+
+
+  
+    
+
+  <h3>Instance methods inherited from class <code><a href="../Object.html">Object</a></code></h3>
+  
+  
+    <a href="../Object.html#in%3F%28collection%3AArray%7CSet%29-instance-method" class="tooltip">
+      <span>in?(collection : Array | Set)</span>
+    in?</a>
+    
+  
+
+
+    
+
+
+  
 </div>
 
 
+  <h2>Class Method Detail</h2>
+  
+    <div class="entry-detail" id="finalize-class-method">
+      <div class="signature">
+        
+        def self.<strong>finalize</strong>
+
+        <a class="method-permalink" href="#finalize-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>finalize the Lexer by creating dfas for the provided
+string rules for fast keyword matching</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L163" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="lex&#40;string:String&#41;:Environment-class-method">
+      <div class="signature">
+        
+        def self.<strong>lex</strong>(string : String) : <a href="../CLTK/Scanner/Environment.html">Environment</a>
+
+        <a class="method-permalink" href="#lex%28string%3AString%29%3AEnvironment-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>lexes a string by continously matching the dfas
+against the string, yielding the callbacks with
+an instance of Environment</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L176" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="pre_delimiter:String?-class-method">
+      <div class="signature">
+        
+        def self.<strong>pre_delimiter</strong> : String?
+
+        <a class="method-permalink" href="#pre_delimiter%3AString%3F-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>In order to speed up lexing, the string might be split
+and fed to the dfas in smaller chunks. by default this
+is done on the newline character "\n". If set to <code>nil</code>
+the string doesn't get chunked. can be set to any <code>String</code></p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L88" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="pre_delimiter&#61;&#40;pre_delimiter:String?&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>pre_delimiter=</strong>(pre_delimiter : String?)
+
+        <a class="method-permalink" href="#pre_delimiter%3D%28pre_delimiter%3AString%3F%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>In order to speed up lexing, the string might be split
+and fed to the dfas in smaller chunks. by default this
+is done on the newline character "\n". If set to <code>nil</code>
+the string doesn't get chunked. can be set to any <code>String</code></p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L88" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
 
 
 
+
+
+  <h2>Macro Detail</h2>
+  
+    <div class="entry-detail" id="rule&#40;expression,state&#61;:default&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>rule</strong>(expression, state = :default)
+
+        <a class="method-permalink" href="#rule%28expression%2Cstate%3D%3Adefault%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Defines a lexing rule. The expression can either
+be a string or a DFA::RegExp compatible expression.
+State indicates a Lexer State in which this Rule should
+be applied. String Expressions for the same state get
+combined in one alternating (..|..|..) DFA for faster
+recognition. String Expressions should be used for
+special keywords and symbols like: def, true or ":"</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/c84a66f8786f7f626ff41b2d4d71d4cbe7194686/src/cltk/scanner.cr#L153" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
 
 
 </div>
