@@ -12,12 +12,15 @@ macro insert_output_of(code_file_name = "generated___code.cr", debug = false, &b
       "cat << 'EOF' > #{intermediate_program_path}\n" +
       block.body.stringify + "\nEOF"
     )
-    result = run(intermediate_program_path)
+    # this doesn't work since v0.22.0, yields:
+    # "can't specify arguments in both, command and args without including "${@}" into your command"
+    # result = run(intermediate_program_path)
+    result = `crystal #{intermediate_program_path}`
     if debug
       pp result
     else
       system("rm #{intermediate_program_path}")
     end
-     %}
+    %}
   {{result}}
 end

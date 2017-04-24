@@ -1,7 +1,9 @@
 module CLTK
   alias TokenValue = (String|Int32)?
 end
-require "../../src/cltk"
+require "../../src/cltk/lexer"
+require "../../src/cltk/parser"
+require "../../src/cltk/ast"
 
 module BrainFuck
 
