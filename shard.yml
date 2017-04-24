@@ -5,6 +5,11 @@ authors:
   - ziprandom <ziprandom@gmail.com>
   - Chris Wailes (RLTK)
 
+dependencies:
+  crystal-dfa:
+    github: ziprandom/crystal-dfa
+    branch: master
+
 description: |
   A Collection of Classes to define Lexers, Parsers & Abstract Syntax Trees. A port of the Ruby Language Toolking written by Chris Wailes
 
