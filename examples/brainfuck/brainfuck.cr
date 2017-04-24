@@ -1,7 +1,7 @@
 module CLTK
   alias TokenValue = (String|Int32)?
 end
-require "../../src/cltk/lexer"
+require "../../src/cltk/scanner"
 require "../../src/cltk/parser"
 require "../../src/cltk/ast"
 
@@ -10,18 +10,24 @@ module BrainFuck
   #
   # Lexer
   #
-  class Lexer < CLTK::Lexer
-    rule(/>/)  { :PTRRIGHT }
-    rule(/</)  { :PTRLEFT  }
-    rule(/\+/) { :INC      }
-    rule(/-/)  { :DEC      }
-    rule(/\./) { :PUT      }
-    rule(/,/)  { :GET      }
-    rule(/\[/) { :LBRACKET }
-    rule(/\]/) { :RBRACKET }
+  class Lexer < CLTK::Scanner
+    extend CLTK::Scanner::LexerCompatibility
+
+    rule(">")  { { :PTRRIGHT } }
+    rule("<")  { { :PTRLEFT  } }
+    rule("+")  { { :INC      } }
+    rule("-")  { { :DEC      } }
+    rule(".")  { { :PUT      } }
+    rule(",")  { { :GET      } }
+    rule("\[")  { { :LBRACKET } }
+    rule("\]")  { { :RBRACKET } }
+
     # ignore the rest
-    rule(/\n/)
-    rule(/./)
+    rule(/[\n\s]/)
+
+    rule(/#\s*/)                 { push_state(:comment) }
+    rule(/[^\n]/, :comment)
+    rule("\n", :comment)         { pop_state            }
   end
 
   #

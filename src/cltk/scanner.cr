@@ -1,4 +1,5 @@
 require "crystal-dfa"
+require "./lexer/exceptions"
 module CLTK
   #
   # A Lexer Class based on [crystal-dfa](https://github.com/ziprandom/crystal-dfa) the Crystal RegExp implementation
@@ -71,7 +72,7 @@ module CLTK
   #
   abstract class Scanner
 
-    alias Token = Tuple(Symbol, String) | Tuple(Symbol)
+    alias Token = Tuple(Symbol, TokenValue) | Tuple(Symbol)
     alias StreamPosition = NamedTuple(position: Int32, size: Int32)
 
     alias ProcType = Proc(String, Environment, Token?)
@@ -101,6 +102,8 @@ module CLTK
       getter :tokens
       # positions for lexed tokens
       getter :positions
+      # current lexing position
+      getter :offset
       # get the currently active lexing state
       def state; @states.last; end
       # push a new lexing state to the stack
@@ -142,6 +145,29 @@ module CLTK
     end
 
     #
+    # wrap lex and #lex to return the Tokens
+    # we expect from a CLTK::Lexer
+    #
+    module LexerCompatibility
+      macro extended
+        def self.lex(string)
+          super(string).map do |token, position|
+            pos = CLTK::StreamPosition.new(
+              position[:position], 0,
+              position[:position], position[:size]
+            )
+	    CLTK::Token.new(token[0], token[1]?, pos)
+          end << CLTK::Token.new(:EOS)
+        end
+
+        def lex(string)
+          self.class.lex(string)
+        end
+      end
+    end
+
+
+    #
     # Defines a lexing rule. The expression can either
     # be a string or a `DFA::RegExp` compatible expression.
     # State indicates a Lexer State in which this Rule should
@@ -163,6 +189,7 @@ module CLTK
     def self.finalize
       @@strings.each do |state, hash|
         litdfa = DFA::RegExp.new(hash.map {|k, _| Regex.escape(k) }.join("|")).dfa
+        @@rx[state] ||= Array({DFA::DFA::DState, Int32?}).new
         @@rx[state] << ({ litdfa, @@callbacks.size+1 })
         cb = ProcType.new { |string, env| hash[string].try &.call(string, env)}
         @@callbacks.unshift cb
@@ -214,9 +241,7 @@ module CLTK
         end
       end
       unless match_end
-        pp env.tokens
-        pp string[0..14]
-        raise "Lexing Error"
+        raise CLTK::Lexer::Exceptions::LexingError.new(env.offset, 0, 0, string)
       end
       match_end
     end

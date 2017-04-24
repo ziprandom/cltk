@@ -37,11 +37,11 @@ describe("brainfuck") do
                   ----- - .               # print 'l'
                   ----- --- .             # print 'd'
                   > + .                   # print '!'
-                  > .                     # print '\n'"
+                  > .                     # print '\\n'"
 
   it "lexes, parses and interprets a brainck program" do
 
-    result = begin
+#    result = begin
 
       # initializations
       lexer  = BrainFuck::Lexer
@@ -55,20 +55,20 @@ describe("brainfuck") do
       result1 = interpreter.new(intermediate_representation).run
 
       # output map ordinal integers to chars and join
-      result1.map do |ordinal_number|
+      result = result1.map do |ordinal_number|
         if (ordinal_number)
           ordinal_number.chr
         end
       end.join
 
 
-    rescue e: CLTK::Lexer::Exceptions::LexingError
-      puts "Lexing Error"
-    rescue e: CLTK::Parser::Exceptions::NotInLanguage
-      puts "Not In Language"
-    rescue e
-      puts e
-    end
+#    rescue e: CLTK::Lexer::Exceptions::LexingError
+#      puts "Lexing Error"
+#    rescue e: CLTK::Parser::Exceptions::NotInLanguage
+#      puts "Not In Language"
+#    rescue e
+#      puts e
+#    end
 
     result.should eq("Hello World!\n")
   end

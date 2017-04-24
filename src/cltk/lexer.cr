@@ -4,7 +4,7 @@ require "string_scanner"
 # Crystal Language Toolkit
 require "./token"
 require "./streamposition"
-require "./lexer/environment"
+require "./lexer/*"
 
 class StringScanner
   getter :last_match
@@ -19,38 +19,6 @@ module CLTK
   # The Lexer class may be sub-classed to produce new lexers.  These lexers
   # have a lot of features, and are described in the main documentation.
   abstract class Lexer
-
-    module Exceptions
-      # A LexingError exception is raised when an input stream contains a
-      # substring that isn't matched by any of a lexer's rules.
-      class LexingError < Exception
-        # @return [Integer]
-        getter :stream_offset
-
-        # @return [Integer]
-        getter :line_number
-
-        # @return [Integer]
-        getter :line_offset
-
-        # @return [String]
-        getter :remainder
-
-        # @param [Integer]	stream_offset	Offset from begnning of string.
-        # @param [Integer]	line_number	Number of newlines encountered so far.
-        # @param [Integer]	line_offset	Offset from beginning of line.
-        # @param [String]	remainder		Rest of the string that couldn't be lexed.
-        def initialize(@stream_offset : Int32, @line_number : Int32, @line_offset : Int32, @remainder : String)
-          super(message)
-          @backtrace = [] of String
-        end
-
-        # @return [String] String representation of the error.
-        def to_s
-          "#{super()}: #{@remainder}"
-        end
-      end
-    end
 
     # @return [Environment] Environment used by an instantiated lexer.
     getter :env

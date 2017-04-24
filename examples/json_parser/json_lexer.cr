@@ -1,17 +1,19 @@
-require "../../src/cltk/lexer"
+require "../../src/cltk/scanner"
 module JSON_PARSE
   # The Lexer
-  class Lexer < CLTK::Lexer
+  class Lexer < CLTK::Scanner
+    extend CLTK::Scanner::LexerCompatibility
+
     # Skip whitespace.
     rule("\n")
     rule(" ")
 
-    rule(":")	  { :COLON   }
-    rule("[")	  { :LBRACK  }
-    rule("]")	  { :RBRACK  }
-    rule("{")	  { :LCBRACK }
-    rule("}")	  { :RCBRACK }
-    rule(",")	  { :COMMA   }
+    rule(":")	  { { :COLON   } }
+    rule("[")	  { { :LBRACK  } }
+    rule("]")	  { { :RBRACK  } }
+    rule("{")	  { { :LCBRACK } }
+    rule("}")	  { { :RCBRACK } }
+    rule(",")	  { { :COMMA   } }
 
     rule("true")  { {:BOOL, 0} }
     rule("false") { {:BOOL, 1} }

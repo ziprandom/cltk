@@ -18,7 +18,7 @@ module CLTK
 
     # The EBNF lexer is used by the CLTK::CFG class.
     class EBNF < CLTK::Scanner
-
+      extend CLTK::Scanner::LexerCompatibility
       #################
       # Default State #
       #################
@@ -32,17 +32,6 @@ module CLTK
       rule(/[A-Z0-9_']+/) { |t| {:TERM,    t.to_s} }
 
       rule(" ")
-
-      def self.lex(string)
-        super(string).tokens.map do |token|
-          # pos = CLTK::StreamPosition.new(position[:position], 0, position[:position], position[:size])
-	  CLTK::Token.new(token[0], token[1]?)
-        end << CLTK::Token.new(:EOS)
-      end
-
-      def lex(string)
-        self.class.lex(string)
-      end
 
     end
   end

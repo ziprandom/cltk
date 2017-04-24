@@ -17,23 +17,24 @@ module CLTK
 
     # The Calculator lexer is a simple lexer for use with several of the
     # provided parsers.
-    class Calculator < CLTK::Lexer
+    class Calculator < Scanner
+      extend CLTK::Scanner::LexerCompatibility
 
       #################
       # Default State #
       #################
 
-      rule(/\+/)	{ :PLS }
-      rule(/-/)	        { :SUB }
-      rule(/\*/)	{ :MUL }
-      rule(/\//)	{ :DIV }
+      rule("+")	        { { :PLS } }
+      rule("-")         { { :SUB } }
+      rule("*")	        { { :MUL } }
+      rule("/")	        { { :DIV } }
 
-      rule(/\(/)	{ :LPAREN }
-      rule(/\)/)	{ :RPAREN }
+      rule("(")	        { { :LPAREN } }
+      rule(")")	        { { :RPAREN } }
 
       rule(/[0-9]+/)	{ |t| {:NUM, t.to_i32}}
 
-      rule(/\s/)
+      rule(" ")
     end
   end
 end
