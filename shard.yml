@@ -8,7 +8,8 @@ authors:
 dependencies:
   crystal-dfa:
     github: ziprandom/crystal-dfa
-    branch: master
+    #branch: master
+    version: ~> 0.3.0
 
 description: |
   A Collection of Classes to define Lexers, Parsers & Abstract Syntax Trees. A port of the Ruby Language Toolking written by Chris Wailes
