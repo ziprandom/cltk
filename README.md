@@ -4,7 +4,7 @@ This is a port of the [Ruby Language Toolkit](https://github.com/chriswailes/RLT
 
 **CLTK (like RLTK) is:** a collection of classes and methods designed to help programmers create languages in an easy to use and straightforward manner. This toolkit provides the following features:
 
-* Lexer generator
+* 2 Lexer generators based on [PCRE Regexps from crystals STD Lib](https://ziprandom.github.io/cltk/CLTK/Lexer.html) and a [second faster one](https://ziprandom.github.io/cltk/CLTK/Scanner.html) based on the [crystal-dfa](https://github.com/ziprandom/crystal-dfa) DFA automaton implementation
 * Parser generator
 * AST node baseclass
 * Class for representing context free grammars

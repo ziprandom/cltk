@@ -386,7 +386,7 @@
 
 <p><strong>CLTK (like RLTK) is:</strong> a collection of classes and methods designed to help programmers create languages in an easy to use and straightforward manner. This toolkit provides the following features:</p>
 
-<ul><li>Lexer generator</li><li>Parser generator</li><li>AST node baseclass</li><li>Class for representing context free grammars</li></ul>
+<ul><li>2 Lexer generators based on <a href="https://ziprandom.github.io/cltk/CLTK/Lexer.html" target="_blank">PCRE Regexps from crystals STD Lib</a> and a <a href="https://ziprandom.github.io/cltk/CLTK/Scanner.html" target="_blank">second faster one</a> based on the <a href="https://github.com/ziprandom/crystal-dfa" target="_blank">crystal-dfa</a> DFA automaton implementation</li><li>Parser generator</li><li>AST node baseclass</li><li>Class for representing context free grammars</li></ul>
 
 <p>In addition, CLTK includes several ready-made lexers and parsers. As well as a <a href="https://github.com/ziprandom/cltk/blob/master/src/cltk/parser/crystalize.cr#L24" target="_blank">serialization mechanism</a> that renders a finalized parser back into crystal syntax to compile it without having to be finalized again at startup (see <a href="examples/exp_lang/exp_lang_repl.cr" target="_blank">exp_lang_repl</a> for a usage example).</p>
 
