@@ -110,63 +110,13 @@
       
         <ul>
   
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator" data-name="cltk::lexers::calculator">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator" data-name="cltk::lexers::calculator">
       <a href="../CLTK/Lexers/Calculator.html">Calculator</a>
       
-        <ul>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/Environment" data-name="cltk::lexers::calculator::environment">
-      <a href="../CLTK/Lexers/Calculator/Environment.html">Environment</a>
-      
     </li>
   
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/FlagsType" data-name="cltk::lexers::calculator::flagstype">
-      <a href="../CLTK/Lexers/Calculator/FlagsType.html">FlagsType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/ProcType" data-name="cltk::lexers::calculator::proctype">
-      <a href="../CLTK/Lexers/Calculator/ProcType.html">ProcType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/RuleType" data-name="cltk::lexers::calculator::ruletype">
-      <a href="../CLTK/Lexers/Calculator/RuleType.html">RuleType</a>
-      
-    </li>
-  
-</ul>
-
-      
-    </li>
-  
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF" data-name="cltk::lexers::ebnf">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF" data-name="cltk::lexers::ebnf">
       <a href="../CLTK/Lexers/EBNF.html">EBNF</a>
-      
-        <ul>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/Environment" data-name="cltk::lexers::ebnf::environment">
-      <a href="../CLTK/Lexers/EBNF/Environment.html">Environment</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/FlagsType" data-name="cltk::lexers::ebnf::flagstype">
-      <a href="../CLTK/Lexers/EBNF/FlagsType.html">FlagsType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/ProcType" data-name="cltk::lexers::ebnf::proctype">
-      <a href="../CLTK/Lexers/EBNF/ProcType.html">ProcType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/RuleType" data-name="cltk::lexers::ebnf::ruletype">
-      <a href="../CLTK/Lexers/EBNF/RuleType.html">RuleType</a>
-      
-    </li>
-  
-</ul>
-
       
     </li>
   
@@ -360,6 +310,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Scanner/LexerCompatibility" data-name="cltk::scanner::lexercompatibility">
+      <a href="../CLTK/Scanner/LexerCompatibility.html">LexerCompatibility</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Scanner/ProcType" data-name="cltk::scanner::proctype">
       <a href="../CLTK/Scanner/ProcType.html">ProcType</a>
       
@@ -514,6 +469,15 @@ pp <span class="t">CalcLexer</span>.lex(source).tokens   <span class="c"># &#61;
 
 
 
+  <h2>Direct Known Subclasses</h2>
+  <ul class="other-types-list">
+  
+    <li class="other-type"><a href="../CLTK/Lexers/Calculator.html">CLTK::Lexers::Calculator</a></li>
+  
+    <li class="other-type"><a href="../CLTK/Lexers/EBNF.html">CLTK::Lexers::EBNF</a></li>
+  
+  </ul>
+
 
 
 
@@ -522,7 +486,7 @@ pp <span class="t">CalcLexer</span>.lex(source).tokens   <span class="c"># &#61;
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L72" target="_blank">cltk/scanner.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L73" target="_blank">cltk/scanner.cr</a>
     
     <br/>
   
@@ -549,16 +513,16 @@ pp <span class="t">CalcLexer</span>.lex(source).tokens   <span class="c"># &#61;
       </li>
     
       <li class="entry-summary">
-        <a href="#pre_delimiter%3AString%3F-class-method" class="signature"><strong>.pre_delimiter</strong> : String?</a>
+        <a href="#split_lines%3ABool-class-method" class="signature"><strong>.split_lines</strong> : Bool</a>
         
-          <div class="summary"><p>In order to speed up lexing, the string might be split and fed to the dfas in smaller chunks.</p></div>
+          <div class="summary"><p>In order to speed up lexing, the string might be split in single lines and therefore fed to the dfas in smaller chunks.</p></div>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#pre_delimiter%3D%28pre_delimiter%3AString%3F%29-class-method" class="signature"><strong>.pre_delimiter=</strong>(pre_delimiter : String?)</a>
+        <a href="#split_lines%3D%28split_lines%3ABool%29-class-method" class="signature"><strong>.split_lines=</strong>(split_lines : Bool)</a>
         
-          <div class="summary"><p>In order to speed up lexing, the string might be split and fed to the dfas in smaller chunks.</p></div>
+          <div class="summary"><p>In order to speed up lexing, the string might be split in single lines and therefore fed to the dfas in smaller chunks.</p></div>
         
       </li>
     
@@ -626,7 +590,7 @@ string rules for fast keyword matching</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L163" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L189" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -646,49 +610,49 @@ an instance of Environment</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L176" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L203" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="pre_delimiter:String?-class-method">
+    <div class="entry-detail" id="split_lines:Bool-class-method">
       <div class="signature">
         
-        def self.<strong>pre_delimiter</strong> : String?
+        def self.<strong>split_lines</strong> : Bool
 
-        <a class="method-permalink" href="#pre_delimiter%3AString%3F-class-method">#</a>
+        <a class="method-permalink" href="#split_lines%3ABool-class-method">#</a>
       </div>
       
         <div class="doc"><p>In order to speed up lexing, the string might be split
-and fed to the dfas in smaller chunks. by default this
-is done on the newline character "\n". If set to <code>nil</code>
-the string doesn't get chunked. can be set to any <code>String</code></p></div>
+in single lines and therefore fed to the dfas in smaller
+chunks. this is enabled by default, but can be disabled
+with this class setter</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L88" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L89" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="pre_delimiter&#61;&#40;pre_delimiter:String?&#41;-class-method">
+    <div class="entry-detail" id="split_lines&#61;&#40;split_lines:Bool&#41;-class-method">
       <div class="signature">
         
-        def self.<strong>pre_delimiter=</strong>(pre_delimiter : String?)
+        def self.<strong>split_lines=</strong>(split_lines : Bool)
 
-        <a class="method-permalink" href="#pre_delimiter%3D%28pre_delimiter%3AString%3F%29-class-method">#</a>
+        <a class="method-permalink" href="#split_lines%3D%28split_lines%3ABool%29-class-method">#</a>
       </div>
       
         <div class="doc"><p>In order to speed up lexing, the string might be split
-and fed to the dfas in smaller chunks. by default this
-is done on the newline character "\n". If set to <code>nil</code>
-the string doesn't get chunked. can be set to any <code>String</code></p></div>
+in single lines and therefore fed to the dfas in smaller
+chunks. this is enabled by default, but can be disabled
+with this class setter</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L88" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L89" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -709,7 +673,7 @@ the string doesn't get chunked. can be set to any <code>String</code></p></div>
       </div>
       
         <div class="doc"><p>Defines a lexing rule. The expression can either
-be a string or a DFA::RegExp compatible expression.
+be a string or a <code>DFA::RegExp</code> compatible expression.
 State indicates a Lexer State in which this Rule should
 be applied. String Expressions for the same state get
 combined in one alternating (..|..|..) DFA for faster
@@ -719,7 +683,7 @@ special keywords and symbols like: def, true or ":"</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L153" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L179" target="_blank">View source</a>]
         
       </div>
     </div>

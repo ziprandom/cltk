@@ -110,63 +110,13 @@
       
         <ul>
   
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator" data-name="cltk::lexers::calculator">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator" data-name="cltk::lexers::calculator">
       <a href="../../CLTK/Lexers/Calculator.html">Calculator</a>
       
-        <ul>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/Environment" data-name="cltk::lexers::calculator::environment">
-      <a href="../../CLTK/Lexers/Calculator/Environment.html">Environment</a>
-      
     </li>
   
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/FlagsType" data-name="cltk::lexers::calculator::flagstype">
-      <a href="../../CLTK/Lexers/Calculator/FlagsType.html">FlagsType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/ProcType" data-name="cltk::lexers::calculator::proctype">
-      <a href="../../CLTK/Lexers/Calculator/ProcType.html">ProcType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/Calculator/RuleType" data-name="cltk::lexers::calculator::ruletype">
-      <a href="../../CLTK/Lexers/Calculator/RuleType.html">RuleType</a>
-      
-    </li>
-  
-</ul>
-
-      
-    </li>
-  
-  <li class="parent " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF" data-name="cltk::lexers::ebnf">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF" data-name="cltk::lexers::ebnf">
       <a href="../../CLTK/Lexers/EBNF.html">EBNF</a>
-      
-        <ul>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/Environment" data-name="cltk::lexers::ebnf::environment">
-      <a href="../../CLTK/Lexers/EBNF/Environment.html">Environment</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/FlagsType" data-name="cltk::lexers::ebnf::flagstype">
-      <a href="../../CLTK/Lexers/EBNF/FlagsType.html">FlagsType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/ProcType" data-name="cltk::lexers::ebnf::proctype">
-      <a href="../../CLTK/Lexers/EBNF/ProcType.html">ProcType</a>
-      
-    </li>
-  
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Lexers/EBNF/RuleType" data-name="cltk::lexers::ebnf::ruletype">
-      <a href="../../CLTK/Lexers/EBNF/RuleType.html">RuleType</a>
-      
-    </li>
-  
-</ul>
-
       
     </li>
   
@@ -360,6 +310,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Scanner/LexerCompatibility" data-name="cltk::scanner::lexercompatibility">
+      <a href="../../CLTK/Scanner/LexerCompatibility.html">LexerCompatibility</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Scanner/ProcType" data-name="cltk::scanner::proctype">
       <a href="../../CLTK/Scanner/ProcType.html">ProcType</a>
       
@@ -459,7 +414,7 @@ gets returned by the lexer</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L95" target="_blank">cltk/scanner.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L96" target="_blank">cltk/scanner.cr</a>
     
     <br/>
   
@@ -495,6 +450,13 @@ gets returned by the lexer</p>
       </li>
     
       <li class="entry-summary">
+        <a href="#offset%3AInt32-instance-method" class="signature"><strong>#offset</strong> : Int32</a>
+        
+          <div class="summary"><p>current lexing position</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#pop_state-instance-method" class="signature"><strong>#pop_state</strong></a>
         
           <div class="summary"><p>pop the last state from the stack</p></div>
@@ -523,7 +485,7 @@ gets returned by the lexer</p>
       </li>
     
       <li class="entry-summary">
-        <a href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%7D%29-instance-method" class="signature"><strong>#tokens</strong> : Array({Symbol} | {Symbol, String})</a>
+        <a href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%3F%7D%29-instance-method" class="signature"><strong>#tokens</strong> : Array({Symbol} | {Symbol, String?})</a>
         
           <div class="summary"><p>the lexed tokens</p></div>
         
@@ -588,7 +550,7 @@ doesn't advance the @offset index</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L124" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L127" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -606,7 +568,7 @@ doesn't advance the @offset index</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L130" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L133" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -625,7 +587,25 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L136" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L139" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="offset:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>offset</strong> : Int32
+
+        <a class="method-permalink" href="#offset%3AInt32-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>current lexing position</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L106" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -643,7 +623,7 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L109" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L112" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -661,7 +641,7 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L103" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L104" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -679,7 +659,7 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L107" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L110" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -697,17 +677,17 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L105" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L108" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="tokens:Array&#40;&#123;Symbol&#125;|&#123;Symbol,String&#125;&#41;-instance-method">
+    <div class="entry-detail" id="tokens:Array&#40;&#123;Symbol&#125;|&#123;Symbol,String?&#125;&#41;-instance-method">
       <div class="signature">
         
-        def <strong>tokens</strong> : Array({Symbol} | {Symbol, String})
+        def <strong>tokens</strong> : Array({Symbol} | {Symbol, String?})
 
-        <a class="method-permalink" href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%7D%29-instance-method">#</a>
+        <a class="method-permalink" href="#tokens%3AArray%28%7BSymbol%7D%7C%7BSymbol%2CString%3F%7D%29-instance-method">#</a>
       </div>
       
         <div class="doc"><p>the lexed tokens</p></div>
@@ -715,7 +695,7 @@ position and returns the results in an array</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L101" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L102" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -734,7 +714,7 @@ tokens and their positions</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/3a9676e44884fd88fe912cb74923427f4feb0d74/src/cltk/scanner.cr#L118" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/e8bb684b8516acc6b0c97d25e6e795fb7272bcbc/src/cltk/scanner.cr#L121" target="_blank">View source</a>]
         
       </div>
     </div>
