@@ -82,10 +82,10 @@ module CLTK
     @@is_finalized = false
 
     # In order to speed up lexing, the string might be split
-    # and fed to the dfas in smaller chunks. by default this
-    # is done on the newline character "\n". If set to `nil`
-    # the string doesn't get chunked. can be set to any `String`
-    class_property pre_delimiter : String? = "\n"
+    # in single lines and therefore fed to the dfas in smaller
+    # chunks. this is enabled by default, but can be disabled
+    # with this class setter
+    class_property split_lines : Bool = true
 
     #
     # Used to keep track of the Lexing State. Used
@@ -143,7 +143,7 @@ module CLTK
 
     #
     # Defines a lexing rule. The expression can either
-    # be a string or a DFA::RegExp compatible expression.
+    # be a string or a `DFA::RegExp` compatible expression.
     # State indicates a Lexer State in which this Rule should
     # be applied. String Expressions for the same state get
     # combined in one alternating (..|..|..) DFA for faster
@@ -176,9 +176,9 @@ module CLTK
     def self.lex(string : String) : Environment
       finalize unless @@is_finalized
       env = Environment.new
-      @@pre_delimiter ?
-        string.split(@@pre_delimiter.not_nil!)  do |string|
-          lex_string(string + @@pre_delimiter.not_nil!, env)
+      @@split_lines ?
+        string.lines(false).each do |line|
+          lex_string(line, env)
         end :
         lex_string(string, env)
       env

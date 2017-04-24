@@ -95,7 +95,7 @@ describe "CLTK::Lexer" do
       CLTK::Token.new(:EOS)
     ]
     actual = CLTK::Lexers::EBNF.lex("aaa BBB * + ?")
-    expected.should eq actual
+    actual.should eq expected
   end
 
   it "can instantiate a lexer with a custom environment" do
