@@ -51,7 +51,7 @@ module JSON_PARSE
 
     production(:json_array) do
       clause("LBRACK array_elements RBRACK") do |_, elements, _|
-        JsonArray.new(elements: elements)
+        JsonArray.new(elements: elements.as(Array).map(&.as(JsonExpression)))
       end
     end
 

@@ -34,7 +34,7 @@ module BrainFuck
   # Parser
   #
   class Parser < CLTK::Parser
-    production(:program, "op+") { |ops| Program.new(operations: ops) }
+    production(:program, "op+") { |ops| Program.new(operations: ops.as(Array).map(&.as(Operation))) }
 
     production(:op) do
       clause("PTRRIGHT")                      { |_| PtrRight.new  }
@@ -43,7 +43,7 @@ module BrainFuck
       clause("DEC")                           { |_| Decrement.new }
       clause("PUT")                           { |_| Put.new       }
       clause("GET")                           { |_| Get.new       }
-      clause("LBRACKET op+ RBRACKET") { |_, ops, _| Loop.new(operations: ops) }
+      clause("LBRACKET op+ RBRACKET") { |_, ops, _| Loop.new(operations: ops.as(Array).map(&.as(Operation))) }
     end
 
     finalize

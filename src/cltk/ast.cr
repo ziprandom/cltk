@@ -1,177 +1,116 @@
-require "./named_tuple_extensions"
-require "json"
-
-# This class is a good start for all your abstract syntax tree node needs.
-#
-# declare an ASTNode by subclassing it
-#
-# ```
-# require "cltk/ast"
-#
-# abstract class MyLanguageValue < CLTK::ASTNode; end
-#
-# class MyLanguageVariable < CLTK::ASTNode
-#   values({name: String, value: MyLanguageValue})
-# end
-#
-# class MyLanguageString < MyLanguageValue
-#   values({text: String})
-# end
-#
-# class MyLanguageStringInterpolated < MyLanguageString
-#   values({variables: Array(MyLanguageVariable)})
-# end
-#
-# country_variable = MyLanguageVariable.new(
-#   name: "country", value: MyLanguageString.new(text: "argentina")
-# )
-#
-# # initialize takes all the values of class and it's ancestors
-# interpolated_string = MyLanguageStringInterpolated.new(
-#   text: "user is from \#\{country\}.", variables: [country_variable]
-# )
-#
-# puts interpolated_string.to_pretty_json
-# # {
-# #   "text": "user is from #{country}.",
-# #   "variables": [
-# #     {
-# #       "name": "country",
-# #       "value": {
-# #         "text": "argentina"
-# #       }
-# #     }
-# #   ]
-# # }
-# ```
-abstract class CLTK::ASTNode
-
-  def initialize(**options)
-    if options.size > 0
-      raise "superfluos options provided : #{options}"
-    end
-  end
-
-  def eval
-    self
-  end
-
-  def inspect
-    "#{self.class.name}(" +
-      if vs = values
-        vs.map do |k, v|
-          value = if v.is_a?(Array)
-                    "[" +
-                      v.map{ |vv| vv.inspect.as(String) }.join(", ") +
-                      "]"
-                  elsif v.is_a?(Hash)
-                    "{" +
-                      v.map{ |kk, vv| "#{kk.inspect}: #{vv.inspect}".as(String) }.join(", ") +
-                      "}"
-                  else
-                    v.inspect
-                  end
-          "#{k}: #{value}"
-        end.join(", ")
-      else
-        ""
-      end + ")"
-  end
-
-  def to_json
-    values.to_json
-  end
-
-  def to_json(json : ::JSON::Builder)
-    values.to_json(json)
-  end
-
-  def to_pretty_json
-    values.to_pretty_json
-  end
-
-  def to_pretty_json(json : ::JSON::Builder)
-    values.to_pretty_json(json)
-  end
-
-  # a macro to define the values this ASTNode should take. defines getters and setters as well as the right initialize method
-  macro values(values)
-    @{{@type.name.downcase.gsub(/:/, "")}}_values:  {{values}}
-
-    def values
-      own_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (@{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}].as(Array)).map { |e| e.as({{values[key].id.gsub(/^Array\(|\)$/, "")}})}{% else %}  {{key}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},
-          {%end%}{% end %}
-      }
-      {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
-        super_values = super
-        if super_values
-          super_values.merge(own_values)
-        else
-          own_values
-        end
-      {% else %}
-        own_values
-      {% end %}
-    end
-
-    def ==(other : self)
-      self.values.values == other.values.values
-    end
-
-    {% for key, index in values %}
-
-      def {{key}}
-        @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{key}}]
-      end
-
-      def {{key}}=(value : {{values[key]}})
-        @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for tkey, index in values.keys%}
-          {% if tkey == key %}{{tkey}}: value{% else %}{{tkey}}: @{{@type.name.downcase.gsub(/:/, "")}}_values[:{{tkey}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},{%end%}{% end %}
-        }
-      end
-    {% end %}
-
-      {% if values.keys.size > 0 %}
-        #        def initialize(@values); end
-
-        def initialize(**options)
-          @{{@type.name.downcase.gsub(/:/, "")}}_values = { {% for key, index in values.keys%}{% if  values[key].stringify.starts_with? "Array" %}{{key}}: (options[:{{key}}].as(Array)).map { |e| e.as({{values[key].id.gsub(/^Array\(|\)$/, "")}})}{% else %}  {{key}}: options[:{{key}}].as({{values.values[index]}}){% end %}{%if index < values.keys.size - 1%},
-          {%end%}{% end %}
-          }
-          {% if !(@type.superclass.class.id =~ "ASTNode") %}
-            rest = options - {{values}}
-            if rest.size != 0
-              super(**rest)
+module CLTK
+  abstract class ASTNode
+    macro make_value_methods
+      macro self.value(**args)
+        \{%
+          args.keys.map do |k|
+            if args[k].is_a? Assign
+              VALUES << { k, args[k].target, args[k].value }
+            else
+              VALUES << { k, args[k] }
             end
-          {% end %}
+          end
+        %}
+
+        \{{
+          args.keys.map do |k|
+            "accessors #{k}, " + (args[k].is_a?(Assign) ? "#{args[k].target}, #{args[k].value}" : "#{args[k]}")
+          end.join("\n")
+         }}
+      end
+
+      macro accessors(name, type, default)
+        def \\{{name}}
+          @\\{{name}}
         end
-      {% end %}
 
-  end
+        def \\{{name}}=(@\\{{name}} : \\{{type}}); end
+      end
 
-  macro inherited
+      macro values(args)
+        \{%
+          args.keys.map do |k|
+            VALUES << { k, args[k] }
+          end
+        %}
+        property \{{args.keys.map{|k| "#{k} : #{args[k]}"}.join(", ").id}}
+      end
 
-    {%if !@type.abstract? %}
-      def_clone
-    {% end %}
+      macro inherited
+        make_value_methods
+      end
+    end
+
+    def self.values
+      NamedTuple.new()
+    end
 
     def values
-      {% if @type.superclass.methods.any?{ |x| x.name == "values"} %}
-        super
-      {% else %}
-        nil
-      {% end %}
+      NamedTuple.new()
     end
 
-  end
-
-  # this macro defines the given values as children by creating the accessor children
-  macro as_children(values)
-    def children
-      { {% for key, index in values %}
-                        {{key.id}}: values[:{{key.id}}]{% if index < values.size - 1 %},{% end %}
-        {% end %} }
+    def ==(other)
+      true
     end
-  end
 
+    def inspect
+      "#{self.class.name}(" +
+        if vs = values
+          vs.map do |k, v|
+            value = if v.is_a?(Array)
+                      "[" + v.map{ |vv| vv.inspect.as(String) }.join(", ") + "]"
+                    elsif v.is_a?(Hash)
+                      "{" + v.map{ |kk, vv| "#{kk.inspect}: #{vv.inspect}".as(String) }.join(", ") + "}"
+                    else
+                      v.inspect
+                    end
+            "#{k}: #{value}"
+          end.join(", ")
+        else
+          ""
+        end + ")"
+    end
+
+    def_clone
+
+    macro inherited
+
+      make_value_methods
+
+      macro finished
+        def_clone
+
+        def ==(other : \{{@type}})
+          \{{ (VALUES.map { |v| "(@#{v[0].id} == other.#{v[0].id})".id } + ["super(other)".id]).join(" && ").id }}
+        end
+
+        def self.values
+          super.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: #{v[1].id}".id }.join(",").id }})
+        end
+
+        def values
+          super.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: @#{v[0]}".id }.join(",").id }})
+        end
+
+        \{%
+           signatures = VALUES.map { |v| "@#{v[0].id} : #{v[1]}" + (v[2] ? "= #{v[2]}" : "") }
+           signature = (signatures + ["**rest"]).join(", ").id
+          %}
+
+        def initialize(\{{signature}})
+          super(**rest)
+        end
+
+      end
+    end
+
+    VALUES = [] of Tuple(Symbol, Object.class)
+
+    macro inherited
+      VALUES = [] of Tuple(Symbol, Object.class)
+    end
+
+    make_value_methods
+
+  end
 end

@@ -1,3 +1,4 @@
+require "../named_tuple_extensions.cr"
 {% if env("VERBOSE") %}
   require "colorize"
   COLORS = [

@@ -32,8 +32,6 @@ class CalcLexer < CLTK::Scanner
   rule(/#\s*/)             {     push_state(:comment) }
   rule(/[^\n]+/, :comment) { |t| {:COMMENT, t}        }
   rule("\n", :comment)     {     pop_state            }
-
-  finalize
 end
 
 source = <<-source

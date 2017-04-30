@@ -3,17 +3,20 @@ require "./xscope"
 
 class CLTK::ASTNode
   def eval_scope(scope)
-    eval
+    self
   end
 end
 
 class Expression < CLTK::ASTNode
+  def eval
+    self
+  end
 end
 
 class XProgram < Expression
   values({
-             expressions: Array(CLTK::ASTNode)
-           })
+           expressions: Array(Expression)
+         })
 
   def eval_scope(scope)
     expressions.compact.reduce(EXP_LANG::Undefined) do |lastResult, exp|
@@ -88,9 +91,7 @@ class AArray < Expression
   def eval_scope(scope)
     AArray.new(members:
       members.map do |m|
-        if m.is_a? Expression
-          m.eval_scope(scope)
-        end
+        m.as(Expression).eval_scope(scope).as(Expression)
       end
     )
   end

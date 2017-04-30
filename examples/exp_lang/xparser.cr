@@ -19,7 +19,7 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:statement) do
     clause("expressions sep*") do |e|
-      XProgram.new(expressions: e)
+      XProgram.new(expressions: e.as(Array).map(&.as(Expression)))
     end
   end
 
@@ -52,13 +52,13 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:function_call) do
     clause("e LPAREN array_elements RPAREN") do |e, _, arguments, _|
-      FunCall.new(prototype_exp: e, parameters: arguments)
+      FunCall.new(prototype_exp: e.as(Expression), parameters: arguments.as(Array).map(&.as(Expression)))
     end
   end
 
   production(:array) do
     clause("LBRACK array_elements RBRACK") do |_, elements, _|
-      a = AArray.new(members: elements)
+      a = AArray.new(members: elements.as(Array).map(&.as(Expression)))
     end
   end
 
@@ -84,20 +84,20 @@ class EXP_LANG::Parser < CLTK::Parser
   build_list_production(:hash_pairs, :hash_pair, :comma)
 
   production(:binary_expressions) do
-    clause("e OR e")    { |e0, _, e2| KOr.new(left: e0,  right: e2) }
-    clause("e AND e")   { |e0, _, e2| KAnd.new(left: e0, right: e2) }
-    clause("e PLUS e")  { |e0, _, e1| Add.new(left: e0,  right: e1) }
-    clause("e SUB e")	{ |e0, _, e1| Sub.new(left: e0,  right: e1) }
-    clause("e MUL e")	{ |e0, _, e1| Mul.new(left: e0,  right: e1) }
-    clause("e DIV e")	{ |e0, _, e1| Div.new(left: e0,  right: e1) }
+    clause("e OR e")    { |e0, _, e2| KOr.new(left: e0.as(Expression),  right: e2.as(Expression)) }
+    clause("e AND e")   { |e0, _, e2| KAnd.new(left: e0.as(Expression), right: e2.as(Expression)) }
+    clause("e PLUS e")  { |e0, _, e1| Add.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e SUB e")	{ |e0, _, e1| Sub.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e MUL e")	{ |e0, _, e1| Mul.new(left: e0.as(Expression),  right: e1.as(Expression)) }
+    clause("e DIV e")	{ |e0, _, e1| Div.new(left: e0.as(Expression),  right: e1.as(Expression)) }
   end
 
   production(:identifier) do
-    clause(:IDENT) { |i| Variable.new(name: i) }
+    clause(:IDENT) { |i| Variable.new(name: i.as(String)) }
   end
 
   production(:string) do
-    clause(:STRING)	{ |s| AString.new(value: s) }
+    clause(:STRING)	{ |s| AString.new(value: s.as(String)) }
   end
 
   production(:number) do
@@ -106,7 +106,7 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:varassign) do
     clause("IDENT ASSIGN e") do |ident, _, e|
-      VarAssign.new(left: Variable.new(name: ident), right: e)
+      VarAssign.new(left: Variable.new(name: ident.as(String)), right: e.as(Expression))
     end
   end
 
@@ -121,12 +121,12 @@ class EXP_LANG::Parser < CLTK::Parser
 
   production(:fun_def) do
     clause("fun_head sep fun_body sep END") do |head, _, body, _, _|
-      args_vars = head.as(Array)[1].as(Array).map {|v| Variable.new(name: v)}
+      args_vars = head.as(Array)[1].as(Array).map {|v| Variable.new(name: v.as(String))}
       exps = body.as(Array)
              .reduce([] of Expression) do |a, exp|
         a = a + [exp.as(Expression)]
       end
-      Prototype.new(name: head.as(Array).first, args: args_vars.as(Array), body: FunBody.new(expressions: exps), scope: nil)
+      Prototype.new(name: head.as(Array).first.as(String?), args: args_vars.as(Array(Variable)), body: FunBody.new(expressions: exps.as(Array(Expression))), scope: nil)
     end
   end
 
