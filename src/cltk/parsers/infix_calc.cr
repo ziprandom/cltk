@@ -31,7 +31,6 @@ module CLTK
 	clause("e SUB e") { |e0, op, e1| e0.as(Int32) - e1.as(Int32) }
 	clause("e MUL e") { |e0, op, e1| e0.as(Int32) * e1.as(Int32) }
 	clause("e DIV e") { |e0, op, e1| e0.as(Int32) / e1.as(Int32) }
-        nil
       end
 
       finalize

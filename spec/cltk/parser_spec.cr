@@ -1,4 +1,4 @@
-# Author:		Chris Wailes <chris.wailes@gmail.com>
+# Author:	Chris Wailes <chris.wailes@gmail.com>
 # Project: 	Ruby Language Toolkit
 # Date:		2011/04/06
 # Description:	This file contains unit tests for the CLTK::Parser class.
@@ -78,8 +78,6 @@ class AmbiguousParser < CLTK::Parser
     clause("e SUB e") { |e0, op, e1 | e0.as(Int32) - e1.as(Int32) }
     clause("e MUL e") { |e0, op, e1 | e0.as(Int32) * e1.as(Int32) }
     clause("e DIV e") { |e0, op, e1 | e0.as(Int32) / e1.as(Int32) }
-    nil
-
   end
 
   finalize
@@ -112,7 +110,6 @@ class AmbiguousParseStackParser < CLTK::Parser
   production(:b_question) do
     clause("")	{ nil }
     clause("B")
-    nil
   end
 
   finalize
@@ -354,7 +351,8 @@ describe "CLTK::Parser" do
   # cloned when we split the parse stack.  This was posted as Issue #17 on
   # Github.
   it "test_ambiguous_parse_stack" do
-    AmbiguousParseStackParser.parse(ABLexer.lex("ab")).as(Array).size.should eq 1
+    result = AmbiguousParseStackParser.parse(ABLexer.lex("ab")).as(Array)
+    result.size.should eq 1
   end
 
   it "test_array_args" do

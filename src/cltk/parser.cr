@@ -50,12 +50,204 @@ module CLTK
 
     @@production_precs = Array(String | {String, Int32} | Nil).new
     @@production_precs_prepare = {} of Int32 => (String | Nil | {String, Int32})
-    @@token_precs      = Hash(String, {String, Int32}).new
     @@grammar          = CLTK::CFG.new
     @@conflicts        = Hash( Int32, Array({ String, String }) ).new {|h, k| h[k] = Array({String, String}).new}
-    @@prec_counts      = {:left => 0, :right => 0, :non => 0}
     @@token_hooks      = Hash(String, Array(Proc(Environment, Nil))).new do |h, k|
       h[k] = [] of Proc(Environment, Nil)
+    end
+
+    alias CLAUSE = NamedTuple(lhs: Symbol, expression: String, precedence: String?, arg_type: Symbol?, cb: Int32)
+    alias LIST_PROD = NamedTuple(empty: Bool, lhs: Symbol|String, elements: String|Array(String), separator: String)
+
+    macro inherited
+      DEFAULT_ARG_TYPE = [:splat]
+
+      CLAUSES = [] of CLAUSE | LIST_PROD
+      PROCS   = [] of ProdProc
+      PREC_COUNT = {:left => 0, :right => 0, :non => 0}
+      TOKEN_PRECS = {} of String => Tuple(String, Int32)
+
+      # Adds productions and actions for parsing nonempty lists.
+      #
+      # @see CFG#nonempty_list_production
+      macro build_nonempty_list_production(symbol, list_elements, separator = "")
+        \{%
+          list_elements = list_elements.is_a?(ArrayLiteral) ?
+                        list_elements.map {|e| e.id.stringify} :
+                        list_elements.id.stringify
+          CLAUSES << { empty: false, lhs: symbol, elements: list_elements, separator: separator.id.stringify }
+        %}
+      end
+
+      macro nonempty_list(symbol, list_elements, separator = "")
+        build_nonemptylist_production(\{{symbol}}, \{{list_elements}}, \{{separator}})
+      end
+
+      # Adds productions and actions for parsing empty lists.
+      #
+      # @see CFG#empty_list_production
+      macro build_list_production(symbol, list_elements, separator = "")
+        \{%
+          list_elements = list_elements.is_a?(ArrayLiteral) ?
+                        list_elements.map {|e| e.id.stringify} :
+                        list_elements.id.stringify
+          CLAUSES << {empty: true, lhs: symbol, elements: list_elements, separator: separator.id.stringify}
+        %}
+      end
+
+      macro list(symbol, list_elements, separator = "")
+        build_list_production(\{{symbol}}, \{{list_elements}}, \{{separator}})
+      end
+
+      macro prec(direction, *symbols)
+        \{%
+          PREC_COUNT[direction] = PREC_COUNT[direction] + 1
+          prec_level = PREC_COUNT[direction]
+          symbols.map do |sym|
+            TOKEN_PRECS[sym.id.stringify] = {direction.id.stringify, prec_level}
+          end
+          %}
+      end
+
+      # Set the default argument type for the actions associated with
+      # clauses.  All actions defined after this call will be passed
+      # arguments in the way specified here, unless overridden in the
+      # call to {Parser.clause}.
+      #
+      # @param [:array, :splat] type The default argument type.
+      #
+      # @return [void]
+      macro default_arg_type(type)
+        \{% DEFAULT_ARG_TYPE << type %}
+      end
+
+      # This method is used to specify that the symbols in *symbols*
+      # are left-associative.  Subsequent calls to this method will
+      # give their arguments higher precedence.
+      #
+      # @param [Array<Symbol>]  symbols  Symbols that are left associative.
+      #
+      # @return [void]
+      macro left(*symbols)
+        prec(:left, \{{symbols.splat}})
+      end
+
+      # This method is used to specify that the symbols in *symbols*
+      # are non-associative.
+      #
+      # @param [Array<Symbol>]  symbols  Symbols that are non-associative.
+      #
+      # @return [void]
+      macro nonassoc(*symbols)
+        prec(:non, \{{symbols.splat}})
+      end
+
+      # This method is used to specify that the symbols in _symbols_
+      # are right associative.  Subsequent calls to this method will
+      # give their arguments higher precedence.
+      #
+      # @param [Array<Symbol>] symbols Symbols that are right-associative.
+      #
+      # @return [void]
+      macro right(*symbols)
+        prec(:right, \{{symbols.splat}})
+      end
+
+      # Adds a new production to the parser with a left-hand value of
+      # *symbol*.  If *expression* is specified it is taken as the
+      # right-hand side of the production and *action* is associated
+      # with the production.  If *expression* is nil then *action* is
+      # evaluated and expected to make one or more calls to
+      # Parser.clause.  A precedence can be associate with this
+      # production by setting *precedence* to a terminal symbol.
+      #
+      # @param [Symbol]			symbol		Left-hand side of the production.
+      # @param [String, Symbol, nil]	expression	Right-hand side of the production.
+      # @param [Symbol, nil]		precedence	Symbol representing the precedence of this produciton.
+      # @param [:array, :splat]		arg_type		Method to use when passing arguments to the action.
+      # @param [Proc]			action		Action associated with this production.
+      #
+      # @return [void]
+      macro production(lhs, expression = nil, precedence = nil, arg_type = nil, &block)
+
+        # Declares a new clause inside of a production.  The right-hand
+        # side is specified by *expression* and the precedence of this
+        # production can be changed by setting the *precedence* argument
+        # to some terminal symbol.
+        #
+        # @param [String, Symbol]  expression  Right-hand side of a production.
+        # @param [Symbol]          precedence  Symbol representing the precedence of this production.
+        # @param [:array, :splat]  arg_type    Method to use when passing arguments to the action.
+        # @param [Proc]            action      Action to be taken when the production is reduced.
+        #
+        # @return [void]
+        macro clause(expression, precedence = \{{precedence}}, arg_type = \{{arg_type}}, &action)
+          \\{%
+             arg_type = arg_type ? arg_type : DEFAULT_ARG_TYPE.last
+             # select the clauses that are not list production to get the next
+             # id for the PROCS array holding all the defined callbacks
+             next_proc_id = @type.constant("CLAUSES").select{|x| x[:expression] }.size
+             CLAUSES << {
+              lhs: \{{lhs}}, expression: expression.id.stringify,
+              precedence: precedence, arg_type: arg_type,
+              cb: next_proc_id
+             }
+             expression_symbol_selections = expression.id.split(" ").map { |e| e=~ /^\./ ? e : nil }
+          %}
+          \\{% if action.is_a?(Block) %}
+             selections = \\{{expression_symbol_selections}}.map_with_index { |e, i| e ? i : nil }.compact
+             PROCS << ProdProc.new(\\{{arg_type}}, selections) do |lhsymbols, env, arg_type|
+              env.as(Environment).yield_with_self do
+                \\{% if !action.args.empty?%}
+                  \\{% if action.args.size == 1 %}
+                    \\{% if arg_type == :array %}
+                      \\{{action.args.first}} = lhsymbols.as(Array)
+                    \\{% else %}
+                      \\{{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0]
+                    \\{% end %}
+                  \\{% else %}
+                      \\{{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0...\\{{action.args.size}}]
+                  \\{% end %}
+                  # reassign the first block argument to
+                  # the whole arguments array if arg_type
+                  # evaluates to :array
+                  \\{% if arg_type.is_a?(NilLiteral) %}
+                    \\{{action.args.first}} = lhsymbols.as(Array) if arg_type == :array
+                  \\{% end %}
+                \\{% end %}
+                result = begin
+                  \\{{action.body}}
+                end
+                result.is_a?(Array) ?
+                  result.map { |r| r.as(CLTK::Type)} :
+                  result.as(CLTK::Type)
+              end
+            end
+          \\{% else %}
+             PROCS << ProdProc.new
+          \\{% end %}
+        end
+        \{% if block.is_a? Block %}
+           \{% if block.args.size > 0 %}
+            clause(\{{expression}}, \{{precedence}}, \{{arg_type}}) do |\{{block.args.splat}}|
+              \{{block.body}}
+            end
+          \{% else %}
+            \{{ block.body }}
+          \{% end %}
+        \{% else %}
+          clause(\{{expression}}, \{{precedence}}, \{{arg_type}})
+        \{% end %}
+      end
+    end
+
+    # Shorthands for defining productions and clauses
+    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+      self.clause(expression, precedence, arg_type, &action)
+    end
+
+    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+      self.production(symbol, expression, precedence, arg_type, &action)
     end
 
     # Installs instance class variables into a class.
@@ -67,19 +259,11 @@ module CLTK
       @@env           = Environment
       @@grammar_prime = CLTK::CFG.new
 
-      @@curr_lhs  = nil
-      @@curr_prec = nil
-
-
       @@lh_sides  = Hash(Int32, String).new
       @@procs     = Hash(Int32, { ProdProc, Int32 }).new
       @@states    = Array(State).new
 
       # Variables for dealing with precedence.
-
-      # Set the default argument handling policy.  Valid values
-      # are :array and :splat.
-      @@default_arg_type = :splat
 
       @@grammar.callback do |type, which, p, sels|
         proc = case type
@@ -114,10 +298,9 @@ module CLTK
                else
                  raise "this should never happen"
 	       end
+
 	@@procs[p.id] = { proc, p.rhs.size }
 	@@production_precs_prepare[p.id] = p.last_terminal
-
-        nil
       end
 
       @env : Environment
@@ -200,27 +383,32 @@ module CLTK
 	    actions.each do |action|
 	      if action.is_a?(Actions::Accept)
 		if sym.to_s != "EOS"
-		  raise CLTK::Parser::Exceptions::ParserConstructionException.new "Accept action found for terminal #{sym} in state #{state.id}."
+		  raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                          "Accept action found for terminal #{sym} in state #{state.id}."
+                        )
 		end
 
-	      elsif !(action.is_a?(Actions::GoTo) || action.is_a?(Actions::Reduce) || action.is_a?(Actions::Shift))
-		raise CLTK::Parser::Exceptions::ParserConstructionException.new "Object of type #{action.class} found in actions for terminal " +
-						      "#{sym} in state #{state.id}."
-
+	      elsif !(action.is_a?(Actions::GoTo) || action.is_a?(Actions::Reduce) ||
+                      action.is_a?(Actions::Shift))
+		raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                        "Object of type #{action.class} found in actions for terminal " +
+			"#{sym} in state #{state.id}.")
 	      end
 	    end
-
 	    if (conflict = state.conflict_on?(sym))
 	      self.inform_conflict(state.id, conflict, sym)
 	    end
 	  else
 	    # Here we check actions for non-terminals.
 	    if actions.size > 1
-	      raise CLTK::Parser::Exceptions::ParserConstructionException.new "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+	      raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                      "State #{state.id} has multiple GoTo actions for non-terminal #{sym}."
+                    )
 
 	    elsif actions.size == 1 && !actions.first.is_a?(Actions::GoTo)
-	      raise CLTK::Parser::Exceptions::ParserConstructionException.new "State #{state.id} has non-GoTo action for non-terminal #{sym}."
-
+	      raise CLTK::Parser::Exceptions::ParserConstructionException.new(
+                      "State #{state.id} has non-GoTo action for non-terminal #{sym}."
+                    )
 	    end
 	  end
 	end
@@ -258,85 +446,6 @@ module CLTK
       path_exists && cur_state.id == dest.id
     end
 
-    # Declares a new clause inside of a production.  The right-hand
-    # side is specified by *expression* and the precedence of this
-    # production can be changed by setting the *precedence* argument
-    # to some terminal symbol.
-    #
-    # @param [String, Symbol]  expression  Right-hand side of a production.
-    # @param [Symbol]          precedence  Symbol representing the precedence of this production.
-    # @param [:array, :splat]  arg_type    Method to use when passing arguments to the action.
-    # @param [Proc]            action      Action to be taken when the production is reduced.
-    #
-    # @return [void]
-    macro clause(expression, precedence = nil, arg_type = nil, &action: _ -> _)
-      # Use the curr_prec only if it isn't overridden for this
-      # clause.
-      Tuple.new({{expression}}, {{precedence}}, {{arg_type}}).tap do |param_tupel|
-
-        expression = param_tupel[0]
-        precedence = param_tupel[1] || @@curr_prec
-        arg_type   = param_tupel[2]
-
-        production, selections = if @@grammar
-                                   @@grammar.as(CLTK::CFG).clause({{expression}}).values
-                                 else
-                                   raise "NO GRAMMAR DEFINED"
-                                 end
-        expected_arity = (selections.empty? ? production.rhs.size : selections.size)
-        action_arity = {% if action.is_a? Proc %}
-                         {{ action.args.size}}
-                       {% else %}
-                         1
-                       {% end %}
-
-        if arg_type == :splat && action_arity != expected_arity
-  	  raise CLTK::Parser::Exceptions::ParserConstructionException.new "Incorrect number of action parameters.  Expected #{expected_arity} but got #{action_arity}. Action arity must match the number of terminals and non-terminals in the clause."
-        end
-
-        # Add the action to our proc list.
-        @@procs[production.id] = {
-          ## new ProdProc
-          ProdProc.new({{arg_type}} || @@default_arg_type || :splat, selections) {% if action %} do |lhsymbols, env, arg_type|
-            env.as(Environment).yield_with_self do
-              {% if !action.args.empty?%}
-                {% if action.args.size == 1%}
-                  {% if arg_type == :array%}
-                    {{action.args.first}} = lhsymbols.as(Array)
-                  {% else %}
-                    {{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0]
-                  {% end %}
-                {% else %}
-                    {{action.args.splat}} = lhsymbols.as(Array(CLTK::Type))[0...{{action.args.size}}]
-                {% end %}
-                # reassign the first block argument to
-                # the whole arguments array if arg_type
-                # evaluates to :array
-                {% if arg_type.is_a?(NilLiteral) %}
-                  {{action.args.first}} = lhsymbols.as(Array) if arg_type == :array
-                {% end %}
-              {% end %}
-
-              result = begin
-                {{action.body}}
-              end
-
-              result.is_a?(Array) ?
-                result.map { |r| r.as(CLTK::Type)} :
-                result.as(CLTK::Type)
-            end
-          end{% end %},
-          production.rhs.size
-        }
-        # If no precedence is specified use the precedence of the
-        # last terminal in the production.
-        @@production_precs_prepare[production.id] = precedence || production.last_terminal
-      end
-    end
-
-    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
-      self.clause(expression, precedence, arg_type, &action)
-    end
     # Removes resources that were needed to generate the parser but
     # aren't needed when actually parsing input.
     #
@@ -361,143 +470,259 @@ module CLTK
       each_state { |state| state.clean }
     end
 
-    # Set the default argument type for the actions associated with
-    # clauses.  All actions defined after this call will be passed
-    # arguments in the way specified here, unless overridden in the
-    # call to {Parser.clause}.
-    #
-    # @param [:array, :splat] type The default argument type.
-    #
-    # @return [void]
-    def self.default_arg_type(type)
-      @@default_arg_type = type if type == :array || type == :splat
-    end
-
-    def self.dat(type)
-      self.default_arg_type(type)
-    end
-    # Adds productions and actions for parsing empty lists.
-    #
-    # @see CFG#empty_list_production
-    def self.build_list_production(symbol, list_elements, separator = "")
-      if list_elements.is_a? Array
-        list_elements = list_elements.map {|e| e.to_s}
-      else
-        list_elements = list_elements.to_s
-      end
-      @@grammar.build_list_production(symbol.to_s, list_elements, separator.to_s)
-    end
-
-    def self.list(symbol, list_elements, separator = "")
-      self.build_list_production(symbol, list_elements, separator)
-    end
 
     alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
 
-    # This method will finalize the parser causing the construction
-    # of states and their actions, and the resolution of conflicts
-    # using lookahead and precedence information.
-    #
-    # No calls to {Parser.production} may appear after the call to
-    # Parser.finalize.
-    #
-    # @param [Hash] opts Options describing how to finalize the parser.
-    #
-    # @option opts [Boolean,String,IO]  :explain     To explain the parser or not.
-    # @option opts [Boolean]            :lookahead   To use lookahead info for conflict resolution.
-    # @option opts [Boolean]            :precedence  To use precedence info for conflict resolution.
-    # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
-    #
-    # @return [void]
-    def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
-      if @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))).empty?
-	#raise ParserConstructionException,
-	raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
-      end
+    macro inherited
 
-      # FIXME: See why this is failing for the simple ListParser example.
-      def_file = caller()[2].split(':')[0] if opts.has_key? :use
+      # This method will finalize the parser causing the construction
+      # of states and their actions, and the resolution of conflicts
+      # using lookahead and precedence information.
+      #
+      # No calls to {Parser.production} may appear after the call to
+      # Parser.finalize.
+      #
+      # @param [Hash] opts Options describing how to finalize the parser.
+      #
+      # @option opts [Boolean,String,IO]  :explain     To explain the parser or not.
+      # @option opts [Boolean]            :lookahead   To use lookahead info for conflict resolution.
+      # @option opts [Boolean]            :precedence  To use precedence info for conflict resolution.
+      # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
+      #
+      # @return [void]
+      def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
+        build_up_productions
+        if @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))).empty?
+	  #raise ParserConstructionException,
+	  raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
+        end
 
-      # Grab all of the symbols that comprise the grammar
-      # (besides the start symbol).
-      @@symbols = @@grammar.symbols.to_a + ["ERROR"]
-      # Add our starting state to the state list.
-      @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
-      start_production    = @@grammar.production(@@start_symbol, @@grammar.start_symbol)[:production]
-      start_state         = State.new(@@symbols, [start_production.to_item])
-      start_state.close(@@grammar.productions_sym)
-      self.add_state(start_state)
+        # FIXME: See why this is failing for the simple ListParser example.
+        # def_file = caller()[2].split(':')[0] if opts.has_key? :use
 
-      # Translate the precedence of productions from tokens to
-      # (associativity, precedence) pairs.
-      @@production_precs = @@production_precs_prepare.map do |id, prec|
-        @@token_precs[prec]?
-      end
-      # Build the rest of the transition table.
-      each_state do |state|
-        # Transition states.
-        tstates = Hash(String, State).new {|h,k| h[k] = State.new(@@symbols) }
+        # Grab all of the symbols that comprise the grammar
+        # (besides the start symbol).
+        @@symbols = @@grammar.symbols.to_a + ["ERROR"]
+        # Add our starting state to the state list.
+        @@start_symbol      = (@@grammar.start_symbol.to_s + "\'")
 
-	#Bin each item in this set into reachable transition
-	#states.
+        start_production    = @@grammar.production(@@start_symbol, @@grammar.start_symbol)[:production]
+        start_state         = State.new(@@symbols, [start_production.to_item])
+        start_state.close(@@grammar.productions_sym)
+        self.add_state(start_state)
 
-	state.each do |item|
-	  if (next_symbol = item.next_symbol)
-            unless tstates[next_symbol]?
-                     tstates[next_symbol] = State.new(@@symbols)
-            end
-            tstates[next_symbol] << item.copy
-	  end
-	end
-	# For each transition state:
-	#  1) Get transition symbol
-	#  2) Advance dot
-	#  3) Close it
-	#  4) Get state id and add transition
-	tstates.each do |symbol, tstate|
-	  tstate.each { |item| item.advance }
+        # Translate the precedence of productions from tokens to
+        # (associativity, precedence) pairs.
+        @@production_precs = @@production_precs_prepare.map do |id, prec|
+          TOKEN_PRECS[prec]?
+        end
 
-	  tstate.close(@@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))))
+        # Build the rest of the transition table.
+        each_state do |state|
+          # Transition states.
+          tstates = Hash(String, State).new {|h,k| h[k] = State.new(@@symbols) }
 
-	  id = self.add_state(tstate)
+	  #Bin each item in this set into reachable transition
+	  #states.
 
-	  # Add Goto and Shift actions.
-	  state.on(symbol, CFG.is_nonterminal?(symbol) ? Actions::GoTo.new(id) : Actions::Shift.new(id))
-	end
-
-	# Find the Accept and Reduce actions for this state.
-	state.each do |item|
-	  if item.at_end?
-	    if item.lhs == @@start_symbol
-	      state.on("EOS", Actions::Accept.new)
-	    else
-	      state.add_reduction(
-                @@grammar.productions_id[item.id]
-              )
+	  state.each do |item|
+	    if (next_symbol = item.next_symbol)
+              unless tstates[next_symbol]?
+                       tstates[next_symbol] = State.new(@@symbols)
+              end
+              tstates[next_symbol] << item.copy
 	    end
 	  end
-	end
+
+	  # For each transition state:
+	  #  1) Get transition symbol
+	  #  2) Advance dot
+	  #  3) Close it
+	  #  4) Get state id and add transition
+	  tstates.each do |symbol, tstate|
+	    tstate.each { |item| item.advance }
+
+	    tstate.close(@@grammar.productions_sym)
+
+	    id = self.add_state(tstate)
+
+	    # Add Goto and Shift actions.
+	    state.on(symbol, CLTK::CFG.is_nonterminal?(symbol) ? Actions::GoTo.new(id) : Actions::Shift.new(id))
+	  end
+
+	  # Find the Accept and Reduce actions for this state.
+	  state.each do |item|
+	    if item.at_end?
+	      if item.lhs == @@start_symbol
+	        state.on("EOS", Actions::Accept.new)
+	      else
+	        state.add_reduction(
+                  @@grammar.productions_id[item.id]
+                )
+	      end
+	    end
+	  end
+        end
+
+        # Build the production.id -> production.lhs map.
+        @@grammar.productions_id.each do |id, production|
+          @@lh_sides[id] = production.lhs
+        end
+
+        # Prune the parsing table for unnecessary reduce actions.
+        self.prune(opts[:lookahead]?, opts[:precedence]?)
+
+        # Check the parser for inconsistencies.
+        check_sanity
+
+        # Print the table if requested.
+        exp = opts[:explain]?
+        if exp.is_a? IO
+          self.explain(exp)
+        end
+
+        # Remove any data that is no longer needed.
+        clean
       end
 
-      # Build the production.id -> production.lhs map.
-      @@grammar.productions_id.each do |id, production|
-        @@lh_sides[id] = production.lhs
+      def self.build_up_productions
+        CLAUSES.each do |clause|
+          if clause.is_a?(CLAUSE)
+            @@grammar.curr_lhs = clause[:lhs].to_s
+            production, selections = @@grammar.not_nil!.clause(clause[:expression]).values
+            @@procs[production.id] = { PROCS[clause[:cb]], production.rhs.size }
+            @@production_precs_prepare[production.id] = (clause[:precedence] || production.last_terminal).to_s
+          else
+            build_list_production_(clause[:lhs], clause[:elements], clause[:separator], clause[:empty])
+          end
+        end
       end
 
-      # Prune the parsing table for unnecessary reduce actions.
-      self.prune(opts[:lookahead]?, opts[:precedence]?)
+      # Adds productions and actions for parsing (non)?empty lists.
+      #
+      # @see CFG#(non)?empty_list_production
+      def self.build_list_production_(symbol, list_elements, separator, empty)
+        list_elements = list_elements.is_a?(Array) ?
+                          list_elements.map {|e| e.to_s} :
+                          list_elements.to_s
+        if empty
+          @@grammar.build_list_production(symbol.to_s, list_elements, separator.to_s)
+        else
+          @@grammar.build_nonempty_list_production(symbol.to_s, list_elements, separator.to_s)
+        end
+      end
 
-      # Check the parser for inconsistencies.
-      check_sanity
+      # This method uses lookahead sets and precedence information to
+      # resolve conflicts and remove unnecessary reduce actions.
+      #
+      # @param [Boolean]  do_lookahead   Prune based on lookahead sets or not.
+      # @param [Boolean]  do_precedence  Prune based on precedence or not.
+      #
+      # @return [void]
+      def self.prune(do_lookahead, do_precedence)
+        terms = @@grammar.terms
 
-      # Print the table if requested.
-      exp = opts[:explain]?
-              if exp.is_a? IO
-                self.explain(exp)
+        # If both options are false there is no pruning to do.
+        return if !(do_lookahead || do_precedence)
+
+        each_state do |state0|
+
+	  #####################
+	  # Lookahead Pruning #
+	  #####################
+
+	  if do_lookahead
+	    # Find all of the reductions in this state.
+	    reductions = state0.actions.values.flatten.uniq.select { |a| a.is_a?(Actions::Reduce) }
+            # reduction is ok ..
+	    reductions.each do |reduction|
+              raction_id = reduction.as(Action).id
+	      production = @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[raction_id]
+	      lookahead = Array(String).new
+
+	      # Build the lookahead set.
+	      each_state do |state1|
+	        if check_reachability(state1, state0, production.rhs)
+		  lookahead |= self.grammar_prime.follow_set("#{state1.id}_#{production.lhs}".to_s)
+	        end
+	      end
+
+	      # Translate the G' follow symbols into G
+	      # lookahead symbols.
+	      lookahead = lookahead.map { |sym| sym.to_s.split('_', 2).last }.uniq
+
+	      # Here we remove the unnecessary reductions.
+	      # If there are error productions we need to
+	      # scale back the amount of pruning done.
+	      pruning_candidates = terms.to_a - lookahead
+
+	      if terms.includes?("ERROR")
+	        pruning_candidates.each do |sym|
+		  state0.actions[sym].delete(reduction) if state0.conflict_on?(sym)
+	        end
+	      else
+	        pruning_candidates.each { |sym| state0.actions[sym].delete(reduction) }
+	      end
+	    end
+	  end
+
+	  ########################################
+	  # Precedence and Associativity Pruning #
+	  ########################################
+
+	  if do_precedence
+	    state0.actions.each do |symbol, actions|
+
+	      # We are only interested in pruning actions
+	      # for terminal symbols.
+	      next unless CLTK::CFG.is_terminal?(symbol)
+
+	      # Skip to the next one if there is no
+	      # possibility of a Shift/Reduce or
+	      # Reduce/Reduce conflict.
+	      next unless actions && actions.size > 1
+	      resolve_ok = actions.reduce(true) do |m, a|
+	        if a.is_a?(Actions::Reduce)
+		  @@production_precs[a.id] && m
+	        else
+		  m
+	        end
+	      end && actions.reduce(false) do |m, a|
+                m  || a.is_a?(Actions::Shift)
               end
 
-              # Remove any data that is no longer needed.
-              clean
+	      if TOKEN_PRECS[symbol]? && resolve_ok
+	        max_prec = 0
+
+	        selected_action = actions.first
+	        # Grab the associativity and precedence
+	        # for the input token.
+	        tassoc, tprec = TOKEN_PRECS[symbol]
+
+	        actions.each do |a|
+		  assoc, prec = (
+                    a.is_a?(Actions::Shift) ? {tassoc, tprec} : @@production_precs[a.id]
+                  ).as({String, Int32})
+
+		  # If two actions have the same precedence we
+		  # will only replace the previous production if:
+		  #  * The token is left associative and the current action is a Reduce
+		  #  * The token is right associative and the current action is a Shift
+		  if prec > max_prec  || (prec == max_prec && tassoc == (a.is_a?(Actions::Shift) ? :right : :left))
+		    max_prec        = prec
+		    selected_action = a
+		  elsif prec == max_prec && assoc == :nonassoc
+		    raise Exception.new "Non-associative token found during conflict resolution."
+		  end
+	        end
+
+	        state0.actions[symbol] = [selected_action]
+	      end
+	    end
+	  end
+        end
+      end
+
     end
 
     # Converts an object into an IO object as appropriate.
@@ -584,257 +809,9 @@ module CLTK
       @@conflicts[state_id] << {type.to_s, sym}
     end
 
-    # This method is used to specify that the symbols in *symbols*
-    # are left-associative.  Subsequent calls to this method will
-    # give their arguments higher precedence.
-    #
-    # @param [Array<Symbol>]  symbols  Symbols that are left associative.
-    #
-    # @return [void]
-    def self.left(*symbols)
-      prec_level = @@prec_counts[:left] += 1
-
-      symbols.map do |sym|
-	@@token_precs[sym.to_s] = {:left.to_s, prec_level}
-      end
-    end
-
-    # This method is used to specify that the symbols in *symbols*
-    # are non-associative.
-    #
-    # @param [Array<Symbol>]  symbols  Symbols that are non-associative.
-    #
-    # @return [void]
-    def self.nonassoc(*symbols)
-      prec_level = @prec_counts[:non] += 1
-
-      symbols.map { |s| s.to_sym }.each do |sym|
-	@token_precs[sym] = [:non, prec_level]
-      end
-    end
-
-    # Adds productions and actions for parsing nonempty lists.
-    #
-    # @see CFG#nonempty_list_production
-    def self.build_nonempty_list_production(symbol : String | Symbol, list_elements, separator = "")
-      if list_elements.is_a? Array
-        list_elements = list_elements.map do |e|
-          if e
-            e.to_s
-          else
-            ""
-          end
-        end
-      else
-        list_elements = list_elements.to_s
-      end
-      @@grammar.build_nonempty_list_production(symbol.to_s, list_elements, separator.to_s)
-    end
-
-    def self.nonempty_list(symbol, list_elements, separator = "")
-      self.build_nonempty_list_production(symbol, list_elements, separator)
-    end
-    # This function is where actual parsing takes place.  The
-    # _tokens_ argument must be an array of Token objects, the last
-    # of which has type EOS.  By default this method will return the
-    # value computed by the first successful parse tree found.
-    #
-    # Additional information about the parsing options can be found in
-    # the main documentation.
-    #
-    # @param [Array<Token>]  tokens  Tokens to be parsed.
-    # @param [Hash]          opts    Options to use when parsing input.
-    #
-    # @option opts [:first, :all]       :accept      Either :first or :all.
-    # @option opts [Object]             :env         The environment in which to evaluate the production action.
-    # @option opts [Boolean,String,IO]  :parse_tree  To print parse trees in the DOT language or not.
-    # @option opts [Boolean,String,IO]  :verbose     To be verbose or not.
-    #
-    # @return [Object, Array<Object>]  Result or results of parsing the given tokens.
     def self.parse(tokens, opts = nil)
 
       #      parser.parse(tokens, opts)
-    end
-
-    # Adds a new production to the parser with a left-hand value of
-    # *symbol*.  If *expression* is specified it is taken as the
-    # right-hand side of the production and *action* is associated
-    # with the production.  If *expression* is nil then *action* is
-    # evaluated and expected to make one or more calls to
-    # Parser.clause.  A precedence can be associate with this
-    # production by setting *precedence* to a terminal symbol.
-    #
-    # @param [Symbol]				symbol		Left-hand side of the production.
-    # @param [String, Symbol, nil]	expression	Right-hand side of the production.
-    # @param [Symbol, nil]			precedence	Symbol representing the precedence of this produciton.
-    # @param [:array, :splat]		arg_type		Method to use when passing arguments to the action.
-    # @param [Proc]				action		Action associated with this production.
-    #
-    # @return [void]
-    macro production(symbol, expression = nil, precedence = nil, arg_type = nil, &action: _ -> _)
-      # Check the symbol.
-      symbol = {{symbol}}
-      expression = {{expression}}
-      precedence = {{precedence}}
-      arg_type = {{arg_type}}
-
-      if !(symbol.is_a?(Symbol) || symbol.is_a?(String)) || !CLTK::CFG.is_nonterminal?(symbol)
-        raise Exception.new "Production symbols must be Strings or Symbols and be in all lowercase."
-      end
-
-      @@grammar.curr_lhs = symbol.to_s
-      @@curr_prec        = precedence
-      @@orig : Symbol? = @@default_arg_type
-      if {{arg_type}}
-        @@default_arg_type = {{arg_type}}
-      end
-      {%if expression%}
-        clause({{expression}}, {{precedence}}, {{arg_type}}) {% if action %} do |{{*action.args}}|
-          {{action.body}}
-        end {% end %}
-      {%else%}
-          {{action.body}}
-      {%end%}
-
-        @@default_arg_type = @@orig
-
-      @@grammar.curr_lhs = nil
-      @@curr_prec        = nil
-
-    end
-
-
-    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
-      self.production(symbol, expression, precedence, arg_type, &action)
-    end
-
-    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
-      self.production(symbol, expression, precedence, arg_type, &action)
-    end
-    # This method uses lookahead sets and precedence information to
-    # resolve conflicts and remove unnecessary reduce actions.
-    #
-    # @param [Boolean]  do_lookahead   Prune based on lookahead sets or not.
-    # @param [Boolean]  do_precedence  Prune based on precedence or not.
-    #
-    # @return [void]
-    def self.prune(do_lookahead, do_precedence)
-      terms = @@grammar.terms
-
-      # If both options are false there is no pruning to do.
-      return if !(do_lookahead || do_precedence)
-
-      each_state do |state0|
-
-	#####################
-	# Lookahead Pruning #
-	#####################
-
-	if do_lookahead
-	  # Find all of the reductions in this state.
-	  reductions = state0.actions.values.flatten.uniq.select { |a| a.is_a?(Actions::Reduce) }
-          # reduction is ok ..
-	  reductions.each do |reduction|
-            raction_id = reduction.as(Action).id
-	    production = @@grammar.productions_id.as(Hash(Int32, CLTK::CFG::Production))[raction_id]
-	    lookahead = Array(String).new
-
-	    # Build the lookahead set.
-	    each_state do |state1|
-	      if check_reachability(state1, state0, production.rhs)
-		lookahead |= self.grammar_prime.follow_set("#{state1.id}_#{production.lhs}".to_s)
-	      end
-	    end
-
-	    # Translate the G' follow symbols into G
-	    # lookahead symbols.
-	    lookahead = lookahead.map { |sym| sym.to_s.split('_', 2).last }.uniq
-
-	    # Here we remove the unnecessary reductions.
-	    # If there are error productions we need to
-	    # scale back the amount of pruning done.
-	    pruning_candidates = terms.to_a - lookahead
-
-	    if terms.includes?("ERROR")
-	      pruning_candidates.each do |sym|
-		state0.actions[sym].delete(reduction) if state0.conflict_on?(sym)
-	      end
-	    else
-	      pruning_candidates.each { |sym| state0.actions[sym].delete(reduction) }
-	    end
-	  end
-	end
-
-	########################################
-	# Precedence and Associativity Pruning #
-	########################################
-
-	if do_precedence
-	  state0.actions.each do |symbol, actions|
-
-	    # We are only interested in pruning actions
-	    # for terminal symbols.
-	    next unless CFG.is_terminal?(symbol)
-
-	    # Skip to the next one if there is no
-	    # possibility of a Shift/Reduce or
-	    # Reduce/Reduce conflict.
-	    next unless actions && actions.size > 1
-	     resolve_ok = actions.reduce(true) do |m, a|
-	       if a.is_a?(Actions::Reduce)
-		 @@production_precs[a.id] && m
-	       else
-		 m
-	       end
-	     end && actions.reduce(false) do |m, a|
-               m  || a.is_a?(Actions::Shift)
-             end
-
-	    if @@token_precs.has_key?(symbol) && @@token_precs[symbol] && resolve_ok
-	      max_prec = 0
-
-	      selected_action = actions.first
-	      # Grab the associativity and precedence
-	      # for the input token.
-	      tassoc, tprec = @@token_precs[symbol]
-
-	      actions.each do |a|
-		assoc, prec = (
-                  a.is_a?(Actions::Shift) ? {tassoc, tprec} : @@production_precs[a.id]
-                ).as({String, Int32})
-
-		# If two actions have the same precedence we
-		# will only replace the previous production if:
-		#  * The token is left associative and the current action is a Reduce
-		#  * The token is right associative and the current action is a Shift
-		if prec > max_prec  || (prec == max_prec && tassoc == (a.is_a?(Actions::Shift) ? :right : :left))
-		  max_prec        = prec
-		  selected_action = a
-		elsif prec == max_prec && assoc == :nonassoc
-		  raise Exception.new "Non-associative token found during conflict resolution."
-		end
-	      end
-
-	      state0.actions[symbol] = [selected_action]
-	    end
-	  end
-	end
-      end
-    end
-
-    # This method is used to specify that the symbols in _symbols_
-    # are right associative.  Subsequent calls to this method will
-    # give their arguments higher precedence.
-    #
-    # @param [Array<Symbol>] symbols Symbols that are right-associative.
-    #
-    # @return [void]
-    def self.right(*symbols)
-      prec_level = @@prec_counts[:right] += 1
-
-      symbols.map do |sym|
-	@@token_precs[sym.to_s] = {:right.to_s, prec_level}
-      end
     end
 
     # Changes the starting symbol of the parser.
@@ -861,7 +838,6 @@ module CLTK
 	raise "Method token_hook expects `sym` to be non-terminal."
       end
     end
-
 
     ####################
     # Instance Methods #

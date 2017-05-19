@@ -15,18 +15,16 @@ module JSON_PARSE
   # The Parser
   class Parser < CLTK::Parser
 
-    production(:json) do
-      clause(:expression) { |e| e }
-    end
+    production(:json, :expression)
 
     production(:expression) do
-      clause(:json_object)  { |o| o }
-      clause(:json_array)   { |a| a }
-      clause(:json_string)  { |s| s }
-      clause(:json_integer) { |i| i }
-      clause(:json_float)   { |f| f }
-      clause(:json_bool)    { |b| b }
-      clause(:json_null)    { |b| b }
+      clause(:json_object)
+      clause(:json_array)
+      clause(:json_string)
+      clause(:json_integer)
+      clause(:json_float)
+      clause(:json_bool)
+      clause(:json_null)
     end
 
     production(:json_integer) do

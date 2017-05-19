@@ -2,6 +2,7 @@ module CLTK
 # The StreamPosition class is used to indicate the position of a token or
   # other text inside a stream.
   class StreamPosition
+    def_clone
     # @return [Integer]
     property :stream_offset
 

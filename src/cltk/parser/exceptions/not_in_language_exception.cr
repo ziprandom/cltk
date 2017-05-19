@@ -25,7 +25,7 @@ module CLTK
 
         # @return [String] String representation of the error.
         def to_s
-          "String not in language.  Token info:\n\tSeen: #{@seen}\n\tCurrent: #{@current}\n\tRemaining: #{@remaining}"
+          "String not in language.  Token info:\n\tSeen: #{@seen}\n\tCurrent: #{@current.inspect}\n\tRemaining: #{@remaining}"
         end
       end
     end
