@@ -165,6 +165,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/CLAUSE" data-name="cltk::parser::clause">
+      <a href="../../CLTK/Parser/CLAUSE.html">CLAUSE</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/CrystalizeVisitor" data-name="cltk::parser::crystalizevisitor">
       <a href="../../CLTK/Parser/CrystalizeVisitor.html">CrystalizeVisitor</a>
       
@@ -217,6 +222,11 @@
   
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Explain" data-name="cltk::parser::explain">
       <a href="../../CLTK/Parser/Explain.html">Explain</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/LIST_PROD" data-name="cltk::parser::list_prod">
+      <a href="../../CLTK/Parser/LIST_PROD.html">LIST_PROD</a>
       
     </li>
   
@@ -412,17 +422,90 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">cltk/parsers/postfix_calc.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">cltk/parsers/postfix_calc.cr</a>
     
     <br/>
   
 
 
 
+  
+    <h2>Constant Summary</h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="CLAUSES">
+        <strong>CLAUSES</strong> = <code>[{lhs: <span class="n">:e</span>, expression: <span class="s">&quot;NUM&quot;</span>, precedence: <span class="n">nil</span>, arg_type: <span class="n">:splat</span>, cb: <span class="n">0</span>}, {lhs: <span class="n">:e</span>, expression: <span class="s">&quot;e e PLS&quot;</span>, precedence: <span class="n">nil</span>, arg_type: <span class="n">:splat</span>, cb: <span class="n">1</span>}, {lhs: <span class="n">:e</span>, expression: <span class="s">&quot;e e SUB&quot;</span>, precedence: <span class="n">nil</span>, arg_type: <span class="n">:splat</span>, cb: <span class="n">2</span>}, {lhs: <span class="n">:e</span>, expression: <span class="s">&quot;e e MUL&quot;</span>, precedence: <span class="n">nil</span>, arg_type: <span class="n">:splat</span>, cb: <span class="n">3</span>}, {lhs: <span class="n">:e</span>, expression: <span class="s">&quot;e e DIV&quot;</span>, precedence: <span class="n">nil</span>, arg_type: <span class="n">:splat</span>, cb: <span class="n">4</span>}] <span class="k">of</span> <span class="t">CLAUSE</span> <span class="o">|</span> <span class="t">LIST_PROD</span></code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>A parser for a simple post-fix calculator.</p>
+      </dd>
+      
+    
+      <dt class="entry-const" id="DEFAULT_ARG_TYPE">
+        <strong>DEFAULT_ARG_TYPE</strong> = <code>[<span class="n">:splat</span>]</code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>A parser for a simple post-fix calculator.</p>
+      </dd>
+      
+    
+      <dt class="entry-const" id="PREC_COUNT">
+        <strong>PREC_COUNT</strong> = <code>{<span class="n">:left</span> => <span class="n">0</span>, <span class="n">:right</span> => <span class="n">0</span>, <span class="n">:non</span> => <span class="n">0</span>}</code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>A parser for a simple post-fix calculator.</p>
+      </dd>
+      
+    
+      <dt class="entry-const" id="PROCS">
+        <strong>PROCS</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">ProdProc</span></code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>A parser for a simple post-fix calculator.</p>
+      </dd>
+      
+    
+      <dt class="entry-const" id="TOKEN_PRECS">
+        <strong>TOKEN_PRECS</strong> = <code>{} <span class="k">of</span> <span class="t">String</span> => <span class="t">Tuple</span>(<span class="t">String</span>, <span class="t">Int32</span>)</code>
+      </dt>
+      
+      <dd class="entry-const-doc">
+        <p>A parser for a simple post-fix calculator.</p>
+      </dd>
+      
+    
+  </dl>
+
 
 
   <h2>Class Method Summary</h2>
   <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#build_list_production_%28symbol%2Clist_elements%2Cseparator%2Cempty%29-class-method" class="signature"><strong>.build_list_production_</strong>(symbol, list_elements, separator, empty)</a>
+        
+          <div class="summary"><p>Adds productions and actions for parsing (non)?empty lists.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#build_up_productions-class-method" class="signature"><strong>.build_up_productions</strong></a>
+        
+          <div class="summary"><p>A parser for a simple post-fix calculator.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#finalize%28opts%3AOpts%3D%7Bexplain%3Afalse%2Clookahead%3Atrue%2Cprecedence%3Atrue%7D%29-class-method" class="signature"><strong>.finalize</strong>(opts : Opts = {explain: <span class="n">false</span>, lookahead: <span class="n">true</span>, precedence: <span class="n">true</span>})</a>
+        
+          <div class="summary"><p>This method will finalize the parser causing the construction of states and their actions, and the resolution of conflicts using lookahead and precedence information.</p></div>
+        
+      </li>
     
       <li class="entry-summary">
         <a href="#new-class-method" class="signature"><strong>.new</strong></a>
@@ -431,11 +514,94 @@
         
       </li>
     
+      <li class="entry-summary">
+        <a href="#prune%28do_lookahead%2Cdo_precedence%29-class-method" class="signature"><strong>.prune</strong>(do_lookahead, do_precedence)</a>
+        
+          <div class="summary"><p>This method uses lookahead sets and precedence information to resolve conflicts and remove unnecessary reduce actions.</p></div>
+        
+      </li>
+    
   </ul>
 
 
 
 
+
+  <h2>Macro Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#build_list_production%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro" class="signature"><strong>build_list_production</strong>(symbol, list_elements, separator = "")</a>
+        
+          <div class="summary"><p>Adds productions and actions for parsing empty lists.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#build_nonempty_list_production%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro" class="signature"><strong>build_nonempty_list_production</strong>(symbol, list_elements, separator = "")</a>
+        
+          <div class="summary"><p>Adds productions and actions for parsing nonempty lists.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#clause%28expression%2Cprecedence%3Dnil%2Carg_type%3Dnil%29-macro" class="signature"><strong>clause</strong>(expression, precedence = nil, arg_type = nil)</a>
+        
+          <div class="summary"><p>Declares a new clause inside of a production.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#default_arg_type%28type%29-macro" class="signature"><strong>default_arg_type</strong>(type)</a>
+        
+          <div class="summary"><p>Set the default argument type for the actions associated with clauses.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#left%28%2Asymbols%29-macro" class="signature"><strong>left</strong>(*symbols)</a>
+        
+          <div class="summary"><p>This method is used to specify that the symbols in <em>symbols</em> are left-associative.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#list%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro" class="signature"><strong>list</strong>(symbol, list_elements, separator = "")</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#nonassoc%28%2Asymbols%29-macro" class="signature"><strong>nonassoc</strong>(*symbols)</a>
+        
+          <div class="summary"><p>This method is used to specify that the symbols in <em>symbols</em> are non-associative.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#nonempty_list%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro" class="signature"><strong>nonempty_list</strong>(symbol, list_elements, separator = "")</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#prec%28direction%2C%2Asymbols%29-macro" class="signature"><strong>prec</strong>(direction, *symbols)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#production%28lhs%2Cexpression%3Dnil%2Cprecedence%3Dnil%2Carg_type%3Dnil%29-macro" class="signature"><strong>production</strong>(lhs, expression = nil, precedence = nil, arg_type = nil)</a>
+        
+          <div class="summary"><p>Adds a new production to the parser with a left-hand value of <em>symbol</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#right%28%2Asymbols%29-macro" class="signature"><strong>right</strong>(*symbols)</a>
+        
+          <div class="summary"><p>This method is used to specify that the symbols in <em>symbols</em> are right associative.</p></div>
+        
+      </li>
+    
+  </ul>
 
 
 
@@ -468,16 +634,6 @@
     add_state</a>, 
     
   
-    <a href="../../CLTK/Parser.html#build_list_production%28symbol%2Clist_elements%2Cseparator%3D%26quot%3B%26quot%3B%29-class-method" class="tooltip">
-      <span>build_list_production(symbol, list_elements, separator = <span class="s">&quot;&quot;</span>)</span>
-    build_list_production</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#build_nonempty_list_production%28symbol%3AString%7CSymbol%2Clist_elements%2Cseparator%3D%26quot%3B%26quot%3B%29-class-method" class="tooltip">
-      <span>build_nonempty_list_production(symbol : String | Symbol, list_elements, separator = <span class="s">&quot;&quot;</span>)</span>
-    build_nonempty_list_production</a>, 
-    
-  
     <a href="../../CLTK/Parser.html#c%28expression%2Cprecedence%3Dnil%2Carg_type%3D%40%40default_arg_type%2C%26action%3AArray%28Type%29%2CEnvironment-%3E_%29-class-method" class="tooltip">
       <span>c(expression, precedence = <span class="n">nil</span>, arg_type = @@default_arg_type, &action : Array(Type), Environment -> _)</span>
     c</a>, 
@@ -488,16 +644,6 @@
     crystalize</a>, 
     
   
-    <a href="../../CLTK/Parser.html#dat%28type%29-class-method" class="tooltip">
-      <span>dat(type)</span>
-    dat</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#default_arg_type%28type%29-class-method" class="tooltip">
-      <span>default_arg_type(type)</span>
-    default_arg_type</a>, 
-    
-  
     <a href="../../CLTK/Parser.html#each_state%28%26block%29-class-method" class="tooltip">
       <span>each_state(&block)</span>
     each_state</a>, 
@@ -506,11 +652,6 @@
     <a href="../../CLTK/Parser.html#env-class-method" class="tooltip">
       <span>env</span>
     env</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#finalize%28opts%3AOpts%3D%7Bexplain%3Afalse%2Clookahead%3Atrue%2Cprecedence%3Atrue%7D%29-class-method" class="tooltip">
-      <span>finalize(opts : Opts = {explain: <span class="n">false</span>, lookahead: <span class="n">true</span>, precedence: <span class="n">true</span>})</span>
-    finalize</a>, 
     
   
     <a href="../../CLTK/Parser.html#get_io%28o%2Cmode%3D%26quot%3Bw%26quot%3B%29-class-method" class="tooltip">
@@ -533,29 +674,9 @@
     inform_conflict</a>, 
     
   
-    <a href="../../CLTK/Parser.html#left%28%2Asymbols%29-class-method" class="tooltip">
-      <span>left(*symbols)</span>
-    left</a>, 
-    
-  
     <a href="../../CLTK/Parser.html#lh_sides-class-method" class="tooltip">
       <span>lh_sides</span>
     lh_sides</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#list%28symbol%2Clist_elements%2Cseparator%3D%26quot%3B%26quot%3B%29-class-method" class="tooltip">
-      <span>list(symbol, list_elements, separator = <span class="s">&quot;&quot;</span>)</span>
-    list</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#nonassoc%28%2Asymbols%29-class-method" class="tooltip">
-      <span>nonassoc(*symbols)</span>
-    nonassoc</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#nonempty_list%28symbol%2Clist_elements%2Cseparator%3D%26quot%3B%26quot%3B%29-class-method" class="tooltip">
-      <span>nonempty_list(symbol, list_elements, separator = <span class="s">&quot;&quot;</span>)</span>
-    nonempty_list</a>, 
     
   
     <a href="../../CLTK/Parser.html#p%28symbol%2Cexpression%3Dnil%2Cprecedence%3Dnil%2Carg_type%3D%40%40default_arg_type%2C%26action%3AArray%28Type%29%2CEnvironment-%3E_%29-class-method" class="tooltip">
@@ -571,16 +692,6 @@
     <a href="../../CLTK/Parser.html#procs-class-method" class="tooltip">
       <span>procs</span>
     procs</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#prune%28do_lookahead%2Cdo_precedence%29-class-method" class="tooltip">
-      <span>prune(do_lookahead, do_precedence)</span>
-    prune</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#right%28%2Asymbols%29-class-method" class="tooltip">
-      <span>right(*symbols)</span>
-    right</a>, 
     
   
     <a href="../../CLTK/Parser.html#setenv%28env%29-class-method" class="tooltip">
@@ -660,6 +771,76 @@
 
   <h2>Class Method Detail</h2>
   
+    <div class="entry-detail" id="build_list_production_&#40;symbol,list_elements,separator,empty&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>build_list_production_</strong>(symbol, list_elements, separator, empty)
+
+        <a class="method-permalink" href="#build_list_production_%28symbol%2Clist_elements%2Cseparator%2Cempty%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Adds productions and actions for parsing (non)?empty lists.</p>
+
+<p>@see CFG#(non)?empty_list_production</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="build_up_productions-class-method">
+      <div class="signature">
+        
+        def self.<strong>build_up_productions</strong>
+
+        <a class="method-permalink" href="#build_up_productions-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>A parser for a simple post-fix calculator.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="finalize&#40;opts:Opts&#61;&#123;explain:false,lookahead:true,precedence:true&#125;&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>finalize</strong>(opts : <a href="../../CLTK/Parser/Opts.html">Opts</a> = {explain: <span class="n">false</span>, lookahead: <span class="n">true</span>, precedence: <span class="n">true</span>})
+
+        <a class="method-permalink" href="#finalize%28opts%3AOpts%3D%7Bexplain%3Afalse%2Clookahead%3Atrue%2Cprecedence%3Atrue%7D%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>This method will finalize the parser causing the construction
+of states and their actions, and the resolution of conflicts
+using lookahead and precedence information.</p>
+
+<p>No calls to {Parser.production} may appear after the call to
+Parser.finalize.</p>
+
+<p>@param [Hash] opts Options describing how to finalize the parser.</p>
+
+<p>@option opts [Boolean,String,IO]  :explain     To explain the parser or not.
+@option opts [Boolean]            :lookahead   To use lookahead info for conflict resolution.
+@option opts [Boolean]            :precedence  To use precedence info for conflict resolution.
+@option opts [String,IO]          :use         A file name or object that is used to load/save the parser.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
     <div class="entry-detail" id="new-class-method">
       <div class="signature">
         
@@ -674,7 +855,31 @@ used for subsequent calls.</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="prune&#40;do_lookahead,do_precedence&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>prune</strong>(do_lookahead, do_precedence)
+
+        <a class="method-permalink" href="#prune%28do_lookahead%2Cdo_precedence%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>This method uses lookahead sets and precedence information to
+resolve conflicts and remove unnecessary reduce actions.</p>
+
+<p>@param [Boolean]  do_lookahead   Prune based on lookahead sets or not.
+@param [Boolean]  do_precedence  Prune based on precedence or not.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -683,6 +888,253 @@ used for subsequent calls.</p></div>
 
 
 
+
+  <h2>Macro Detail</h2>
+  
+    <div class="entry-detail" id="build_list_production&#40;symbol,list_elements,separator&#61;&quot;&quot;&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>build_list_production</strong>(symbol, list_elements, separator = "")
+
+        <a class="method-permalink" href="#build_list_production%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Adds productions and actions for parsing empty lists.</p>
+
+<p>@see CFG#empty_list_production</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="build_nonempty_list_production&#40;symbol,list_elements,separator&#61;&quot;&quot;&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>build_nonempty_list_production</strong>(symbol, list_elements, separator = "")
+
+        <a class="method-permalink" href="#build_nonempty_list_production%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Adds productions and actions for parsing nonempty lists.</p>
+
+<p>@see CFG#nonempty_list_production</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="clause&#40;expression,precedence&#61;nil,arg_type&#61;nil&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>clause</strong>(expression, precedence = nil, arg_type = nil)
+
+        <a class="method-permalink" href="#clause%28expression%2Cprecedence%3Dnil%2Carg_type%3Dnil%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Declares a new clause inside of a production.  The right-hand
+side is specified by <em>expression</em> and the precedence of this
+production can be changed by setting the <em>precedence</em> argument
+to some terminal symbol.</p>
+
+<p>@param [String, Symbol]  expression  Right-hand side of a production.
+@param [Symbol]          precedence  Symbol representing the precedence of this production.
+@param [:array, :splat]  arg_type    Method to use when passing arguments to the action.
+@param [Proc]            action      Action to be taken when the production is reduced.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L19" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="default_arg_type&#40;type&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>default_arg_type</strong>(type)
+
+        <a class="method-permalink" href="#default_arg_type%28type%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Set the default argument type for the actions associated with
+clauses.  All actions defined after this call will be passed
+arguments in the way specified here, unless overridden in the
+call to {Parser.clause}.</p>
+
+<p>@param [:array, :splat] type The default argument type.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="left&#40;*symbols&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>left</strong>(*symbols)
+
+        <a class="method-permalink" href="#left%28%2Asymbols%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>This method is used to specify that the symbols in <em>symbols</em>
+are left-associative.  Subsequent calls to this method will
+give their arguments higher precedence.</p>
+
+<p>@param [Array&lt;Symbol>]  symbols  Symbols that are left associative.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="list&#40;symbol,list_elements,separator&#61;&quot;&quot;&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>list</strong>(symbol, list_elements, separator = "")
+
+        <a class="method-permalink" href="#list%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="nonassoc&#40;*symbols&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>nonassoc</strong>(*symbols)
+
+        <a class="method-permalink" href="#nonassoc%28%2Asymbols%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>This method is used to specify that the symbols in <em>symbols</em>
+are non-associative.</p>
+
+<p>@param [Array&lt;Symbol>]  symbols  Symbols that are non-associative.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="nonempty_list&#40;symbol,list_elements,separator&#61;&quot;&quot;&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>nonempty_list</strong>(symbol, list_elements, separator = "")
+
+        <a class="method-permalink" href="#nonempty_list%28symbol%2Clist_elements%2Cseparator%3D%22%22%29-macro">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="prec&#40;direction,*symbols&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>prec</strong>(direction, *symbols)
+
+        <a class="method-permalink" href="#prec%28direction%2C%2Asymbols%29-macro">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="production&#40;lhs,expression&#61;nil,precedence&#61;nil,arg_type&#61;nil&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>production</strong>(lhs, expression = nil, precedence = nil, arg_type = nil)
+
+        <a class="method-permalink" href="#production%28lhs%2Cexpression%3Dnil%2Cprecedence%3Dnil%2Carg_type%3Dnil%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>Adds a new production to the parser with a left-hand value of
+<em>symbol</em>.  If <em>expression</em> is specified it is taken as the
+right-hand side of the production and <em>action</em> is associated
+with the production.  If <em>expression</em> is nil then <em>action</em> is
+evaluated and expected to make one or more calls to
+Parser.clause.  A precedence can be associate with this
+production by setting <em>precedence</em> to a terminal symbol.</p>
+
+<p>@param [Symbol]			symbol		Left-hand side of the production.
+@param [String, Symbol, nil]	expression	Right-hand side of the production.
+@param [Symbol, nil]		precedence	Symbol representing the precedence of this produciton.
+@param [:array, :splat]		arg_type		Method to use when passing arguments to the action.
+@param [Proc]			action		Action associated with this production.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="right&#40;*symbols&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>right</strong>(*symbols)
+
+        <a class="method-permalink" href="#right%28%2Asymbols%29-macro">#</a>
+      </div>
+      
+        <div class="doc"><p>This method is used to specify that the symbols in <em>symbols</em>
+are right associative.  Subsequent calls to this method will
+give their arguments higher precedence.</p>
+
+<p>@param [Array&lt;Symbol>] symbols Symbols that are right-associative.</p>
+
+<p>@return [void]</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/postfix_calc.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
 
 
 </div>

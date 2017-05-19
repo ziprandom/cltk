@@ -165,6 +165,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/CLAUSE" data-name="cltk::parser::clause">
+      <a href="../CLTK/Parser/CLAUSE.html">CLAUSE</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/CrystalizeVisitor" data-name="cltk::parser::crystalizevisitor">
       <a href="../CLTK/Parser/CrystalizeVisitor.html">CrystalizeVisitor</a>
       
@@ -217,6 +222,11 @@
   
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Explain" data-name="cltk::parser::explain">
       <a href="../CLTK/Parser/Explain.html">Explain</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/LIST_PROD" data-name="cltk::parser::list_prod">
+      <a href="../CLTK/Parser/LIST_PROD.html">LIST_PROD</a>
       
     </li>
   
@@ -392,50 +402,6 @@
 
 
 
-  <h2>Overview</h2>
-
-  <p>This class is a good start for all your abstract syntax tree node needs.</p>
-
-<p>declare an ASTNode by subclassing it</p>
-
-<pre><code><span class="k">require</span> <span class="s">&quot;cltk/ast&quot;</span>
-
-<span class="k">abstract</span> <span class="k">class</span> <span class="t">MyLanguageValue</span> <span class="o"><</span> <span class="t">CLTK</span><span class="t">::</span><span class="t">ASTNode</span>; <span class="k">end</span>
-
-<span class="k">class</span> <span class="t">MyLanguageVariable</span> <span class="o"><</span> <span class="t">CLTK</span><span class="t">::</span><span class="t">ASTNode</span>
-  values({name: <span class="t">String</span>, value: <span class="t">MyLanguageValue</span>})
-<span class="k">end</span>
-
-<span class="k">class</span> <span class="t">MyLanguageString</span> <span class="o"><</span> <span class="t">MyLanguageValue</span>
-  values({text: <span class="t">String</span>})
-<span class="k">end</span>
-
-<span class="k">class</span> <span class="t">MyLanguageStringInterpolated</span> <span class="o"><</span> <span class="t">MyLanguageString</span>
-  values({variables: <span class="t">Array</span>(<span class="t">MyLanguageVariable</span>)})
-<span class="k">end</span>
-
-country_variable <span class="o">=</span> <span class="t">MyLanguageVariable</span>.<span class="k">new</span>(
-  name: <span class="s">&quot;country&quot;</span>, value: <span class="t">MyLanguageString</span>.<span class="k">new</span>(text: <span class="s">&quot;argentina&quot;</span>)
-)
-
-<span class="c"># initialize takes all the values of class and it&#39;s ancestors</span>
-interpolated_string <span class="o">=</span> <span class="t">MyLanguageStringInterpolated</span>.<span class="k">new</span>(
-  text: <span class="s">&quot;user is from \#\&#123;country\&#125;.&quot;</span>, variables: [country_variable]
-)
-
-puts interpolated_string.to_pretty_json
-<span class="c"># &#123;</span>
-<span class="c">#   &quot;text&quot;: &quot;user is from #&#123;country&#125;.&quot;,</span>
-<span class="c">#   &quot;variables&quot;: &#91;</span>
-<span class="c">#     &#123;</span>
-<span class="c">#       &quot;name&quot;: &quot;country&quot;,</span>
-<span class="c">#       &quot;value&quot;: &#123;</span>
-<span class="c">#         &quot;text&quot;: &quot;argentina&quot;</span>
-<span class="c">#       &#125;</span>
-<span class="c">#     &#125;</span>
-<span class="c">#   &#93;</span>
-<span class="c"># &#125;</span></code></pre>
-
 
 
 
@@ -452,12 +418,24 @@ puts interpolated_string.to_pretty_json
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L47" target="_blank">cltk/ast.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L2" target="_blank">cltk/ast.cr</a>
     
     <br/>
   
 
 
+
+  
+    <h2>Constant Summary</h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="VALUES">
+        <strong>VALUES</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">Tuple</span>(<span class="t">Symbol</span>, <span class="t">Object</span>.<span class="k">class</span>)</code>
+      </dt>
+      
+    
+  </dl>
 
 
 
@@ -465,7 +443,7 @@ puts interpolated_string.to_pretty_json
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new-class-method" class="signature"><strong>.new</strong></a>
+        <a href="#values-class-method" class="signature"><strong>.values</strong></a>
         
       </li>
     
@@ -477,7 +455,14 @@ puts interpolated_string.to_pretty_json
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#eval-instance-method" class="signature"><strong>#eval</strong></a>
+        <a href="#%3D%3D%28other%29-instance-method" class="signature"><strong>#==</strong>(other)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#clone-instance-method" class="signature"><strong>#clone</strong></a>
+        
+          <div class="summary"><p>Returns a copy of <code><a href="../CLTK/ASTNode.html#self-macro">self</a></code> with all instance variables cloned.</p></div>
         
       </li>
     
@@ -487,22 +472,7 @@ puts interpolated_string.to_pretty_json
       </li>
     
       <li class="entry-summary">
-        <a href="#to_json%28json%3AJSON%3A%3ABuilder%29-instance-method" class="signature"><strong>#to_json</strong>(json : JSON::Builder)</a>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#to_json-instance-method" class="signature"><strong>#to_json</strong></a>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#to_pretty_json%28json%3AJSON%3A%3ABuilder%29-instance-method" class="signature"><strong>#to_pretty_json</strong>(json : JSON::Builder)</a>
-        
-      </li>
-    
-      <li class="entry-summary">
-        <a href="#to_pretty_json-instance-method" class="signature"><strong>#to_pretty_json</strong></a>
+        <a href="#values-instance-method" class="signature"><strong>#values</strong></a>
         
       </li>
     
@@ -514,16 +484,22 @@ puts interpolated_string.to_pretty_json
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#as_children%28values%29-macro" class="signature"><strong>as_children</strong>(values)</a>
-        
-          <div class="summary"><p>this macro defines the given values as children by creating the accessor children</p></div>
+        <a href="#accessors%28name%2Ctype%2Cdefault%29-macro" class="signature"><strong>accessors</strong>(name, type, default)</a>
         
       </li>
     
       <li class="entry-summary">
-        <a href="#values%28values%29-macro" class="signature"><strong>values</strong>(values)</a>
+        <a href="#make_value_methods-macro" class="signature"><strong>make_value_methods</strong></a>
         
-          <div class="summary"><p>a macro to define the values this ASTNode should take.</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#self-macro" class="signature"><strong>self</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#values%28args%29-macro" class="signature"><strong>values</strong>(args)</a>
         
       </li>
     
@@ -561,18 +537,18 @@ puts interpolated_string.to_pretty_json
 
   <h2>Class Method Detail</h2>
   
-    <div class="entry-detail" id="new-class-method">
+    <div class="entry-detail" id="values-class-method">
       <div class="signature">
         
-        def self.<strong>new</strong>
+        def self.<strong>values</strong>
 
-        <a class="method-permalink" href="#new-class-method">#</a>
+        <a class="method-permalink" href="#values-class-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L49" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L42" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -582,18 +558,36 @@ puts interpolated_string.to_pretty_json
 
   <h2>Instance Method Detail</h2>
   
-    <div class="entry-detail" id="eval-instance-method">
+    <div class="entry-detail" id="&#61;&#61;&#40;other&#41;-instance-method">
       <div class="signature">
         
-        def <strong>eval</strong>
+        def <strong>==</strong>(other)
 
-        <a class="method-permalink" href="#eval-instance-method">#</a>
+        <a class="method-permalink" href="#%3D%3D%28other%29-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L55" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L50" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="clone-instance-method">
+      <div class="signature">
+        
+        def <strong>clone</strong>
+
+        <a class="method-permalink" href="#clone-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Returns a copy of <code><a href="../CLTK/ASTNode.html#self-macro">self</a></code> with all instance variables cloned.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L72" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -609,71 +603,23 @@ puts interpolated_string.to_pretty_json
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L59" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L54" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="to_json&#40;json:JSON::Builder&#41;-instance-method">
+    <div class="entry-detail" id="values-instance-method">
       <div class="signature">
         
-        def <strong>to_json</strong>(json : JSON::Builder)
+        def <strong>values</strong>
 
-        <a class="method-permalink" href="#to_json%28json%3AJSON%3A%3ABuilder%29-instance-method">#</a>
+        <a class="method-permalink" href="#values-instance-method">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L85" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="to_json-instance-method">
-      <div class="signature">
-        
-        def <strong>to_json</strong>
-
-        <a class="method-permalink" href="#to_json-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L81" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="to_pretty_json&#40;json:JSON::Builder&#41;-instance-method">
-      <div class="signature">
-        
-        def <strong>to_pretty_json</strong>(json : JSON::Builder)
-
-        <a class="method-permalink" href="#to_pretty_json%28json%3AJSON%3A%3ABuilder%29-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L93" target="_blank">View source</a>]
-        
-      </div>
-    </div>
-  
-    <div class="entry-detail" id="to_pretty_json-instance-method">
-      <div class="signature">
-        
-        def <strong>to_pretty_json</strong>
-
-        <a class="method-permalink" href="#to_pretty_json-instance-method">#</a>
-      </div>
-      
-      <br/>
-      <div>
-        
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L89" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L46" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -683,38 +629,66 @@ puts interpolated_string.to_pretty_json
 
   <h2>Macro Detail</h2>
   
-    <div class="entry-detail" id="as_children&#40;values&#41;-macro">
+    <div class="entry-detail" id="accessors&#40;name,type,default&#41;-macro">
       <div class="signature">
         
-        macro <strong>as_children</strong>(values)
+        macro <strong>accessors</strong>(name, type, default)
 
-        <a class="method-permalink" href="#as_children%28values%29-macro">#</a>
+        <a class="method-permalink" href="#accessors%28name%2Ctype%2Cdefault%29-macro">#</a>
       </div>
-      
-        <div class="doc"><p>this macro defines the given values as children by creating the accessor children</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L169" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L110" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="values&#40;values&#41;-macro">
+    <div class="entry-detail" id="make_value_methods-macro">
       <div class="signature">
         
-        macro <strong>values</strong>(values)
+        macro <strong>make_value_methods</strong>
 
-        <a class="method-permalink" href="#values%28values%29-macro">#</a>
+        <a class="method-permalink" href="#make_value_methods-macro">#</a>
       </div>
-      
-        <div class="doc"><p>a macro to define the values this ASTNode should take. defines getters and setters as well as the right initialize method</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/4fda495e1bb535aaebf671353624f019bf61b1bb/src/cltk/ast.cr#L98" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L3" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="self-macro">
+      <div class="signature">
+        
+        macro <strong>self</strong>
+
+        <a class="method-permalink" href="#self-macro">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L110" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="values&#40;args&#41;-macro">
+      <div class="signature">
+        
+        macro <strong>values</strong>(args)
+
+        <a class="method-permalink" href="#values%28args%29-macro">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/ast.cr#L110" target="_blank">View source</a>]
         
       </div>
     </div>
