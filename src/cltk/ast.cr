@@ -93,11 +93,20 @@ module CLTK
         end
 
         \{%
-           signatures = VALUES.map { |v| "@#{v[0].id} : #{v[1]}" + (v[2] ? "= #{v[2]}" : "") }
+           signatures = VALUES.map { |v| "#{v[0].id} " + (v[2] ? "= #{v[2]}" : "") }
            signature = (signatures + ["**rest"]).join(", ").id
+           assignments = VALUES.map do |v|
+             if v[1].id =~ /^Array/
+               type = v[1].id.gsub(/Array\(/, "").gsub(/\)/, "")
+               "@#{v[0].id} = #{v[0].id}.as(Array).map(&.as(#{type}))"
+             else
+               "@#{v[0].id} = #{v[0].id}.as(#{v[1].id})"
+             end
+           end
           %}
 
         def initialize(\{{signature}})
+          \{{assignments.size > 0 ? assignments.join("\n").id : "".id}}
           super(**rest)
         end
 

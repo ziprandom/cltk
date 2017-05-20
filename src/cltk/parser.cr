@@ -81,7 +81,7 @@ module CLTK
       end
 
       macro nonempty_list(symbol, list_elements, separator = "")
-        build_nonemptylist_production(\{{symbol}}, \{{list_elements}}, \{{separator}})
+        build_nonempty_list_production(\{{symbol}}, \{{list_elements}}, \{{separator}})
       end
 
       # Adds productions and actions for parsing empty lists.
