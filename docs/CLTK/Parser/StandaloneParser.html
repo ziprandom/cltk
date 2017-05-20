@@ -5,7 +5,7 @@
   <meta id="repository-name" content="github.com/ziprandom/cltk">
   <link href="../../css/style.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="../../js/doc.js"></script>
-  <title>CLTK::Parser::Opts - github.com/ziprandom/cltk</title>
+  <title>CLTK::Parser::StandaloneParser - github.com/ziprandom/cltk</title>
 </head>
 <body>
 
@@ -230,7 +230,7 @@
       
     </li>
   
-  <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/Parser/Opts" data-name="cltk::parser::opts">
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/Opts" data-name="cltk::parser::opts">
       <a href="../../CLTK/Parser/Opts.html">Opts</a>
       
     </li>
@@ -275,7 +275,7 @@
       
     </li>
   
-  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+  <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
       <a href="../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
       
     </li>
@@ -397,18 +397,17 @@
 <div id="main-content">
 <h1 class="type-name">
 
-  <span class="kind">alias</span> CLTK::Parser::Opts
+  <span class="kind">class</span> CLTK::Parser::StandaloneParser
 
 </h1>
 
 
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../../CLTK/Parser/StandaloneParser.html">CLTK::Parser::StandaloneParser</a></li><li class="superclass">Reference</li><li class="superclass"><a href="../../Object.html">Object</a></li></ul>
 
 
 
 
 
-  <h2>Alias Definition</h2>
-  <code>{explain: Bool | IO | String, lookahead: Bool, precedence: Bool, use: String?}</code>
 
 
 
@@ -424,7 +423,7 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser.cr#L451" target="_blank">cltk/parser.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L15" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -433,7 +432,72 @@
 
 
 
+  <h2>Class Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#_parse%28procs%2Clh_sides%2Csymbols%2Cstates%2Ctoken_hooks%2Ctokens%2Copts%3ANamedTuple%3F%3Dnil%29-class-method" class="signature"><strong>._parse</strong>(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = <span class="n">nil</span>)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28lh_sides%3AHash%28Int32%2CString%29%2Csymbols%3AArray%28String%29%2Cstates%3AArray%28State%29%29-class-method" class="signature"><strong>.new</strong>(lh_sides : Hash(Int32, String), symbols : Array(String), states : Array(State))</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28__temp_46%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_46 : MessagePack::Unpacker)</a>
+        
+      </li>
+    
+  </ul>
 
+
+
+  <h2>Instance Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#lh_sides%3AHash%28Int32%2CString%29-instance-method" class="signature"><strong>#lh_sides</strong> : Hash(Int32, String)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#lh_sides%3D%28_lh_sides%3AHash%28Int32%2CString%29%29-instance-method" class="signature"><strong>#lh_sides=</strong>(_lh_sides : Hash(Int32, String))</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#parse%28tokens%3AArray%2Copts%3ANamedTuple%3F%3Dnil%29-instance-method" class="signature"><strong>#parse</strong>(tokens : Array, opts : NamedTuple? = <span class="n">nil</span>)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#states%3AArray%28CLTK%3A%3AParser%3A%3AState%29-instance-method" class="signature"><strong>#states</strong> : Array(CLTK::Parser::State)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#states%3D%28_states%3AArray%28State%29%29-instance-method" class="signature"><strong>#states=</strong>(_states : Array(State))</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#symbols%3AArray%28String%29-instance-method" class="signature"><strong>#symbols</strong> : Array(String)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#symbols%3D%28_symbols%3AArray%28String%29%29-instance-method" class="signature"><strong>#symbols=</strong>(_symbols : Array(String))</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
+        
+      </li>
+    
+  </ul>
 
 
 
@@ -441,10 +505,215 @@
 
 <div class="methods-inherited">
   
+    
+
+
+    
+
+
+  
+    
+
+  <h3>Instance methods inherited from class <code><a href="../../Object.html">Object</a></code></h3>
+  
+  
+    <a href="../../Object.html#in%3F%28collection%3AArray%7CSet%29-instance-method" class="tooltip">
+      <span>in?(collection : Array | Set)</span>
+    in?</a>
+    
+  
+
+
+    
+
+
+  
 </div>
 
 
+  <h2>Class Method Detail</h2>
+  
+    <div class="entry-detail" id="_parse&#40;procs,lh_sides,symbols,states,token_hooks,tokens,opts:NamedTuple?&#61;nil&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>_parse</strong>(procs, lh_sides, symbols, states, token_hooks, tokens, opts : <a href="../../NamedTuple.html">NamedTuple</a>? = <span class="n">nil</span>)
 
+        <a class="method-permalink" href="#_parse%28procs%2Clh_sides%2Csymbols%2Cstates%2Ctoken_hooks%2Ctokens%2Copts%3ANamedTuple%3F%3Dnil%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L16" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;lh_sides:Hash&#40;Int32,String&#41;,symbols:Array&#40;String&#41;,states:Array&#40;State&#41;&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(lh_sides : Hash(Int32, String), symbols : Array(String), states : Array(<a href="../../CLTK/Parser/State.html">State</a>))
+
+        <a class="method-permalink" href="#new%28lh_sides%3AHash%28Int32%2CString%29%2Csymbols%3AArray%28String%29%2Cstates%3AArray%28State%29%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_46:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_46 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_46%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+  <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="lh_sides:Hash&#40;Int32,String&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>lh_sides</strong> : Hash(Int32, String)
+
+        <a class="method-permalink" href="#lh_sides%3AHash%28Int32%2CString%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="lh_sides&#61;&#40;_lh_sides:Hash&#40;Int32,String&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>lh_sides=</strong>(_lh_sides : Hash(Int32, String))
+
+        <a class="method-permalink" href="#lh_sides%3D%28_lh_sides%3AHash%28Int32%2CString%29%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="parse&#40;tokens:Array,opts:NamedTuple?&#61;nil&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>parse</strong>(tokens : Array, opts : <a href="../../NamedTuple.html">NamedTuple</a>? = <span class="n">nil</span>)
+
+        <a class="method-permalink" href="#parse%28tokens%3AArray%2Copts%3ANamedTuple%3F%3Dnil%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L16" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="states:Array&#40;CLTK::Parser::State&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>states</strong> : Array(<a href="../../CLTK/Parser/State.html">CLTK::Parser::State</a>)
+
+        <a class="method-permalink" href="#states%3AArray%28CLTK%3A%3AParser%3A%3AState%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="states&#61;&#40;_states:Array&#40;State&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>states=</strong>(_states : Array(<a href="../../CLTK/Parser/State.html">State</a>))
+
+        <a class="method-permalink" href="#states%3D%28_states%3AArray%28State%29%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="symbols:Array&#40;String&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>symbols</strong> : Array(String)
+
+        <a class="method-permalink" href="#symbols%3AArray%28String%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="symbols&#61;&#40;_symbols:Array&#40;String&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>symbols=</strong>(_symbols : Array(String))
+
+        <a class="method-permalink" href="#symbols%3D%28_symbols%3AArray%28String%29%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L18" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
 
 
 

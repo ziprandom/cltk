@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../../CLTK/Parser/State.html">State</a>
       
@@ -423,7 +428,12 @@ input stack by the rule specified by Reduce.id.</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L40" target="_blank">cltk/parser/actions.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L41" target="_blank">cltk/parser/actions.cr</a>
+    
+    <br/>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L81" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -442,6 +452,11 @@ input stack by the rule specified by Reduce.id.</p>
         
       </li>
     
+      <li class="entry-summary">
+        <a href="#new%28__temp_70%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_70 : MessagePack::Unpacker)</a>
+        
+      </li>
+    
   </ul>
 
 
@@ -450,7 +465,27 @@ input stack by the rule specified by Reduce.id.</p>
   <ul class="list-summary">
     
       <li class="entry-summary">
+        <a href="#id%3AInt32-instance-method" class="signature"><strong>#id</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3D%28_id%3AInt32%29-instance-method" class="signature"><strong>#id=</strong>(_id : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#production%3ACLTK%3A%3ACFG%3A%3AProduction-instance-method" class="signature"><strong>#production</strong> : CLTK::CFG::Production</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#production%3D%28_production%3ACLTK%3A%3ACFG%3A%3AProduction%29-instance-method" class="signature"><strong>#production=</strong>(_production : CLTK::CFG::Production)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
         
       </li>
     
@@ -476,7 +511,12 @@ input stack by the rule specified by Reduce.id.</p>
   
     <a href="../../../CLTK/Parser/Action.html#id%3AInt32-instance-method" class="tooltip">
       <span>id : Int32</span>
-    id</a>
+    id</a>, 
+    
+  
+    <a href="../../../CLTK/Parser/Action.html#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="tooltip">
+      <span>to_msgpack(packer : MessagePack::Packer)</span>
+    to_msgpack</a>
     
   
 
@@ -486,8 +526,13 @@ input stack by the rule specified by Reduce.id.</p>
   <h3>Class methods inherited from struct <code><a href="../../../CLTK/Parser/Action.html">CLTK::Parser::Action</a></code></h3>
   
   
+    <a href="../../../CLTK/Parser/Action.html#from_msgpack%28pull%3AMessagePack%3A%3AUnpacker%29-class-method" class="tooltip">
+      <span>from_msgpack(pull : MessagePack::Unpacker)</span>
+    from_msgpack</a>, 
+    
+  
     <a href="../../../CLTK/Parser/Action.html#new%28id%3AInt32%29-class-method" class="tooltip">
-      <span>new(id : Int32)</span>
+      <span>new(id : Int32)<br/>new(packer : MessagePack::Unpacker)</span>
     new</a>
     
   
@@ -542,7 +587,23 @@ input stack by the rule specified by Reduce.id.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L44" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L45" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_70:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_70 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_70%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L82" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -551,6 +612,38 @@ input stack by the rule specified by Reduce.id.</p>
 
 
   <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="id:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>id</strong> : Int32
+
+        <a class="method-permalink" href="#id%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L82" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id&#61;&#40;_id:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>id=</strong>(_id : Int32)
+
+        <a class="method-permalink" href="#id%3D%28_id%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L82" target="_blank">View source</a>]
+        
+      </div>
+    </div>
   
     <div class="entry-detail" id="production:CLTK::CFG::Production-instance-method">
       <div class="signature">
@@ -563,7 +656,39 @@ input stack by the rule specified by Reduce.id.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L41" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L82" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="production&#61;&#40;_production:CLTK::CFG::Production&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>production=</strong>(_production : <a href="../../../CLTK/CFG/Production.html">CLTK::CFG::Production</a>)
+
+        <a class="method-permalink" href="#production%3D%28_production%3ACLTK%3A%3ACFG%3A%3AProduction%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L82" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L83" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -581,7 +706,7 @@ input stack by the rule specified by Reduce.id.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L51" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L53" target="_blank">View source</a>]
         
       </div>
     </div>

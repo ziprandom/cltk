@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" current" data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../CLTK/Parser/State.html">State</a>
       
@@ -423,7 +428,12 @@ used during parsing.</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L5" target="_blank">cltk/parser/state.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L5" target="_blank">cltk/parser/state.cr</a>
+    
+    <br/>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L32" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -444,6 +454,11 @@ used during parsing.</p>
         <a href="#new%28tokens%3AArray%28String%29%2Citems%3D%5B%5DofCFG%3A%3AItem%29-class-method" class="signature"><strong>.new</strong>(tokens : Array(String), items = <span class="o">[]</span> <span class="k">of</span> <span class="t">CFG</span><span class="t">::</span><span class="t">Item</span>)</a>
         
           <div class="summary"><p>Instantiate a new State object.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28__temp_54%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_54 : MessagePack::Unpacker)</a>
         
       </li>
     
@@ -469,7 +484,10 @@ used during parsing.</p>
       <li class="entry-summary">
         <a href="#actions%3AHash%28String%2CArray%28CLTK%3A%3AParser%3A%3AAction%29%29-instance-method" class="signature"><strong>#actions</strong> : Hash(String, Array(CLTK::Parser::Action))</a>
         
-          <div class="summary"><p>@return [Hash{Symbol => Array&lt;Action>}]  Maps lookahead symbols to actions</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#actions%3D%28_actions%3AHash%28String%2CArray%28CLTK%3A%3AParser%3A%3AAction%29%29%29-instance-method" class="signature"><strong>#actions=</strong>(_actions : Hash(String, Array(CLTK::Parser::Action)))</a>
         
       </li>
     
@@ -518,8 +536,6 @@ used during parsing.</p>
       <li class="entry-summary">
         <a href="#id%3AInt32-instance-method" class="signature"><strong>#id</strong> : Int32</a>
         
-          <div class="summary"><p>@return [Integer] State's ID.</p></div>
-        
       </li>
     
       <li class="entry-summary">
@@ -530,9 +546,17 @@ used during parsing.</p>
       </li>
     
       <li class="entry-summary">
+        <a href="#id%3D%28_id%3AInt32%29-instance-method" class="signature"><strong>#id=</strong>(_id : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
         <a href="#items%3AArray%28CLTK%3A%3ACFG%3A%3AItem%29-instance-method" class="signature"><strong>#items</strong> : Array(CLTK::CFG::Item)</a>
         
-          <div class="summary"><p>@return  [Array&lt;CFG::Item>]  Item objects that comprise this state</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#items%3D%28_items%3AArray%28CFG%3A%3AItem%29%29-instance-method" class="signature"><strong>#items=</strong>(_items : Array(CFG::Item))</a>
         
       </li>
     
@@ -547,6 +571,11 @@ used during parsing.</p>
         <a href="#on%3F%28symbol%29-instance-method" class="signature"><strong>#on?</strong>(symbol)</a>
         
           <div class="summary"><p>Returns that actions that should be taken when the input token is <em>symbol</em>.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
         
       </li>
     
@@ -597,7 +626,7 @@ used during parsing.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L18" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L18" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -618,7 +647,23 @@ used during parsing.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L23" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L23" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_54:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_54 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_54%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -639,7 +684,7 @@ used during parsing.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L68" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L68" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -663,7 +708,7 @@ the States have the same ID.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L40" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L40" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -676,12 +721,26 @@ the States have the same ID.</p>
         <a class="method-permalink" href="#actions%3AHash%28String%2CArray%28CLTK%3A%3AParser%3A%3AAction%29%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Hash{Symbol => Array&lt;Action>}]  Maps lookahead symbols to actions</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="actions&#61;&#40;_actions:Hash&#40;String,Array&#40;CLTK::Parser::Action&#41;&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>actions=</strong>(_actions : Hash(String, Array(<a href="../../CLTK/Parser/Action.html">CLTK::Parser::Action</a>)))
+
+        <a class="method-permalink" href="#actions%3D%28_actions%3AHash%28String%2CArray%28CLTK%3A%3AParser%3A%3AAction%29%29%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L13" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -703,7 +762,7 @@ the States have the same ID.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L50" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L50" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -721,7 +780,7 @@ the States have the same ID.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L62" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L62" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -741,7 +800,7 @@ the States have the same ID.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L74" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L74" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -763,7 +822,7 @@ the States have the same ID.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L83" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L83" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -788,7 +847,7 @@ no conflict is detected nil is returned.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L100" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -808,7 +867,7 @@ no conflict is detected nil is returned.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L130" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L130" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -821,12 +880,10 @@ no conflict is detected nil is returned.</p>
         <a class="method-permalink" href="#id%3AInt32-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Integer] State's ID.</p></div>
-      
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -844,7 +901,23 @@ no conflict is detected nil is returned.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L7" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id&#61;&#40;_id:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>id=</strong>(_id : Int32)
+
+        <a class="method-permalink" href="#id%3D%28_id%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -857,12 +930,26 @@ no conflict is detected nil is returned.</p>
         <a class="method-permalink" href="#items%3AArray%28CLTK%3A%3ACFG%3A%3AItem%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return  [Array&lt;CFG::Item>]  Item objects that comprise this state</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="items&#61;&#40;_items:Array&#40;CFG::Item&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>items=</strong>(_items : Array(<a href="../../CLTK/CFG/Item.html">CFG::Item</a>))
+
+        <a class="method-permalink" href="#items%3D%28_items%3AArray%28CFG%3A%3AItem%29%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L10" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -885,7 +972,7 @@ no conflict is detected nil is returned.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L144" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L144" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -908,7 +995,23 @@ is <em>symbol</em>.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/state.cr#L158" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/state.cr#L158" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>

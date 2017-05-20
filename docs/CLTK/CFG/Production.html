@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../CLTK/Parser/State.html">State</a>
       
@@ -430,7 +435,12 @@ context-free grammar.</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L6" target="_blank">cltk/cfg/production.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L6" target="_blank">cltk/cfg/production.cr</a>
+    
+    <br/>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L99" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -446,6 +456,11 @@ context-free grammar.</p>
         <a href="#new%28id%3AInt32%2Clhs%3AString%2Crhs%3AArray%28String%29%29-class-method" class="signature"><strong>.new</strong>(id : Int32, lhs : String, rhs : Array(String))</a>
         
           <div class="summary"><p>Instantiates a new Production object with the specified ID, and left- and right-hand sides.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28__temp_80%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_80 : MessagePack::Unpacker)</a>
         
       </li>
     
@@ -473,7 +488,10 @@ context-free grammar.</p>
       <li class="entry-summary">
         <a href="#id%3AInt32-instance-method" class="signature"><strong>#id</strong> : Int32</a>
         
-          <div class="summary"><p>@return [Integer]  ID of this production.</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3D%28_id%3AInt32%29-instance-method" class="signature"><strong>#id=</strong>(_id : Int32)</a>
         
       </li>
     
@@ -487,14 +505,20 @@ context-free grammar.</p>
       <li class="entry-summary">
         <a href="#lhs%3AString-instance-method" class="signature"><strong>#lhs</strong> : String</a>
         
-          <div class="summary"><p>@return [Symbol]  Left-hand side of this production.</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#lhs%3D%28_lhs%3AString%29-instance-method" class="signature"><strong>#lhs=</strong>(_lhs : String)</a>
         
       </li>
     
       <li class="entry-summary">
         <a href="#rhs%3AArray%28String%29-instance-method" class="signature"><strong>#rhs</strong> : Array(String)</a>
         
-          <div class="summary"><p>@return [Array&lt;Symbol>]  Right-hand side of this production.</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#rhs%3D%28_rhs%3AArray%28String%29%29-instance-method" class="signature"><strong>#rhs=</strong>(_rhs : Array(String))</a>
         
       </li>
     
@@ -502,6 +526,11 @@ context-free grammar.</p>
         <a href="#to_item-instance-method" class="signature"><strong>#to_item</strong></a>
         
           <div class="summary"><p>@return [Item]  An Item based on this production.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
         
       </li>
     
@@ -566,7 +595,23 @@ and left- and right-hand sides.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L22" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L22" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_80:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_80 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_80%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -594,7 +639,7 @@ left- and right- hand sides match.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L31" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L30" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -612,7 +657,7 @@ left- and right- hand sides match.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L38" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L37" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -625,12 +670,26 @@ left- and right- hand sides match.</p>
         <a class="method-permalink" href="#id%3AInt32-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Integer]  ID of this production.</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id&#61;&#40;_id:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>id=</strong>(_id : Int32)
+
+        <a class="method-permalink" href="#id%3D%28_id%3AInt32%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L8" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -648,7 +707,7 @@ left- and right- hand sides match.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L43" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L42" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -661,12 +720,26 @@ left- and right- hand sides match.</p>
         <a class="method-permalink" href="#lhs%3AString-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Symbol]  Left-hand side of this production.</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="lhs&#61;&#40;_lhs:String&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>lhs=</strong>(_lhs : String)
+
+        <a class="method-permalink" href="#lhs%3D%28_lhs%3AString%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L11" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -679,12 +752,26 @@ left- and right- hand sides match.</p>
         <a class="method-permalink" href="#rhs%3AArray%28String%29-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Array&lt;Symbol>]  Right-hand side of this production.</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="rhs&#61;&#40;_rhs:Array&#40;String&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>rhs=</strong>(_rhs : Array(String))
+
+        <a class="method-permalink" href="#rhs%3D%28_rhs%3AArray%28String%29%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L14" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -702,7 +789,23 @@ left- and right- hand sides match.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L54" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L53" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L100" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -724,7 +827,7 @@ left- and right- hand sides match.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/production.cr#L63" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/production.cr#L62" target="_blank">View source</a>]
         
       </div>
     </div>

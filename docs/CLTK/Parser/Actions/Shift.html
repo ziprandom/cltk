@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../../CLTK/Parser/State.html">State</a>
       
@@ -423,7 +428,12 @@ current input token.</p>
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L58" target="_blank">cltk/parser/actions.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L60" target="_blank">cltk/parser/actions.cr</a>
+    
+    <br/>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L88" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -432,10 +442,40 @@ current input token.</p>
 
 
 
+  <h2>Class Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new%28id%3AInt32%29-class-method" class="signature"><strong>.new</strong>(id : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28__temp_76%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_76 : MessagePack::Unpacker)</a>
+        
+      </li>
+    
+  </ul>
+
 
 
   <h2>Instance Method Summary</h2>
   <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#id%3AInt32-instance-method" class="signature"><strong>#id</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3D%28_id%3AInt32%29-instance-method" class="signature"><strong>#id=</strong>(_id : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
+        
+      </li>
     
       <li class="entry-summary">
         <a href="#to_s-instance-method" class="signature"><strong>#to_s</strong></a>
@@ -459,7 +499,12 @@ current input token.</p>
   
     <a href="../../../CLTK/Parser/Action.html#id%3AInt32-instance-method" class="tooltip">
       <span>id : Int32</span>
-    id</a>
+    id</a>, 
+    
+  
+    <a href="../../../CLTK/Parser/Action.html#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="tooltip">
+      <span>to_msgpack(packer : MessagePack::Packer)</span>
+    to_msgpack</a>
     
   
 
@@ -469,8 +514,13 @@ current input token.</p>
   <h3>Class methods inherited from struct <code><a href="../../../CLTK/Parser/Action.html">CLTK::Parser::Action</a></code></h3>
   
   
+    <a href="../../../CLTK/Parser/Action.html#from_msgpack%28pull%3AMessagePack%3A%3AUnpacker%29-class-method" class="tooltip">
+      <span>from_msgpack(pull : MessagePack::Unpacker)</span>
+    from_msgpack</a>, 
+    
+  
     <a href="../../../CLTK/Parser/Action.html#new%28id%3AInt32%29-class-method" class="tooltip">
-      <span>new(id : Int32)</span>
+      <span>new(id : Int32)<br/>new(packer : MessagePack::Unpacker)</span>
     new</a>
     
   
@@ -510,9 +560,92 @@ current input token.</p>
 </div>
 
 
+  <h2>Class Method Detail</h2>
+  
+    <div class="entry-detail" id="new&#40;id:Int32&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(id : Int32)
+
+        <a class="method-permalink" href="#new%28id%3AInt32%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L61" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_76:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_76 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_76%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L89" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
 
 
   <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="id:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>id</strong> : Int32
+
+        <a class="method-permalink" href="#id%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L89" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id&#61;&#40;_id:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>id=</strong>(_id : Int32)
+
+        <a class="method-permalink" href="#id%3D%28_id%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L89" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L90" target="_blank">View source</a>]
+        
+      </div>
+    </div>
   
     <div class="entry-detail" id="to_s-instance-method">
       <div class="signature">
@@ -527,7 +660,7 @@ current input token.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parser/actions.cr#L60" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/actions.cr#L63" target="_blank">View source</a>]
         
       </div>
     </div>

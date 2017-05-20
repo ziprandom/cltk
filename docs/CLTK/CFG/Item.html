@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../CLTK/Parser/State.html">State</a>
       
@@ -422,7 +427,12 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L5" target="_blank">cltk/cfg/item.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L5" target="_blank">cltk/cfg/item.cr</a>
+    
+    <br/>
+  
+    
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L102" target="_blank">cltk/parser/msgpack.cr</a>
     
     <br/>
   
@@ -435,9 +445,14 @@
   <ul class="list-summary">
     
       <li class="entry-summary">
-        <a href="#new%28dot%3AInt32%2C%2Aargs%29-class-method" class="signature"><strong>.new</strong>(dot : Int32, *args)</a>
+        <a href="#new%28dot%3AInt32%2Cid%3AInt32%2Clhs%3AString%2Crhs%3AArray%28String%29%29-class-method" class="signature"><strong>.new</strong>(dot : Int32, id : Int32, lhs : String, rhs : Array(String))</a>
         
           <div class="summary"><p>Instantiates a new Item object with a dot located before the symbol at index <em>dot</em> of the right-hand side.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new%28__temp_88%3AMessagePack%3A%3AUnpacker%29-class-method" class="signature"><strong>.new</strong>(__temp_88 : MessagePack::Unpacker)</a>
         
       </li>
     
@@ -479,7 +494,30 @@
       <li class="entry-summary">
         <a href="#dot%3AInt32-instance-method" class="signature"><strong>#dot</strong> : Int32</a>
         
-          <div class="summary"><p>@return [Integer] Index of the next symbol in this item.</p></div>
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#dot%3D%28_dot%3AInt32%29-instance-method" class="signature"><strong>#dot=</strong>(_dot : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3AInt32-instance-method" class="signature"><strong>#id</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#id%3D%28_id%3AInt32%29-instance-method" class="signature"><strong>#id=</strong>(_id : Int32)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#lhs%3AString-instance-method" class="signature"><strong>#lhs</strong> : String</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#lhs%3D%28_lhs%3AString%29-instance-method" class="signature"><strong>#lhs=</strong>(_lhs : String)</a>
         
       </li>
     
@@ -487,6 +525,21 @@
         <a href="#next_symbol-instance-method" class="signature"><strong>#next_symbol</strong></a>
         
           <div class="summary"><p>Returns the symbol located after the dot.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#rhs%3AArray%28String%29-instance-method" class="signature"><strong>#rhs</strong> : Array(String)</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#rhs%3D%28_rhs%3AArray%28String%29%29-instance-method" class="signature"><strong>#rhs=</strong>(_rhs : Array(String))</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="signature"><strong>#to_msgpack</strong>(packer : MessagePack::Packer)</a>
         
       </li>
     
@@ -525,6 +578,11 @@
     id</a>, 
     
   
+    <a href="../../CLTK/CFG/Production.html#id%3D%28_id%3AInt32%29-instance-method" class="tooltip">
+      <span>id=(_id : Int32)</span>
+    id=</a>, 
+    
+  
     <a href="../../CLTK/CFG/Production.html#last_terminal-instance-method" class="tooltip">
       <span>last_terminal</span>
     last_terminal</a>, 
@@ -535,14 +593,29 @@
     lhs</a>, 
     
   
+    <a href="../../CLTK/CFG/Production.html#lhs%3D%28_lhs%3AString%29-instance-method" class="tooltip">
+      <span>lhs=(_lhs : String)</span>
+    lhs=</a>, 
+    
+  
     <a href="../../CLTK/CFG/Production.html#rhs%3AArray%28String%29-instance-method" class="tooltip">
       <span>rhs : Array(String)</span>
     rhs</a>, 
     
   
+    <a href="../../CLTK/CFG/Production.html#rhs%3D%28_rhs%3AArray%28String%29%29-instance-method" class="tooltip">
+      <span>rhs=(_rhs : Array(String))</span>
+    rhs=</a>, 
+    
+  
     <a href="../../CLTK/CFG/Production.html#to_item-instance-method" class="tooltip">
       <span>to_item</span>
     to_item</a>, 
+    
+  
+    <a href="../../CLTK/CFG/Production.html#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method" class="tooltip">
+      <span>to_msgpack(packer : MessagePack::Packer)</span>
+    to_msgpack</a>, 
     
   
     <a href="../../CLTK/CFG/Production.html#to_s%28padding%3D0%29-instance-method" class="tooltip">
@@ -558,7 +631,7 @@
   
   
     <a href="../../CLTK/CFG/Production.html#new%28id%3AInt32%2Clhs%3AString%2Crhs%3AArray%28String%29%29-class-method" class="tooltip">
-      <span>new(id : Int32, lhs : String, rhs : Array(String))</span>
+      <span>new(id : Int32, lhs : String, rhs : Array(String))<br/>new(__temp_80 : MessagePack::Unpacker)</span>
     new</a>
     
   
@@ -593,12 +666,12 @@
 
   <h2>Class Method Detail</h2>
   
-    <div class="entry-detail" id="new&#40;dot:Int32,*args&#41;-class-method">
+    <div class="entry-detail" id="new&#40;dot:Int32,id:Int32,lhs:String,rhs:Array&#40;String&#41;&#41;-class-method">
       <div class="signature">
         
-        def self.<strong>new</strong>(dot : Int32, *args)
+        def self.<strong>new</strong>(dot : Int32, id : Int32, lhs : String, rhs : Array(String))
 
-        <a class="method-permalink" href="#new%28dot%3AInt32%2C%2Aargs%29-class-method">#</a>
+        <a class="method-permalink" href="#new%28dot%3AInt32%2Cid%3AInt32%2Clhs%3AString%2Crhs%3AArray%28String%29%29-class-method">#</a>
       </div>
       
         <div class="doc"><p>Instantiates a new Item object with a dot located before the
@@ -612,7 +685,23 @@ arguments (<em>args</em>) should be as specified by
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L16" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L16" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new&#40;__temp_88:MessagePack::Unpacker&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(__temp_88 : MessagePack::Unpacker)
+
+        <a class="method-permalink" href="#new%28__temp_88%3AMessagePack%3A%3AUnpacker%29-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -639,7 +728,7 @@ arguments (<em>args</em>) should be as specified by
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L28" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L25" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -660,7 +749,7 @@ side hasn't already been reached.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L36" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L33" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -680,7 +769,7 @@ side hasn't already been reached.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L45" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L42" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -698,7 +787,7 @@ side hasn't already been reached.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L50" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L47" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -711,12 +800,90 @@ side hasn't already been reached.</p>
         <a class="method-permalink" href="#dot%3AInt32-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>@return [Integer] Index of the next symbol in this item.</p></div>
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="dot&#61;&#40;_dot:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>dot=</strong>(_dot : Int32)
+
+        <a class="method-permalink" href="#dot%3D%28_dot%3AInt32%29-instance-method">#</a>
+      </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L7" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>id</strong> : Int32
+
+        <a class="method-permalink" href="#id%3AInt32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="id&#61;&#40;_id:Int32&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>id=</strong>(_id : Int32)
+
+        <a class="method-permalink" href="#id%3D%28_id%3AInt32%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="lhs:String-instance-method">
+      <div class="signature">
+        
+        def <strong>lhs</strong> : String
+
+        <a class="method-permalink" href="#lhs%3AString-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="lhs&#61;&#40;_lhs:String&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>lhs=</strong>(_lhs : String)
+
+        <a class="method-permalink" href="#lhs%3D%28_lhs%3AString%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -736,7 +903,55 @@ side hasn't already been reached.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L57" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L54" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="rhs:Array&#40;String&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>rhs</strong> : Array(String)
+
+        <a class="method-permalink" href="#rhs%3AArray%28String%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="rhs&#61;&#40;_rhs:Array&#40;String&#41;&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>rhs=</strong>(_rhs : Array(String))
+
+        <a class="method-permalink" href="#rhs%3D%28_rhs%3AArray%28String%29%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_msgpack&#40;packer:MessagePack::Packer&#41;-instance-method">
+      <div class="signature">
+        
+        def <strong>to_msgpack</strong>(packer : MessagePack::Packer)
+
+        <a class="method-permalink" href="#to_msgpack%28packer%3AMessagePack%3A%3APacker%29-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parser/msgpack.cr#L103" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -758,7 +973,7 @@ side hasn't already been reached.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/cfg/item.cr#L70" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/cfg/item.cr#L67" target="_blank">View source</a>]
         
       </div>
     </div>

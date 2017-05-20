@@ -275,6 +275,11 @@
       
     </li>
   
+  <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/StandaloneParser" data-name="cltk::parser::standaloneparser">
+      <a href="../../CLTK/Parser/StandaloneParser.html">StandaloneParser</a>
+      
+    </li>
+  
   <li class=" " data-id="github.com/ziprandom/cltk/CLTK/Parser/State" data-name="cltk::parser::state">
       <a href="../../CLTK/Parser/State.html">State</a>
       
@@ -422,7 +427,7 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">cltk/parsers/infix_calc.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">cltk/parsers/infix_calc.cr</a>
     
     <br/>
   
@@ -501,9 +506,16 @@
       </li>
     
       <li class="entry-summary">
-        <a href="#finalize%28opts%3AOpts%3D%7Bexplain%3Afalse%2Clookahead%3Atrue%2Cprecedence%3Atrue%7D%29-class-method" class="signature"><strong>.finalize</strong>(opts : Opts = {explain: <span class="n">false</span>, lookahead: <span class="n">true</span>, precedence: <span class="n">true</span>})</a>
+        <a href="#finalize%28explain%3Dfalse%2Clookahead%3Dtrue%2Cprecedence%3Dtrue%2Cuse%3Dnil%29-class-method" class="signature"><strong>.finalize</strong>(explain = <span class="n">false</span>, lookahead = <span class="n">true</span>, precedence = <span class="n">true</span>, use = <span class="n">nil</span>)</a>
         
           <div class="summary"><p>This method will finalize the parser causing the construction of states and their actions, and the resolution of conflicts using lookahead and precedence information.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#finalize_from_serialized_parser%28path%29-class-method" class="signature"><strong>.finalize_from_serialized_parser</strong>(path)</a>
+        
+          <div class="summary"><p>A parser for a simple infix calculator.</p></div>
         
       </li>
     
@@ -518,6 +530,20 @@
         <a href="#prune%28do_lookahead%2Cdo_precedence%29-class-method" class="signature"><strong>.prune</strong>(do_lookahead, do_precedence)</a>
         
           <div class="summary"><p>This method uses lookahead sets and precedence information to resolve conflicts and remove unnecessary reduce actions.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#serialize_to_file%28path%29-class-method" class="signature"><strong>.serialize_to_file</strong>(path)</a>
+        
+          <div class="summary"><p>A parser for a simple infix calculator.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#to_parser-class-method" class="signature"><strong>.to_parser</strong></a>
+        
+          <div class="summary"><p>A parser for a simple infix calculator.</p></div>
         
       </li>
     
@@ -629,6 +655,11 @@
   <h3>Class methods inherited from class <code><a href="../../CLTK/Parser.html">CLTK::Parser</a></code></h3>
   
   
+    <a href="../../CLTK/Parser.html#_parse%28procs%2Clh_sides%2Csymbols%2Cstates%2Ctoken_hooks%2Ctokens%2Copts%3ANamedTuple%3F%3Dnil%29-class-method" class="tooltip">
+      <span>_parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = <span class="n">nil</span>)</span>
+    _parse</a>, 
+    
+  
     <a href="../../CLTK/Parser.html#add_state%28state%29-class-method" class="tooltip">
       <span>add_state(state)</span>
     add_state</a>, 
@@ -652,11 +683,6 @@
     <a href="../../CLTK/Parser.html#env-class-method" class="tooltip">
       <span>env</span>
     env</a>, 
-    
-  
-    <a href="../../CLTK/Parser.html#get_io%28o%2Cmode%3D%26quot%3Bw%26quot%3B%29-class-method" class="tooltip">
-      <span>get_io(o, mode = <span class="s">&quot;w&quot;</span>)</span>
-    get_io</a>, 
     
   
     <a href="../../CLTK/Parser.html#grammar-class-method" class="tooltip">
@@ -786,7 +812,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -804,17 +830,17 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="finalize&#40;opts:Opts&#61;&#123;explain:false,lookahead:true,precedence:true&#125;&#41;-class-method">
+    <div class="entry-detail" id="finalize&#40;explain&#61;false,lookahead&#61;true,precedence&#61;true,use&#61;nil&#41;-class-method">
       <div class="signature">
         
-        def self.<strong>finalize</strong>(opts : <a href="../../CLTK/Parser/Opts.html">Opts</a> = {explain: <span class="n">false</span>, lookahead: <span class="n">true</span>, precedence: <span class="n">true</span>})
+        def self.<strong>finalize</strong>(explain = <span class="n">false</span>, lookahead = <span class="n">true</span>, precedence = <span class="n">true</span>, use = <span class="n">nil</span>)
 
-        <a class="method-permalink" href="#finalize%28opts%3AOpts%3D%7Bexplain%3Afalse%2Clookahead%3Atrue%2Cprecedence%3Atrue%7D%29-class-method">#</a>
+        <a class="method-permalink" href="#finalize%28explain%3Dfalse%2Clookahead%3Dtrue%2Cprecedence%3Dtrue%2Cuse%3Dnil%29-class-method">#</a>
       </div>
       
         <div class="doc"><p>This method will finalize the parser causing the construction
@@ -836,7 +862,25 @@ Parser.finalize.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="finalize_from_serialized_parser&#40;path&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>finalize_from_serialized_parser</strong>(path)
+
+        <a class="method-permalink" href="#finalize_from_serialized_parser%28path%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>A parser for a simple infix calculator.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -855,7 +899,7 @@ used for subsequent calls.</p></div>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -879,7 +923,43 @@ resolve conflicts and remove unnecessary reduce actions.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="serialize_to_file&#40;path&#41;-class-method">
+      <div class="signature">
+        
+        def self.<strong>serialize_to_file</strong>(path)
+
+        <a class="method-permalink" href="#serialize_to_file%28path%29-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>A parser for a simple infix calculator.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="to_parser-class-method">
+      <div class="signature">
+        
+        def self.<strong>to_parser</strong>
+
+        <a class="method-permalink" href="#to_parser-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>A parser for a simple infix calculator.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -906,7 +986,7 @@ resolve conflicts and remove unnecessary reduce actions.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -926,7 +1006,7 @@ resolve conflicts and remove unnecessary reduce actions.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -954,7 +1034,7 @@ to some terminal symbol.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L25" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L25" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -979,7 +1059,7 @@ call to {Parser.clause}.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1003,7 +1083,7 @@ give their arguments higher precedence.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1019,7 +1099,7 @@ give their arguments higher precedence.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1042,7 +1122,7 @@ are non-associative.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1058,7 +1138,7 @@ are non-associative.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1074,7 +1154,7 @@ are non-associative.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1106,7 +1186,7 @@ production by setting <em>precedence</em> to a terminal symbol.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -1130,7 +1210,7 @@ give their arguments higher precedence.</p>
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/92d863e99bcec94583b6b7256e12013906cccc46/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/parsers/infix_calc.cr#L20" target="_blank">View source</a>]
         
       </div>
     </div>
