@@ -81,6 +81,6 @@ module Kazoo
 
     list(:arg_defs, :IDENT, :COMMA)
 
-    finalize
+    finalize(use: "./kazoo_parser.bin")
   end
 end

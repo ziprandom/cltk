@@ -26,6 +26,7 @@ require "./parser/state"
 require "./parser/prod_proc"
 {% if env("VERBOSE") == "procs" %}require "./parser/prod_proc_debug"{% end %}
 require "./parser/actions"
+require "./parser/msgpack"
 
 #######################
 # Classes and Modules #
@@ -335,26 +336,6 @@ module CLTK
       end
     end
 
-    # Build a hash with the default options for Parser.finalize
-    # and then update it with the values from *opts*.
-    #
-    # @param [Hash{Symbol => Object}] opts Hash containing options for finalize.
-    #
-    # @return [Hash{Symbol => Object}]
-    private def self.build_finalize_opts(opts : Hash)
-
-      opts[:explain] =
-        opts[:explain] ?
-          self.get_io(opts[:explain].as(String)) : nil
-
-      {
-	explain =>    false,
-	lookahead =>  true,
-	precedence => true,
-	use =>        false
-      }.merge(opts)
-    end
-
     def self.setenv(env)
       @@env = env
     end
@@ -471,10 +452,26 @@ module CLTK
     end
 
 
-    alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool}
+    alias Opts = {explain: Bool | String | IO, lookahead: Bool, precedence: Bool, use: String?}
 
     macro inherited
 
+      def self.serialize_to_file(path)
+        file = File.open(path, "w+")
+        packer = MessagePack::Packer.new(file)
+        to_parser.to_msgpack(packer)
+        file.close
+      end
+
+      def self.finalize_from_serialized_parser(path)
+        file = File.open(path, "r")
+        unpacker = MessagePack::Unpacker.new(file)
+        parsed_parser = CLTK::Parser::StandaloneParser.new unpacker
+        file.close
+        @@lh_sides = parsed_parser.lh_sides
+        @@symbols = parsed_parser.symbols
+        @@states = parsed_parser.states
+      end
       # This method will finalize the parser causing the construction
       # of states and their actions, and the resolution of conflicts
       # using lookahead and precedence information.
@@ -490,8 +487,19 @@ module CLTK
       # @option opts [String,IO]          :use         A file name or object that is used to load/save the parser.
       #
       # @return [void]
-      def self.finalize(opts : Opts = {explain: false, lookahead: true, precedence: true} )
+      def self.finalize(explain = false, lookahead = true, precedence = true, use = nil)
+        opts = {
+          :explain => explain, :lookahead => lookahead, :precedence => precedence, :use => use
+        }
         build_up_productions
+        unless ENV["NOCACHE"]?
+          if (path = opts[:use]).is_a?(String)
+            if File.exists?(path) && File.readable?(path)
+              finalize_from_serialized_parser(path)
+              return
+            end
+          end
+        end
         if @@grammar.productions_sym.as(Hash(String, Array(CLTK::CFG::Production))).empty?
 	  #raise ParserConstructionException,
 	  raise Exception.new "Parser has no productions.  Cowardly refusing to construct an empty parser."
@@ -580,9 +588,11 @@ module CLTK
         if exp.is_a? IO
           self.explain(exp)
         end
-
         # Remove any data that is no longer needed.
         clean
+        if (path = opts[:use]).is_a?(String)
+          serialize_to_file(path)
+        end
       end
 
       def self.build_up_productions
@@ -723,24 +733,6 @@ module CLTK
         end
       end
 
-    end
-
-    # Converts an object into an IO object as appropriate.
-    #
-    # @param [Object]  o     Object to be converted into an IO object.
-    # @param [String]  mode  String representing the mode to open the IO object in.
-    #
-    # @return [IO, false] The IO object or false if a conversion wasn't possible.
-    def self.get_io(o, mode = "w")
-      if o.is_a?(Bool)
-        STDOUT
-      elsif o.is_a?(String)
-	File.open(o, mode).read
-      elsif o.is_a?(IO)
-	o
-      else
-	false
-      end
     end
 
     # Iterate over the parser's states.

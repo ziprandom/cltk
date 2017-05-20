@@ -19,8 +19,7 @@ module CLTK
       # @param [Integer]        id   ID number of this production.
       # @param [Symbol]         lhs  Left-hand side of the production.
       # @param [Array<Symbol>]  rhs  Right-hand side of the production.
-      def initialize(@id : Int32, @lhs : String, @rhs : Array(String))
-      end
+      def initialize(@id : Int32, @lhs : String, @rhs : Array(String)); end
 
       # Comparese on production to another.  Returns true only if the
       # left- and right- hand sides match.

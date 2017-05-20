@@ -9,13 +9,20 @@ require "../named_tuple_extensions.cr"
 
 macro def_parse(params_as_const = true)
 
-  def self.parse(tokens : Array, opts : NamedTuple? = nil)
-    {% if params_as_const %}
-      _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
-    {% else %}
-      _parse(@@procs, @@lh_sides, @@symbols, @@states, @@token_hooks, tokens, opts)
-    {% end %}
-  end
+  {% if params_as_const == :instance %}
+    def parse(tokens : Array, opts : NamedTuple? = nil)
+      token_hooks = Hash(String, Array(Proc(Environment, Nil))).new
+      self.class._parse(@prod_procs, @lh_sides, @symbols, @states, token_hooks, tokens, opts)
+    end
+  {% else %}
+    def self.parse(tokens : Array, opts : NamedTuple? = nil)
+      {% if params_as_const %}
+        _parse(PROCS, LH_SIDES, SYMBOLS, STATES, TOKEN_HOOKS, tokens, opts)
+      {% else %}
+        _parse(@@procs, @@lh_sides, @@symbols, @@states, @@token_hooks, tokens, opts)
+      {% end %}
+    end
+  {% end %}
 
   private def self.build_parse_opts(opts : NamedTuple?)
     {
@@ -26,7 +33,7 @@ macro def_parse(params_as_const = true)
     }.merge(opts)
   end
 
-  private def self._parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = nil)
+  def self._parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = nil)
     # Get the full options hash.
     opts = build_parse_opts(opts)
     {% if env("VERBOSE") %}

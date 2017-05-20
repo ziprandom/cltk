@@ -74,7 +74,7 @@ module JSON_PARSE
       clause("json_string COLON expression") {|key, _, value| [key, value] }
     end
 
-    finalize
+    finalize(use: "json_parser.bin")
   end
 
   #

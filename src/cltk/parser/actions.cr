@@ -29,6 +29,7 @@ module CLTK
       # The GoTo class indicates to the parser that it should goto the state
       # specified by GoTo.id.
       struct GoTo < Action
+        def initialize(@id : Int32); end
         # @return [String] String representation of this action.
         def to_s
           "GoTo #{self.id}"
@@ -42,6 +43,7 @@ module CLTK
 
         # @param [Production]  production  Production to reduce by
         def initialize(production : CLTK::CFG::Production)
+          @id = 0
           super(production.id)
 
           @production = production
@@ -56,6 +58,7 @@ module CLTK
       # The Shift class indicates to the parser that it should shift the
       # current input token.
       struct Shift < Action
+        def initialize(@id : Int32); end
         # @return [String] String representation of this action.
         def to_s
           "Shift to State #{self.id}"

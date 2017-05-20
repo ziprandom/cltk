@@ -13,11 +13,8 @@ module CLTK
       #
       # @param [Integer]        dot   Location of the dot in this Item.
       # @param [Array<Object>]  args  (see {Production#initialize})
-      def initialize(dot : Int32, *args)
-        super(*args)
-
+      def initialize(@dot : Int32, @id : Int32, @lhs : String, @rhs : Array(String))
         # The Dot indicates the NEXT symbol to be read.
-        @dot = dot
       end
 
       # Compares two items.
