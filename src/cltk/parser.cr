@@ -196,8 +196,9 @@ module CLTK
              expression_symbol_selections = expression.id.split(" ").map { |e| e=~ /^\./ ? e : nil }
           %}
           \\{% if action.is_a?(Block) %}
-             selections = \\{{expression_symbol_selections}}.map_with_index { |e, i| e ? i : nil }.compact
-             PROCS << ProdProc.new(\\{{arg_type}}, selections) do |lhsymbols, env, arg_type|
+             PROCS << ProdProc.new(
+               \\{{arg_type}}, \\{{expression_symbol_selections}}.map_with_index { |e, i| e ? i : nil }.compact
+             ) do |lhsymbols, env, arg_type|
               env.as(Environment).yield_with_self do
                 \\{% if !action.args.empty?%}
                   \\{% if action.args.size == 1 %}
