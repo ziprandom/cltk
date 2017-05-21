@@ -114,19 +114,19 @@ module CLTK
           \{% for tuple in VISITS %}\
            when \{{tuple[0]}}
             \{%for key in tuple[1] %}\
-            value = \{{key.id}}
-            result = if value.is_a?(Array)
-                       value.map do |v|
+            %value = \{{key.id}}
+            result = if %value.is_a?(Array)
+                       %value.map do |v|
                          next v if visited_ids.includes? v.object_id
                          visited_ids << v.object_id
                          v.visit(name, visited_ids, &block)
                        end
                      else
-                       if visited_ids.includes? value.object_id
-                         value
+                       if visited_ids.includes? %value.object_id
+                         %value
                        else
-                         visited_ids << value.object_id
-                         value.visit(name, visited_ids, &block)
+                         visited_ids << %value.object_id
+                         %value.visit(name, visited_ids, &block)
                        end
                      end
             \{{key.id}} = result if result.is_a?(CLTK::ASTNode)
