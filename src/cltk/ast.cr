@@ -96,7 +96,7 @@ module CLTK
            \{% key = tuple[0]; elements = tuple[1]%}
           def map_\{{key.id}}(&block : CLTK::ASTNode -> _)
             visited_ids = [] of UInt64
-            visit(\{{key}}, visited_ids, &block)
+            visit(\{{key}}, visited_ids, block)
           end
         \{% end %}
 
@@ -108,33 +108,20 @@ module CLTK
         # macro. If no children are defined for a
         # given traversal path name the block is invoked
         # only with self.
-        def visit(name, visited_ids = [] of UInt64, &block : CLTK::ASTNode -> _)
+        def visit(name, visited_ids = [] of UInt64, block = Proc(CLTK::ASTNode, CLTK::ASTNode?).new {})
           \{% if VISITS.size > 0 %}
           case name
           \{% for tuple in VISITS %}\
            when \{{tuple[0]}}
-            \{%for key in tuple[1] %}\
-            %value = \{{key.id}}
-            result = if %value.is_a?(Array)
-                       %value.map do |v|
-                         next v if visited_ids.includes? v.object_id
-                         visited_ids << v.object_id
-                         v.visit(name, visited_ids, &block)
-                       end
-                     else
-                       if visited_ids.includes? %value.object_id
-                         %value
-                       else
-                         visited_ids << %value.object_id
-                         %value.visit(name, visited_ids, &block)
-                       end
-                     end
-            \{{key.id}} = result if result.is_a?(CLTK::ASTNode)
-            \{% end %}\
+           [\{{tuple[1].map(&.id).splat}}].flatten.compact.each do |c|
+             next if visited_ids.includes? c.object_id
+             visited_ids << c.object_id
+             c.visit(name, visited_ids, block)
+           end
           \{% end %}\
           end
-        \{% end %}\
-          res = yield(self)
+          \{% end %}\
+          res = block.call(self)
           res.is_a?(self) ? res : self
         end
 
