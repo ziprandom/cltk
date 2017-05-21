@@ -423,7 +423,7 @@
   <h2>Defined in:</h2>
   
     
-      <a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L2" target="_blank">cltk/ast.cr</a>
+      <a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L2" target="_blank">cltk/ast.cr</a>
     
     <br/>
   
@@ -437,6 +437,11 @@
     
       <dt class="entry-const" id="VALUES">
         <strong>VALUES</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">Tuple</span>(<span class="t">Symbol</span>, <span class="t">Object</span>.<span class="k">class</span>)</code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="VISITS">
+        <strong>VISITS</strong> = <code><span class="o">[]</span> <span class="k">of</span> <span class="t">Tuple</span>(<span class="t">Symbol</span>, <span class="t">Array</span>(<span class="t">Symbol</span>))</code>
       </dt>
       
     
@@ -467,7 +472,7 @@
       <li class="entry-summary">
         <a href="#clone-instance-method" class="signature"><strong>#clone</strong></a>
         
-          <div class="summary"><p>Returns a copy of <code><a href="../CLTK/ASTNode.html#self-macro">self</a></code> with all instance variables cloned.</p></div>
+          <div class="summary"><p>Returns a copy of <code>self</code> with all instance variables cloned.</p></div>
         
       </li>
     
@@ -499,7 +504,7 @@
       </li>
     
       <li class="entry-summary">
-        <a href="#self-macro" class="signature"><strong>self</strong></a>
+        <a href="#traverse%28name%2C%2Avalues%29-macro" class="signature"><strong>traverse</strong>(name, *values)</a>
         
       </li>
     
@@ -553,7 +558,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L42" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L38" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -574,7 +579,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L50" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L46" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -587,12 +592,12 @@
         <a class="method-permalink" href="#clone-instance-method">#</a>
       </div>
       
-        <div class="doc"><p>Returns a copy of <code><a href="../CLTK/ASTNode.html#self-macro">self</a></code> with all instance variables cloned.</p></div>
+        <div class="doc"><p>Returns a copy of <code>self</code> with all instance variables cloned.</p></div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L72" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L68" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -608,7 +613,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L54" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L50" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -624,7 +629,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L46" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L42" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -645,7 +650,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L110" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L167" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -661,23 +666,23 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L3" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L3" target="_blank">View source</a>]
         
       </div>
     </div>
   
-    <div class="entry-detail" id="self-macro">
+    <div class="entry-detail" id="traverse&#40;name,*values&#41;-macro">
       <div class="signature">
         
-        macro <strong>self</strong>
+        macro <strong>traverse</strong>(name, *values)
 
-        <a class="method-permalink" href="#self-macro">#</a>
+        <a class="method-permalink" href="#traverse%28name%2C%2Avalues%29-macro">#</a>
       </div>
       
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L110" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L167" target="_blank">View source</a>]
         
       </div>
     </div>
@@ -693,7 +698,7 @@
       <br/>
       <div>
         
-          [<a href="https://github.com/ziprandom/cltk/blob/cf4fbdffed18b572b40b42bed280ce955ddf6d1a/src/cltk/ast.cr#L110" target="_blank">View source</a>]
+          [<a href="https://github.com/ziprandom/cltk/blob/8abc707171a86f325ad1d2e6a0bfef71bfdc1c80/src/cltk/ast.cr#L167" target="_blank">View source</a>]
         
       </div>
     </div>
