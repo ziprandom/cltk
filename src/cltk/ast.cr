@@ -49,23 +49,23 @@ module CLTK
       self.class == other.class
     end
 
-    def inspect
-      "#{self.class.name}(" +
-        if vs = values
-          vs.map do |k, v|
-            value = if v.is_a?(Array)
-                      "[" + v.map{ |vv| vv.inspect.as(String) }.join(", ") + "]"
-                    elsif v.is_a?(Hash)
-                      "{" + v.map{ |kk, vv| "#{kk.inspect}: #{vv.inspect}".as(String) }.join(", ") + "}"
-                    else
-                      v.inspect
-                    end
-            "#{k}: #{value}"
-          end.join(", ")
-        else
-          ""
-        end + ")"
-    end
+#    def inspect
+#      "#{self.class.name}(" +
+#        if vs = values
+#          vs.map do |k, v|
+#            value = if v.is_a?(Array)
+#                      "[" + v.map{ |vv| vv.inspect.as(String) }.join(", ") + "]"
+#                    elsif v.is_a?(Hash)
+#                      "{" + v.map{ |kk, vv| "#{kk.inspect}: #{vv.inspect}".as(String) }.join(", ") + "}"
+#                    else
+#                      v.inspect
+#                    end
+#            "#{k}: #{value}"
+#          end.join(", ")
+#        else
+#          ""
+#        end + ")"
+#    end
 
     def_clone
 
@@ -112,12 +112,24 @@ module CLTK
           \{% if VISITS.size > 0 %}
           case name
           \{% for tuple in VISITS %}\
-           when \{{tuple[0]}}
-           [\{{tuple[1].map(&.id).splat}}].flatten.compact.each do |c|
-             next if visited_ids.includes? c.object_id
-             visited_ids << c.object_id
-             c.visit(name, visited_ids, block)
-           end
+            when \{{tuple[0]}}
+            \{% for key in tuple[1]%}
+              %val = \{{key.id}}
+              if %val.is_a?(Array)
+                %result = %val.map! do |v|
+                  next v if visited_ids.includes? v.object_id
+                  visited_ids << v.object_id
+                  res = v.visit(name, visited_ids, block)
+                  res.is_a?(CLTK::ASTNode) ? res : v
+                end
+              else
+                unless %val == nil || visited_ids.includes? %val.object_id
+                  visited_ids << %val.object_id
+                  %result = %val.not_nil!.visit(name, visited_ids, block)
+                  self.\{{key.id}}=(%result)
+                end
+              end
+            \{% end %}
           \{% end %}\
           end
           \{% end %}\

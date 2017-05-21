@@ -42,31 +42,6 @@ end
 
 describe CLTK::ASTNode do
 
-  describe "traversal" do
-    c1 = Child.new("child_1", [] of Child)
-    # here we create a circle of reference
-    # to make sure no infinite loops are created
-    c2 = Child.new("child_2", [c1] of Child)
-    c1.siblings = [c2]
-    p = Parent.new("parent", c1, c2)
-
-    it "works" do
-      visited = [] of CLTK::ASTNode
-
-      p.map_children do |c|
-        if c.responds_to? :name
-          c.name = "visited " + c.name
-        end
-        visited << c
-        c
-      end
-
-      visited.should eq [c2, c1, p]
-      c1.name.should eq "visited child_1"
-      c2.name.should eq "visited child_2"
-      p.name.should eq "visited parent"
-    end
-  end
   describe "initialization" do
     it "initializes a simple class" do
       js = JsonString.new(text: "hey a text")
@@ -174,21 +149,66 @@ describe CLTK::ASTNode do
       jsarray = JsonArray.new(elements: [js1, js2])
       js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
       js_a.values.should eq({
-                             text: "this is a text",
-                             special: true,
-                             child: jsarray
+                              text: "this is a text",
+                              special: true,
+                              child: jsarray
                             })
     end
 
-    it "has a nice, readable string representation" do
-      js1 = JsonString.new(text: "text1").as(JsonExpression)
-      js2 = JsonString.new(text: "text2").as(JsonExpression)
-      jsarray = JsonArray.new(elements: [js1, js2])
-      js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
-      js_a.inspect.should eq(
-                         %{SuperSpecialJsonString(text: "this is a text", special: true, child: JsonArray(elements: [JsonString(text: "text1"), JsonString(text: "text2")]))}
-                       )
+    describe "traversal" do
+      c1 = Child.new("child_1", [] of Child)
+      # here we create a circle of reference
+      # to make sure no infinite loops are created
+      c2 = Child.new("child_2", [c1] of Child)
+      c1.siblings = [c2]
+      p = Parent.new("parent", c1, c2)
+
+      it "iterates over the ast tree avoiding repetitions" do
+        visited = [] of CLTK::ASTNode
+
+        p.map_children do |c|
+          if c.responds_to? :name
+            c.name = "visited " + c.name
+          end
+          visited << c
+          c
+        end
+
+        visited.should eq [c2, c1, p]
+        c1.name.should eq "visited child_1"
+        c2.name.should eq "visited child_2"
+        p.name.should eq "visited parent"
+      end
+
+      it "replaces leaf nodes with the result of the callback" do
+        c1 = Child.new("child_1", [] of Child)
+        c2 = Child.new("child_2", [] of Child)
+        p = Parent.new("parent", c1, c2)
+
+        p.map_children do |node|
+          case node
+          when Child
+            Child.new(name: "i was newly created", siblings: [node])
+          when Parent
+            node
+          end
+        end
+        p.child_a.name.should eq "i was newly created"
+        p.child_a.siblings.first.should eq c1
+        p.child_b.name.should eq "i was newly created"
+        p.child_b.siblings.first.should eq c2
+      end
     end
+
+#    pending "has a nice, readable string representation" do
+#      js1 = JsonString.new(text: "text1").as(JsonExpression)
+#      js2 = JsonString.new(text: "text2").as(JsonExpression)
+#      jsarray = JsonArray.new(elements: [js1, js2])
+#      js_a = SuperSpecialJsonString.new(text: "this is a text", special: true, child: jsarray)
+#      js_a.inspect.should eq(
+#                            %{SuperSpecialJsonString(text: "this is a text", special: true, child: JsonArray(elements: [JsonString(text: "text1"), JsonString(text: "text2")]))}
+#                          )
+#    end
 
     it "works with a class in the hierarchy thats not defining its own values" do
       s1 = ChildOfSpecialisedJsonString.new(text: "a text for JsonString", childish: false)
