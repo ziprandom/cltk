@@ -25,8 +25,48 @@ class JsonArray < JsonExpression
   values({elements: Array(JsonExpression)})
 end
 
+class Parent < CLTK::ASTNode
+  values({name: String,
+          child_a: Child,
+          child_b: Child})
+  traverse(:children, :child_a)
+  traverse(:children, :child_b)
+end
+
+class Child < CLTK::ASTNode
+  values({name: String,
+          siblings: Array(Child)})
+  traverse(:children, :siblings)
+end
+
+
 describe CLTK::ASTNode do
 
+  describe "traversal" do
+    c1 = Child.new("child_1", [] of Child)
+    # here we create a circle of reference
+    # to make sure no infinite loops are created
+    c2 = Child.new("child_2", [c1] of Child)
+    c1.siblings = [c2]
+    p = Parent.new("parent", c1, c2)
+
+    it "works" do
+      visited = [] of CLTK::ASTNode
+
+      p.map_children do |c|
+        if c.responds_to? :name
+          c.name = "visited " + c.name
+        end
+        visited << c
+        c
+      end
+
+      visited.should eq [c2, c1, p]
+      c1.name.should eq "visited child_1"
+      c2.name.should eq "visited child_2"
+      p.name.should eq "visited parent"
+    end
+  end
   describe "initialization" do
     it "initializes a simple class" do
       js = JsonString.new(text: "hey a text")

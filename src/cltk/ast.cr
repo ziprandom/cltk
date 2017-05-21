@@ -1,23 +1,6 @@
 module CLTK
   abstract class ASTNode
     macro make_value_methods
-      macro self.value(**args)
-        \{%
-          args.keys.map do |k|
-            if args[k].is_a? Assign
-              VALUES << { k, args[k].target, args[k].value }
-            else
-              VALUES << { k, args[k] }
-            end
-          end
-        %}
-
-        \{{
-          args.keys.map do |k|
-            "accessors #{k}, " + (args[k].is_a?(Assign) ? "#{args[k].target}, #{args[k].value}" : "#{args[k]}")
-          end.join("\n")
-         }}
-      end
 
       macro accessors(name, type, default)
         def \\{{name}}
@@ -25,6 +8,19 @@ module CLTK
         end
 
         def \\{{name}}=(@\\{{name}} : \\{{type}}); end
+      end
+
+      macro traverse(name, *values)
+        \{%
+          visit = VISITS.find(&.[0].==(name))
+          unless visit
+            VISITS << {name, [] of Symbol}
+            visit = VISITS.find(&.[0].==(name))
+          end
+          values.map do |value|
+            visit[1] = visit[1] + [value]
+          end
+        %}
       end
 
       macro values(args)
@@ -50,7 +46,7 @@ module CLTK
     end
 
     def ==(other)
-      true
+      self.class == other.class
     end
 
     def inspect
@@ -81,7 +77,11 @@ module CLTK
         def_clone
 
         def ==(other : \{{@type}})
-          \{{ (VALUES.map { |v| "(@#{v[0].id} == other.#{v[0].id})".id } + ["super(other)".id]).join(" && ").id }}
+          if self.object_id == other.object_id
+            true
+          else
+            \{{ (VALUES.map { |v| "(@#{v[0].id} == other.#{v[0].id})".id } + ["super(other)".id]).join(" && ").id }}
+          end
         end
 
         def self.values
@@ -92,13 +92,59 @@ module CLTK
           super.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: @#{v[0]}".id }.join(",").id }})
         end
 
+        \{% for tuple in  VISITS %}
+           \{% key = tuple[0]; elements = tuple[1]%}
+          def map_\{{key.id}}(&block : CLTK::ASTNode -> _)
+            visited_ids = [] of UInt64
+            visit(\{{key}}, visited_ids, &block)
+          end
+        \{% end %}
+
+        # Recursively apply the given block to each
+        # node that gets visited with the given key
+        # which nodes get traverses for a given key
+        # can be set on a class via the:
+        # `traverse :name, :child_1, :child2`
+        # macro. If no children are defined for a
+        # given traversal path name the block is invoked
+        # only with self.
+        def visit(name, visited_ids = [] of UInt64, &block : CLTK::ASTNode -> _)
+          \{% if VISITS.size > 0 %}
+          case name
+          \{% for tuple in VISITS %}\
+           when \{{tuple[0]}}
+            \{%for key in tuple[1] %}\
+            value = \{{key.id}}
+            result = if value.is_a?(Array)
+                       value.map do |v|
+                         next v if visited_ids.includes? v.object_id
+                         visited_ids << v.object_id
+                         v.visit(name, visited_ids, &block)
+                       end
+                     else
+                       if visited_ids.includes? value.object_id
+                         value
+                       else
+                         visited_ids << value.object_id
+                         value.visit(name, visited_ids, &block)
+                       end
+                     end
+            \{{key.id}} = result if result.is_a?(CLTK::ASTNode)
+            \{% end %}\
+          \{% end %}\
+          end
+        \{% end %}\
+          res = yield(self)
+          res.is_a?(self) ? res : self
+        end
+
         \{%
            signatures = VALUES.map { |v| "#{v[0].id} " + (v[2] ? "= #{v[2]}" : "") }
            signature = (signatures + ["**rest"]).join(", ").id
            assignments = VALUES.map do |v|
              if v[1].id =~ /^Array/
                type = v[1].id.gsub(/Array\(/, "").gsub(/\)/, "")
-               "@#{v[0].id} = #{v[0].id}.as(Array).map(&.as(#{type}))"
+               "@#{v[0].id} = #{v[0].id}.as(Array).map(&.as(#{type})).as(#{v[1].id})"
              else
                "@#{v[0].id} = #{v[0].id}.as(#{v[1].id})"
              end
@@ -114,9 +160,11 @@ module CLTK
     end
 
     VALUES = [] of Tuple(Symbol, Object.class)
+    VISITS = [] of Tuple(Symbol, Array(Symbol))
 
     macro inherited
       VALUES = [] of Tuple(Symbol, Object.class)
+      VISITS = [] of Tuple(Symbol, Array(Symbol))
     end
 
     make_value_methods
