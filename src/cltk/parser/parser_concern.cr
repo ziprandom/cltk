@@ -1,4 +1,5 @@
 require "./state"
+require "../named_tuple_extensions"
 
 require "../cfg"
 require "./state"

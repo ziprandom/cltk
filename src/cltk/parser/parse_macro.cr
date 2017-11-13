@@ -1,3 +1,4 @@
+require "../named_tuple_extensions.cr"
 {% if env("VERBOSE") %}
   require "colorize"
   COLORS = [
@@ -23,17 +24,13 @@ macro def_parse(params_as_const = true)
     end
   {% end %}
 
-  private def self.build_parse_opts(opts : NamedTuple)
-    build_parse_opts(nil).merge(opts)
-  end
-
-  private def self.build_parse_opts(opts : Nil)
+  private def self.build_parse_opts(opts : NamedTuple?)
     {
       accept:     :first,
       env:        {% if params_as_const %}Environment{% else %}@@env{% end %}.new,
       parse_tree: nil,
       verbose:    nil,
-    }
+    }.merge(opts)
   end
 
   def self._parse(procs, lh_sides, symbols, states, token_hooks, tokens, opts : NamedTuple? = nil)

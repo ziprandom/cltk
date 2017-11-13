@@ -85,11 +85,11 @@ module CLTK
         end
 
         def self.values
-          super\{% if VALUES.size > 0 %}.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: #{v[1].id}".id }.join(",").id }})\{% end %}
+          super.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: #{v[1].id}".id }.join(",").id }})
         end
 
         def values
-          super\{% if VALUES.size > 0 %}.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: @#{v[0]}".id }.join(",").id }})\{% end %}
+          super.merge NamedTuple.new(\{{ VALUES.map { |v| "#{v[0].id}: @#{v[0]}".id }.join(",").id }})
         end
 
         \{% for tuple in  VISITS %}

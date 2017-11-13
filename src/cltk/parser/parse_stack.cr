@@ -95,13 +95,11 @@ module CLTK
       def push(state, o, node0, position)
         @state_stack << state
         if o.is_a? Array
-          @output_stack << [
-            o.reduce(Array(CLTK::Parser::StackType).new) do |a, e|
-              e.is_a?(CLTK::Parser::StackType) ? a.push(e) : a
-            end.as(CLTK::Parser::StackType)
-          ].as(CLTK::Parser::StackType)
+          @output_stack = @output_stack + [o.map{ |e| e.as(CLTK::Parser::StackType) }.as(CLTK::Parser::StackType)]
         elsif o.is_a? CLTK::Parser::StackType
           @output_stack << o
+        else
+          @output_stack << o#.as(CLTK::Parser::StackType)
         end
 
         @node_stack	<< @labels.size
