@@ -1,0 +1,10 @@
+version: 1.0
+shards:
+  crystal-dfa:
+    github: ziprandom/crystal-dfa
+    commit: a39216f949eaf7dc3fcab1c3bd7b7d995a3a0323
+
+  msgpack:
+    github: benoist/msgpack-crystal
+    version: 0.7.1
+
