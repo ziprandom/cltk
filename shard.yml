@@ -1,5 +1,5 @@
 name: cltk
-version: 0.1.0
+version: 0.1.1
 
 authors:
   - ziprandom <ziprandom@gmail.com>
@@ -8,8 +8,7 @@ authors:
 dependencies:
   crystal-dfa:
     github: ziprandom/crystal-dfa
-    #branch: master
-    version: ~> 0.4.0
+    branch: master
   msgpack:
     github: benoist/msgpack-crystal
 

@@ -2,9 +2,9 @@ version: 1.0
 shards:
   crystal-dfa:
     github: ziprandom/crystal-dfa
-    commit: a39216f949eaf7dc3fcab1c3bd7b7d995a3a0323
+    commit: c4a7ca301a5f2ff82843290e15523151d7428fba
 
   msgpack:
     github: benoist/msgpack-crystal
-    version: 0.7.1
+    version: 0.8.0
 
