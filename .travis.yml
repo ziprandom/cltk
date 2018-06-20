@@ -1,6 +1,6 @@
 language: crystal
 before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
   - echo -e "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main\ndeb-src http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee --append /etc/apt/sources.list
   - sudo apt-get update
