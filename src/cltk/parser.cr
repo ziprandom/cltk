@@ -466,7 +466,7 @@ module CLTK
 
       def self.finalize_from_serialized_parser(path)
         file = File.open(path, "r")
-        unpacker = MessagePack::Unpacker.new(file)
+        unpacker = MessagePack::IOUnpacker.new(file)
         parsed_parser = CLTK::Parser::StandaloneParser.new unpacker
         file.close
         @@lh_sides = parsed_parser.lh_sides
