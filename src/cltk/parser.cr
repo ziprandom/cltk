@@ -744,7 +744,7 @@ module CLTK
     def self.each_state
       current_state = 0
       while current_state < @@states.size
-	yield @@states.at(current_state)
+	yield @@states[current_state]
 	current_state += 1
       end
     end

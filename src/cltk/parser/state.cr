@@ -130,7 +130,7 @@ module CLTK
       def each
         current_item = 0
         while current_item < @items.size
-          yield @items.at(current_item)
+          yield @items[current_item]
           current_item += 1
         end
       end
