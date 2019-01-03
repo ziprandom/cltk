@@ -466,7 +466,7 @@ module CLTK
 
       def self.finalize_from_serialized_parser(path)
         file = File.open(path, "r")
-        unpacker = MessagePack::Unpacker.new(file)
+        unpacker = MessagePack::IOUnpacker.new(file)
         parsed_parser = CLTK::Parser::StandaloneParser.new unpacker
         file.close
         @@lh_sides = parsed_parser.lh_sides
@@ -744,7 +744,7 @@ module CLTK
     def self.each_state
       current_state = 0
       while current_state < @@states.size
-	yield @@states.at(current_state)
+	yield @@states[current_state]
 	current_state += 1
       end
     end
