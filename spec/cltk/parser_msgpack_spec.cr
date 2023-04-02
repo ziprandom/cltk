@@ -9,7 +9,7 @@ class ArrayCalc2 < CLTK::Parser
     clause("PLS e e") { |args| args = args.as(Array); args[1].as(Int32) + args[2].as(Int32) }
     clause("SUB e e") { |args| args = args.as(Array); args[1].as(Int32) - args[2].as(Int32) }
     clause("MUL e e") { |args| args = args.as(Array); args[1].as(Int32) * args[2].as(Int32) }
-    clause("DIV e e") { |args| args = args.as(Array); args[1].as(Int32) / args[2].as(Int32) }
+    clause("DIV e e") { |args| args = args.as(Array); args[1].as(Int32) // args[2].as(Int32) }
     nil
   end
 

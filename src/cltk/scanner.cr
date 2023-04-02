@@ -274,7 +274,7 @@ module CLTK
     # wrap the given block to be yielded in an Environment
     private macro block_to_proc(&block)
       {%unless block.is_a? Nop %}
-        ProcType.new do |{{block.args.first}}, env|
+        ProcType.new do |{{block.args.first || "_".id }}, env|
           env.yield_with_self do
             {{block.body}}
           end

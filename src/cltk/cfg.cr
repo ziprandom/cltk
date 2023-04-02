@@ -264,7 +264,7 @@ module CLTK
       production
     end
 
-    def callback(&callback: Symbol, Symbol, Production, Array(Int32)-> Nil)
+    def callback(&callback : Symbol, Symbol, Production, Array(Int32)-> Nil)
       @callback = callback
       nil
     end

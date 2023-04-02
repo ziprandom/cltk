@@ -77,7 +77,7 @@ class AmbiguousParser < CLTK::Parser
     clause("e PLS e") { |e0, op, e1 | e0.as(Int32) + e1.as(Int32) }
     clause("e SUB e") { |e0, op, e1 | e0.as(Int32) - e1.as(Int32) }
     clause("e MUL e") { |e0, op, e1 | e0.as(Int32) * e1.as(Int32) }
-    clause("e DIV e") { |e0, op, e1 | e0.as(Int32) / e1.as(Int32) }
+    clause("e DIV e") { |e0, op, e1 | e0.as(Int32) // e1.as(Int32) }
   end
 
   finalize
@@ -92,7 +92,7 @@ class ArrayCalc < CLTK::Parser
     clause("PLS e e") { |args| args = args.as(Array); args[1].as(Int32) + args[2].as(Int32) }
     clause("SUB e e") { |args| args = args.as(Array); args[1].as(Int32) - args[2].as(Int32) }
     clause("MUL e e") { |args| args = args.as(Array); args[1].as(Int32) * args[2].as(Int32) }
-    clause("DIV e e") { |args| args = args.as(Array); args[1].as(Int32) / args[2].as(Int32) }
+    clause("DIV e e") { |args| args = args.as(Array); args[1].as(Int32) // args[2].as(Int32) }
     nil
   end
 
@@ -218,7 +218,7 @@ class ErrorCalc < CLTK::Parser
     clause("e PLS e") { |e0, op, e1| e0.as(Int32) + e1.as(Int32) }
     clause("e SUB e") { |e0, op, e1| e0.as(Int32) - e1.as(Int32) }
     clause("e MUL e") { |e0, op, e1| e0.as(Int32) * e1.as(Int32) }
-    clause("e DIV e") { |e0, op, e1| e0.as(Int32) / e1.as(Int32) }
+    clause("e DIV e") { |e0, op, e1| e0.as(Int32) // e1.as(Int32) }
     clause("e PLS ERROR e") do |e0, op, ts, e1|
       error(ts);
       e0.as(Int32) + e1.as(Int32)
@@ -275,7 +275,7 @@ class RotatingCalc < CLTK::Parser
       ->(a : Int32, b : Int32) { a + b }, # +
       ->(a : Int32, b : Int32) { a - b }, # -
       ->(a : Int32, b : Int32) { a * b }, # *
-      ->(a : Int32, b : Int32) { a / b }  # /
+      ->(a : Int32, b : Int32) { a // b }  # /
     ]
 
     def get_op(orig_op)
