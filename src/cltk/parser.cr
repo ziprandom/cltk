@@ -244,11 +244,11 @@ module CLTK
     end
 
     # Shorthands for defining productions and clauses
-    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+    def self.c(expression, precedence = nil, arg_type = @@default_arg_type, &action : Array(Type), Environment -> _)
       self.clause(expression, precedence, arg_type, &action)
     end
 
-    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action: Array(Type), Environment -> _)
+    def self.p(symbol, expression = nil, precedence = nil, arg_type = @@default_arg_type, &action : Array(Type), Environment -> _)
       self.production(symbol, expression, precedence, arg_type, &action)
     end
 
@@ -824,7 +824,7 @@ module CLTK
     # @param [Proc]    proc  Code to execute when the block is seen
     #
     # @return [void]
-    def self.token_hook(sym, &proc: Proc(Environment, Nil))
+    def self.token_hook(sym, &proc : Proc(Environment, Nil))
       if CFG.is_terminal?(sym)
 	@@token_hooks[sym.to_s] << proc
       else
